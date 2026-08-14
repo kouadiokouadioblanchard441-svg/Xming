@@ -9,7 +9,7 @@ import WheelResultModal from "@/components/wheel-result-modal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
-import { ChevronLeft, ChevronDown, ChevronUp, Trophy } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { getUserAvatar } from "@/lib/avatar";
 import {
   DEFAULT_SPIN_WHEEL_SEGMENTS,
@@ -346,12 +346,6 @@ export default function SpinWheelPage() {
   const [showNoTours, setShowNoTours] = useState(false);
   const [spinResult,  setSpinResult]  = useState<{ won: boolean; amount: number; label: string } | null>(null);
 
-  /* Personal spin history — for "Balance" + historique détaillé */
-  const { data: spinHistory = [] } = useQuery<{ amount: string; description: string; createdAt: string }[]>({
-    queryKey: ["/api/spin-wheel/history"],
-  });
-  const [showBalanceHistory, setShowBalanceHistory] = useState(false);
-
   /* Platform settings — for popup texts */
   const { data: platformSettings } = useQuery<Record<string, string>>({
     queryKey: ["/api/settings"],
@@ -362,11 +356,6 @@ export default function SpinWheelPage() {
   const rulesText = platformSettings?.spinWheelRulesText
     ?? "Achetez un produit pour obtenir des tours gratuits. Chaque tour vous donne une chance de remporter un gain en FCFA crédité directement sur votre solde.";
   const rulesHighlight = platformSettings?.spinWheelRulesHighlight ?? "";
-  const wheelTotalWon = useMemo(
-    () => spinHistory.reduce((sum, tx) => sum + parseFloat(tx.amount || "0"), 0),
-    [spinHistory],
-  );
-
   const [segments, setSegments] = useState<SpinWheelSegment[]>(DEFAULT_SPIN_WHEEL_SEGMENTS);
   const rotDrawRef   = useRef(rotation);
   const segDrawRef   = useRef(segments);
@@ -488,8 +477,6 @@ export default function SpinWheelPage() {
     if (rafRef.current)  cancelAnimationFrame(rafRef.current);
   }, []);
 
-  // balance kept for reference but we display wheelTotalWon in the UI
-
   /* Masked display list — prefer API data, fall back to demo rows */
   const historyRows: RecentSpin[] = useMemo(() => {
     if (recentSpins && recentSpins.length > 0) return recentSpins;
@@ -523,8 +510,25 @@ export default function SpinWheelPage() {
           </span>
         </header>
 
-         {/* ── Description + actions au-dessus de la roue ── */}
+          {/* ── Tours gratuits, description et actions au-dessus de la roue ── */}
          <div className="mx-4 mb-3">
+            <div className="flex justify-center mb-3">
+              <div
+                className="flex items-center gap-2 rounded-full px-4 py-2 shadow-sm"
+                style={{
+                  background: "rgba(255,255,255,0.97)",
+                  border: "1px solid rgba(232,25,44,0.18)",
+                }}
+              >
+                <span className="text-sm font-semibold text-gray-700">Tours gratuits</span>
+                <span
+                  className="min-w-8 rounded-full px-2 py-0.5 text-center text-sm font-bold text-white"
+                  style={{ background: "#E8192C" }}
+                >
+                  {spinTokens}
+                </span>
+              </div>
+            </div>
            <p className="text-center text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.78)" }}>
              Tournez la roue et tentez de gagner des récompenses en FCFA.
            </p>
@@ -597,78 +601,6 @@ export default function SpinWheelPage() {
                 if (dist <= centerR) handleSpin();
               }}
             />
-          </div>
-        </div>
-
-        {/* ── Balance / Gratuit row ── */}
-        <div className="mx-4 mb-3">
-          <div
-            className="rounded-2xl overflow-hidden shadow-md"
-            style={{ background: "rgba(255,255,255,0.97)" }}
-          >
-            {/* Top row */}
-            <div className="flex items-center justify-between px-4 py-3">
-              {/* Total gagné — cliquable pour voir l'historique */}
-              <button
-                className="flex items-center gap-2 active:opacity-70 transition-opacity"
-                onClick={() => setShowBalanceHistory(v => !v)}
-              >
-                <Trophy className="w-4 h-4" style={{ color: "#E8192C" }} />
-                <span className="text-sm text-gray-700 font-medium">Balance</span>
-                <span
-                  className="px-3 py-0.5 rounded-full text-sm font-bold text-white"
-                  style={{ background: "#E8192C" }}
-                >
-                  {wheelTotalWon.toLocaleString("fr-FR", { maximumFractionDigits: 0 })} FCFA
-                </span>
-                {showBalanceHistory
-                  ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" />
-                  : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
-              </button>
-
-              {/* Gratuit */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-700 font-medium">Gratuit</span>
-                <span
-                  className="px-3 py-0.5 rounded-full text-sm font-bold text-white"
-                  style={{ background: "#E8192C" }}
-                >
-                  {spinTokens}
-                </span>
-              </div>
-            </div>
-
-            {/* Historique déroulant */}
-            {showBalanceHistory && (
-              <div className="border-t" style={{ borderColor: "#f3f4f6" }}>
-                {spinHistory.length === 0 ? (
-                  <p className="text-center text-gray-400 text-xs py-4">Aucun gain pour l'instant</p>
-                ) : (
-                  <div className="max-h-52 overflow-y-auto divide-y divide-gray-100">
-                    {spinHistory.slice().reverse().map((tx, i) => {
-                      const d = tx.createdAt ? new Date(tx.createdAt) : null;
-                      const dateStr = d
-                        ? `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`
-                        : "";
-                      return (
-                        <div key={i} className="flex items-center justify-between px-4 py-2.5">
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg">🎰</span>
-                            <div>
-                              <p className="text-xs font-semibold text-gray-800">{tx.description || "Gain roue"}</p>
-                              <p className="text-[10px] text-gray-400">{dateStr}</p>
-                            </div>
-                          </div>
-                           <span className="text-sm font-extrabold" style={{ color: "#E8192C" }}>
-                            +{Number(tx.amount).toLocaleString("fr-FR")} FCFA
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
 
