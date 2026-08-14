@@ -3,24 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { getCountryByCode } from "@/lib/countries";
 import { useLocation } from "wouter";
-import { ChevronRight } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
-import iconLv1    from "@assets/team_1_1786039393584.png";
-import iconLv2    from "@assets/team_2_1786039393656.png";
-import iconLv3    from "@assets/team_3_1786039393719.png";
-import iconLink   from "@assets/link_1786039393680.png";
-import inviteBg   from "@assets/invite_bg_1786039393701.png";
+import xpengInvite   from "@assets/xpeng-team-invite.png";
+import xpengProgress from "@assets/xpeng-team-progress.png";
 
 /* ── Palette ─────────────────────────────────── */
-const PAGE_BG    = "#000000";
-const HDR_FROM   = "#111111";
-const HDR_TO     = "#1e2e0a";
-const COPY_BTN   = "#5a7228";
-
-const LV1 = { bg: "#f0d566", tc: "#6b5000", label: "Leve1", icon: iconLv1, rate_label: "Remise Niveau 1" };
-const LV2 = { bg: "#c0cce8", tc: "#1e3560", label: "Leve2", icon: iconLv2, rate_label: "Remise Niveau 2" };
-const LV3 = { bg: "#f0b8b0", tc: "#7a1e1e", label: "Leve3", icon: iconLv3, rate_label: "Remise Niveau 3" };
+const GREEN   = "#4CAF50";
+const GREENDARK = "#388E3C";
 
 interface TeamStats {
   level1Count: number;
@@ -50,220 +40,267 @@ export default function TeamPage() {
   if (!user) return null;
 
   const countryInfo = getCountryByCode(user.country);
-  const currency    = countryInfo?.currency || "USDT";
-  const referralLink = `${window.location.origin}/#/register?invite_code=${user.referralCode}`;
+  const currency    = countryInfo?.currency || "FCFA";
+  const referralCode = user.referralCode || "";
+  const referralLink = `${window.location.origin}/#/register?invite_code=${referralCode}`;
 
-  const copyLink = () => {
-    navigator.clipboard.writeText(referralLink);
-    toast({ title: t.teamLinkCopied });
-  };
-
-  const lv1Rate = settings?.level1Commission || "10";
+  const lv1Rate = settings?.level1Commission || "30";
   const lv2Rate = settings?.level2Commission || "2";
   const lv3Rate = settings?.level3Commission || "1";
 
-  const task1Rate = settings?.taskLevel1Commission || "3";
-  const task2Rate = settings?.taskLevel2Commission || "2";
-  const task3Rate = settings?.taskLevel3Commission || "1";
+  const totalUsers =
+    (stats?.level1Count || 0) +
+    (stats?.level2Count || 0) +
+    (stats?.level3Count || 0);
+  const totalCommission = stats?.totalCommission || 0;
 
-  const levels = [
-    {
-      ...LV1,
-      rate:  `${lv1Rate}%`,
-      total: stats?.level1Count    || 0,
-      actif: stats?.level1Invested || 0,
-    },
-    {
-      ...LV2,
-      rate:  `${lv2Rate}%`,
-      total: stats?.level2Count    || 0,
-      actif: stats?.level2Invested || 0,
-    },
-    {
-      ...LV3,
-      rate:  `${lv3Rate}%`,
-      total: stats?.level3Count    || 0,
-      actif: stats?.level3Invested || 0,
-    },
-  ];
+  const copyCode = () => {
+    navigator.clipboard.writeText(referralCode);
+    toast({ title: "Code copié !" });
+  };
+  const copyLink = () => {
+    navigator.clipboard.writeText(referralLink);
+    toast({ title: "Lien copié !" });
+  };
 
   return (
-    <div className="flex flex-col min-h-full pb-20" style={{ background: PAGE_BG }}>
+    <div
+      className="flex flex-col min-h-full pb-20"
+      style={{ background: "#f5f5f5" }}
+    >
 
-      {/* ══ Header ══ */}
+      {/* ══ Stats 3 colonnes ══ */}
       <div
-        className="relative flex items-center justify-center px-4 pt-5 pb-4"
-        style={{ background: `linear-gradient(135deg, ${HDR_FROM}, ${HDR_TO})` }}
+        className="flex"
+        style={{ background: "#fff", borderBottom: "1px solid #e0e0e0" }}
       >
-        <button
-          onClick={() => navigate("/")}
-          className="absolute left-4 w-8 h-8 flex items-center justify-center rounded-full"
-          style={{ background: "rgba(255,255,255,0.18)" }}
-          data-testid="button-back"
-        >
-          <ChevronRight className="w-5 h-5 text-white rotate-180" />
-        </button>
-        <h1 className="text-white font-bold text-lg tracking-wide">{t.teamTitle || "équipe"}</h1>
-      </div>
-
-      <div className="px-3 pt-4 space-y-4">
-
-        {/* ══ Lien d'invitation ══ */}
-        <div className="rounded-2xl shadow-sm px-4 py-4 flex items-center gap-3" style={{ background: "#000000" }}>
-          {/* Illustration */}
-          <img src={inviteBg} alt="" className="w-14 h-14 object-contain shrink-0" />
-
-          {/* Texte */}
-          <div className="flex-1 min-w-0">
-            <p className="font-extrabold text-white text-sm mb-0.5">{t.teamInviteLink || "Lien d'invitation"}</p>
-            <p
-              className="text-xs truncate"
-              style={{ color: "rgba(255,255,255,0.7)" }}
-              data-testid="text-referral-link"
-            >
-              {referralLink}
+        {[
+          { label: "Utilisateurs", val: stats?.level1Count || 0 },
+          { label: "Utilisateurs", val: stats?.level2Count || 0 },
+          { label: "Utilisateurs", val: stats?.level3Count || 0 },
+        ].map((col, i) => (
+          <div
+            key={i}
+            className="flex-1 flex flex-col items-center py-3"
+            style={{
+              borderRight: i < 2 ? "1px solid #e0e0e0" : "none",
+            }}
+          >
+            <p style={{ fontSize: 13, color: "#333", lineHeight: 1.4 }}>
+              Utilisateurs : {col.val}
+            </p>
+            <p style={{ fontSize: 13, color: "#333", lineHeight: 1.4 }}>
+              Récompenses : {i === 0
+                ? (stats?.level1Commission || 0).toFixed(0)
+                : i === 1
+                  ? (stats?.level2Commission || 0).toFixed(0)
+                  : (stats?.level3Commission || 0).toFixed(0)}
             </p>
           </div>
+        ))}
+      </div>
 
-          {/* Bouton copier */}
-          <button
-            onClick={copyLink}
-            className="shrink-0 px-4 py-1.5 rounded-full text-white text-xs font-bold shadow active:scale-95 transition-transform"
-            style={{ background: COPY_BTN }}
-            data-testid="button-copy-link"
-          >
-            {t.teamCopy || "Copier"}
-          </button>
-        </div>
+      {/* ══ Boutons navigation ══ */}
+      <div
+        className="flex gap-3 px-4 py-3"
+        style={{ background: "#fff" }}
+      >
+        <button
+          onClick={() => navigate("/tasks")}
+          className="flex-1 text-center font-semibold rounded-full py-2"
+          style={{
+            border: `1.5px solid ${GREEN}`,
+            color: GREEN,
+            fontSize: 13,
+            background: "#fff",
+          }}
+          data-testid="button-task-center"
+        >
+          Centre des tâches &gt;
+        </button>
+        <button
+          onClick={() => navigate("/members")}
+          className="flex-1 text-center font-semibold rounded-full py-2"
+          style={{
+            border: `1.5px solid ${GREEN}`,
+            color: GREEN,
+            fontSize: 13,
+            background: "#fff",
+          }}
+          data-testid="button-team-history"
+        >
+          Historique d'équipe &gt;
+        </button>
+      </div>
 
-        {/* ══ Niveau d'équipe ══ */}
-        <div className="rounded-2xl shadow-sm overflow-hidden" style={{ background: "#000000" }}>
+      <div className="px-3 pt-2 space-y-3">
 
-          {/* En-tête section */}
-          <div className="flex items-center justify-between px-4 pt-4 pb-2">
-            <div>
-              <p className="font-extrabold text-white text-base">{t.teamLevel1 ? "Niveau d'équipe" : "Niveau d'équipe"}</p>
-              <p className="text-white/60 text-xs mt-0.5">
-                1 Récompense d'activation :&nbsp;
-                <span className="font-bold text-white">{currency} 0</span>
+        {/* ══ Carte invitation ══ */}
+        <div
+          className="rounded-2xl bg-white shadow-sm overflow-hidden"
+          style={{ border: "1px solid #e8e8e8" }}
+        >
+          {/* Header */}
+          <div className="flex items-start gap-3 px-4 pt-4 pb-3">
+            <img
+              src={xpengInvite}
+              alt="XPENG"
+              style={{ width: 72, height: 72, objectFit: "contain", flexShrink: 0 }}
+            />
+            <div className="flex-1 min-w-0">
+              <p
+                className="font-bold leading-snug"
+                style={{ fontSize: 15, color: "#111", marginBottom: 4 }}
+              >
+                Commencez à inviter des amis maintenant
+              </p>
+              <p style={{ fontSize: 12, color: "#777" }}>
+                Partagez le code d'invitation ou le lien
               </p>
             </div>
-            <button
-              onClick={() => navigate("/members")}
-              className="flex items-center gap-0.5 text-xs font-semibold"
-              style={{ color: "rgba(255,255,255,0.7)" }}
-              data-testid="button-team-details"
+          </div>
+
+          {/* Code row */}
+          <div className="flex items-center gap-2 px-4 pb-3">
+            <div
+              className="flex-1 flex items-center justify-center rounded-full py-2"
+              style={{
+                border: `1.5px solid ${GREEN}`,
+                color: GREEN,
+                fontSize: 14,
+                fontWeight: 600,
+                background: "#fff",
+                minWidth: 0,
+                overflow: "hidden",
+              }}
             >
-              Détails de l'équipe <ChevronRight className="w-3.5 h-3.5" />
+              <span className="truncate px-2" data-testid="text-referral-code">
+                {referralCode}
+              </span>
+            </div>
+            <button
+              onClick={copyCode}
+              className="shrink-0 font-semibold rounded-lg py-2 px-4 active:scale-95 transition-transform"
+              style={{
+                background: GREEN,
+                color: "#fff",
+                fontSize: 14,
+                border: "none",
+              }}
+              data-testid="button-copy-code"
+            >
+              Copier
             </button>
           </div>
 
-          {/* Cards niveau */}
-          <div className="px-3 pb-4 space-y-3">
-            {levels.map((lvl, idx) => (
-              <div
-                key={idx}
-                className="rounded-2xl overflow-hidden shadow-sm"
-                style={{ background: lvl.bg }}
-                data-testid={`level-card-${idx + 1}`}
-              >
-                {/* Titre + médaille */}
-                <div className="flex items-center justify-between px-4 pt-3 pb-1">
-                  <p className="font-extrabold text-base italic" style={{ color: lvl.tc }}>{lvl.label}</p>
-                  <img src={lvl.icon} alt={lvl.label} className="w-10 h-10 object-contain" />
-                </div>
-
-                {/* 3 stats */}
-                <div className="grid grid-cols-3 pb-4 pt-1">
-                  <div className="flex flex-col items-center px-2">
-                    <p className="font-extrabold text-xl leading-tight" style={{ color: lvl.tc }}>{lvl.rate}</p>
-                    <p className="text-[10px] text-center leading-snug mt-0.5" style={{ color: lvl.tc, opacity: 0.75 }}>{lvl.rate_label}</p>
-                  </div>
-                  <div className="flex flex-col items-center px-2 border-x border-black/10">
-                    <p className="font-extrabold text-xl leading-tight" style={{ color: lvl.tc }}>{lvl.total}</p>
-                    <p className="text-[10px] text-center leading-snug mt-0.5" style={{ color: lvl.tc, opacity: 0.75 }}>Total des invités</p>
-                  </div>
-                  <div className="flex flex-col items-center px-2">
-                    <p className="font-extrabold text-xl leading-tight" style={{ color: lvl.tc }}>{lvl.actif}</p>
-                    <p className="text-white/80 text-[10px] text-center leading-snug mt-0.5">Actif</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+          {/* Link row */}
+          <div className="flex items-center gap-2 px-4 pb-4">
+            <div
+              className="flex-1 flex items-center rounded-full py-2"
+              style={{
+                border: "1.5px solid #ccc",
+                color: "#555",
+                fontSize: 12,
+                background: "#fff",
+                minWidth: 0,
+                overflow: "hidden",
+              }}
+            >
+              <span className="truncate px-3" data-testid="text-referral-link">
+                {referralLink}
+              </span>
+            </div>
+            <button
+              onClick={copyLink}
+              className="shrink-0 font-semibold rounded-lg py-2 px-4 active:scale-95 transition-transform"
+              style={{
+                background: GREEN,
+                color: "#fff",
+                fontSize: 14,
+                border: "none",
+              }}
+              data-testid="button-copy-link"
+            >
+              Copier
+            </button>
           </div>
         </div>
 
-        {/* ══ Section explicative ══ */}
-        <div className="rounded-2xl px-5 py-5 space-y-5" style={{ background: "#3a4f1a" }}>
+        {/* ══ Carte Ma progression ══ */}
+        <div
+          className="rounded-2xl overflow-hidden shadow-sm"
+          style={{ background: GREEN }}
+        >
+          <div className="flex items-center justify-between px-5 py-5">
+            {/* Left */}
+            <div className="flex flex-col gap-4">
+              <p
+                className="font-bold"
+                style={{ fontSize: 18, color: "#fff", marginBottom: 6 }}
+              >
+                Ma progression
+              </p>
 
-          {/* Titre */}
-          <div className="flex items-center gap-2 border-b border-white/20 pb-3">
-            <span className="text-2xl">👥</span>
-            <h2 className="text-white font-extrabold text-base tracking-wide">
-              Comment fonctionne le parrainage ?
-            </h2>
-          </div>
+              {/* Utilisateurs */}
+              <div>
+                <p style={{ fontSize: 22, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>
+                  {totalUsers}
+                </p>
+                <button
+                  onClick={() => navigate("/members")}
+                  style={{ fontSize: 13, color: "#ffffffcc", textDecoration: "underline" }}
+                  data-testid="button-total-users"
+                >
+                  Utilisateurs totaux &gt;
+                </button>
+              </div>
 
-          {/* Explication générale */}
-          <div className="space-y-2">
-            <p className="text-white font-bold text-sm">🔗 Principe du parrainage</p>
-            <p className="text-white/85 text-sm leading-relaxed">
-              Chaque membre possède un lien d'invitation unique. Lorsqu'une personne s'inscrit via votre lien, elle devient votre filleul de <span className="text-yellow-300 font-bold">Niveau 1</span>. Si ce filleul invite à son tour d'autres personnes, elles rejoignent votre équipe en <span className="text-blue-300 font-bold">Niveau 2</span>, et ainsi de suite jusqu'au <span className="text-red-300 font-bold">Niveau 3</span>.
-            </p>
-          </div>
-
-          {/* Commissions sur investissements */}
-          <div className="space-y-2">
-            <p className="text-white font-bold text-sm">💰 Commissions sur les investissements</p>
-            <p className="text-white/85 text-sm leading-relaxed">
-              Lorsqu'un filleul achète un produit d'investissement, vous recevez automatiquement une commission sur le montant investi :
-            </p>
-            <div className="space-y-2 mt-1">
-              {[
-                { label: "Niveau 1", rate: lv1Rate, color: "#f0d566", tc: "#6b5000" },
-                { label: "Niveau 2", rate: lv2Rate, color: "#c0cce8", tc: "#1e3560" },
-                { label: "Niveau 3", rate: lv3Rate, color: "#f0b8b0", tc: "#7a1e1e" },
-              ].map((lvl) => (
-                <div key={lvl.label} className="flex items-center justify-between rounded-xl px-4 py-2.5" style={{ background: lvl.color }}>
-                  <span className="font-bold text-sm" style={{ color: lvl.tc }}>{lvl.label}</span>
-                  <span className="font-extrabold text-lg" style={{ color: lvl.tc }}>{lvl.rate}%</span>
-                  <span className="text-xs font-medium" style={{ color: lvl.tc, opacity: 0.8 }}>sur l'investissement</span>
-                </div>
-              ))}
+              {/* Récompenses */}
+              <div>
+                <p style={{ fontSize: 20, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>
+                  {currency} {totalCommission.toFixed(0)}
+                </p>
+                <button
+                  onClick={() => navigate("/team-details")}
+                  style={{ fontSize: 13, color: "#ffffffcc", textDecoration: "underline" }}
+                  data-testid="button-total-rewards"
+                >
+                  Récompenses totales &gt;
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Commissions sur tâches */}
-          <div className="space-y-2">
-            <p className="text-white font-bold text-sm">✅ Gains sur les tâches quotidiennes</p>
-            <p className="text-white/85 text-sm leading-relaxed">
-              Chaque jour, quand un filleul accomplit ses tâches et reçoit sa récompense, vous touchez automatiquement un pourcentage de ses gains sur vos <span className="text-white font-bold">revenus</span> :
-            </p>
-            <div className="space-y-2 mt-1">
-              {[
-                { label: "Niveau 1", rate: task1Rate, desc: "Parrain direct", color: "#f0d566", tc: "#6b5000" },
-                { label: "Niveau 2", rate: task2Rate, desc: "Parrain du parrain", color: "#c0cce8", tc: "#1e3560" },
-                { label: "Niveau 3", rate: task3Rate, desc: "3ème niveau", color: "#f0b8b0", tc: "#7a1e1e" },
-              ].map((lvl) => (
-                <div key={lvl.label} className="flex items-center justify-between rounded-xl px-4 py-2.5" style={{ background: lvl.color }}>
-                  <div>
-                    <p className="font-bold text-sm leading-tight" style={{ color: lvl.tc }}>{lvl.label}</p>
-                    <p className="text-xs" style={{ color: lvl.tc, opacity: 0.7 }}>{lvl.desc}</p>
-                  </div>
-                  <span className="font-extrabold text-lg" style={{ color: lvl.tc }}>{lvl.rate}%</span>
-                  <span className="text-xs font-medium" style={{ color: lvl.tc, opacity: 0.8 }}>sur les tâches</span>
-                </div>
-              ))}
-            </div>
+            {/* Right image */}
+            <img
+              src={xpengProgress}
+              alt="XPENG"
+              style={{ width: 140, height: 110, objectFit: "contain", flexShrink: 0 }}
+            />
           </div>
+        </div>
 
-          {/* Remarque */}
-          <div className="rounded-xl px-4 py-3 border border-white/20" style={{ background: "rgba(255,255,255,0.08)" }}>
-            <p className="text-white/90 text-xs leading-relaxed">
-              📌 <span className="font-bold text-white">Remarque :</span> Les commissions sont créditées instantanément sur votre solde des revenus dès que votre filleul effectue une action éligible. Plus votre équipe est active, plus vos gains augmentent chaque jour !
-            </p>
-          </div>
-
+        {/* ══ Bloc texte règles ══ */}
+        <div
+          className="rounded-2xl bg-white shadow-sm px-4 py-5"
+          style={{ border: "1px solid #e8e8e8" }}
+        >
+          <p style={{ fontSize: 14, color: "#333", lineHeight: 1.8 }}>
+            Lorsqu'un ami que vous invitez s'inscrit et investit, vous recevez
+            immédiatement une prime de <strong>{lv1Rate} %</strong> sur son investissement.
+          </p>
+          <p style={{ fontSize: 14, color: "#333", lineHeight: 1.8, marginTop: 8 }}>
+            Lorsque les membres de votre équipe de deuxième niveau investissent,
+            vous recevez une prime de <strong>{lv2Rate} %</strong>.
+          </p>
+          <p style={{ fontSize: 14, color: "#333", lineHeight: 1.8, marginTop: 8 }}>
+            Lorsque les membres de votre équipe de troisième niveau investissent,
+            vous recevez une prime de <strong>{lv3Rate} %</strong>.
+          </p>
+          <p style={{ fontSize: 14, color: "#333", lineHeight: 1.8, marginTop: 8 }}>
+            Une fois que les membres de votre équipe ont investi, la prime est
+            immédiatement créditée sur votre compte et vous pouvez la retirer
+            immédiatement.
+          </p>
         </div>
 
       </div>
