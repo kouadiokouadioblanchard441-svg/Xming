@@ -663,6 +663,72 @@ export class DatabaseStorage implements IStorage {
     return deposit;
   }
 
+  /* ── WestPay helpers ──────────────────────────────────────── */
+
+  async findProcessingWestpayDeposit(
+    amount: number,
+    payerPhone: string | null,
+    _country: string,
+  ): Promise<Deposit | null> {
+    const candidates = await db
+      .select()
+      .from(deposits)
+      .where(
+        and(
+          eq(deposits.status, "processing"),
+          eq(deposits.paymentMethod, "WestPay"),
+          sql`${deposits.amount} = ${amount}`,
+        ),
+      )
+      .orderBy(asc(deposits.createdAt));
+
+    if (candidates.length === 0) return null;
+
+    if (payerPhone) {
+      const normalized = payerPhone.replace(/^\+/, "");
+      const match = candidates.find((d) => {
+        const stored = (d.accountNumber || "").replace(/^\+/, "");
+        return stored === normalized || normalized.endsWith(stored) || stored.endsWith(normalized);
+      });
+      if (match) return match;
+      // Phone given but no match and multiple candidates → don't guess
+      if (candidates.length > 1) return null;
+    }
+
+    return candidates[0] ?? null;
+  }
+
+  async approveWestpayDeposit(
+    depositId: number,
+    txId: string,
+    payerPhone: string | null,
+  ): Promise<void> {
+    const deposit = await this.getDeposit(depositId);
+    if (!deposit) throw new Error("Deposit not found");
+
+    await this.updateDeposit(depositId, {
+      status: "approved",
+      processedAt: new Date(),
+      reference: txId,
+      accountNumber: payerPhone || deposit.accountNumber,
+    });
+
+    const user = await this.getUser(deposit.userId);
+    if (user) {
+      const newBalance = parseFloat(user.balance) + deposit.amount;
+      await this.updateUser(user.id, {
+        balance: newBalance.toFixed(2),
+        hasDeposited: true,
+      });
+      await this.createTransaction({
+        userId: user.id,
+        type: "deposit",
+        amount: deposit.amount.toString(),
+        description: "Dépôt WestPay confirmé",
+      });
+    }
+  }
+
   async cleanupDepositScreenshots(): Promise<void> {
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
     await db.update(deposits)

@@ -1145,6 +1145,81 @@ export async function registerRoutes(
     }
   });
 
+  // ── WestPay : initiate hosted payment ──────────────────────────────────
+  app.post("/api/deposits/westpay/initiate", requireAuth, async (req, res) => {
+    try {
+      const { amount } = req.body;
+      if (!amount || Number(amount) <= 0)
+        return res.status(400).json({ message: "Montant invalide" });
+
+      const user = await storage.getUser(req.session.userId!);
+      if (!user) return res.status(401).json({ message: "Non authentifié" });
+
+      const settings = await storage.getSettings();
+      const minDeposit = parseInt(settings.minDeposit || "3500");
+      if (Number(amount) < minDeposit)
+        return res.status(400).json({
+          message: `Montant minimum : ${minDeposit.toLocaleString()} FCFA`,
+        });
+
+      const slug = settings.westpayMerchantSlug;
+      if (!slug)
+        return res.status(500).json({
+          message: "WestPay non configuré. Ajoutez le slug marchand dans les paramètres admin.",
+        });
+
+      // Map internal country code → WestPay country name
+      const countryMap: Record<string, string> = {
+        CI: "Cote d'Ivoire",
+        BF: "Burkina Faso",
+        ML: "Mali",
+        BJ: "Benin",
+        SN: "Senegal",
+        TG: "Togo",
+        CM: "Cameroun",
+        GN: "Guinée",
+        NE: "Niger",
+        CG: "Congo Brazzaville",
+        CD: "Congo RDC",
+        GA: "Gabon",
+        KE: "Kenya",
+        GH: "Ghana",
+        NG: "Nigeria",
+      };
+      const wpCountry = countryMap[user.country || "CI"] ?? "Cote d'Ivoire";
+
+      // Create a processing deposit record to track this payment
+      const deposit = await storage.createDeposit({
+        userId: user.id,
+        amount: Number(amount),
+        accountName: user.name || user.phone,
+        accountNumber: user.phone,
+        country: user.country || "CI",
+        paymentMethod: "WestPay",
+        status: "processing",
+        reference: null,
+      });
+
+      // Build the WestPay hosted-payment URL
+      const forwardedProto = req.headers["x-forwarded-proto"] as string | undefined;
+      const forwardedHost  = req.headers["x-forwarded-host"]  as string | undefined;
+      const protocol = forwardedProto || (req.secure ? "https" : "http");
+      const host     = forwardedHost  || req.headers.host || "";
+      const appBase  = process.env.APP_URL || `${protocol}://${host}`;
+      const redirectUrl = `${appBase}/deposit?wp_deposit=${deposit.id}&wp_return=1`;
+
+      const payUrl = new URL("https://westpay.cfd/pay");
+      payUrl.searchParams.set("merchant", slug);
+      payUrl.searchParams.set("amount",   String(Math.round(Number(amount))));
+      payUrl.searchParams.set("country",  wpCountry);
+      payUrl.searchParams.set("redirect", redirectUrl);
+
+      res.json({ depositId: deposit.id, payUrl: payUrl.toString() });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Verify deposit status
   app.get("/api/deposits/:id/verify", requireAuth, async (req, res) => {
     try {
@@ -1655,7 +1730,11 @@ export async function registerRoutes(
     try {
       const settings = await storage.getSettings();
       // Never expose secret keys via this public (unauthenticated) endpoint
-      const { omnipayCallbackKey, soleaspayEnabled, soleaspayChannelName, soleaspayCountries, ...publicSettings } = settings;
+      const {
+        omnipayCallbackKey, soleaspayEnabled, soleaspayChannelName, soleaspayCountries,
+        westpayWebhookSecret, westpayMerchantSlug,
+        ...publicSettings
+      } = settings;
       res.json(publicSettings);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -2774,6 +2853,67 @@ export async function registerRoutes(
       res.json(withdrawal);
     } catch (error: any) {
       res.status(400).json({ message: error.message });
+    }
+  });
+
+  // ── WestPay webhook ────────────────────────────────────────────────────
+  // Must be declared BEFORE the static-file catch-all.
+  // WestPay sends: POST with X-RobotPay-Signature + X-RobotPay-Event headers.
+  app.post("/api/webhook/westpay", async (req, res) => {
+    try {
+      const signature = (req.headers["x-robotpay-signature"] as string) || "";
+      const event     = (req.headers["x-robotpay-event"]     as string) || "";
+
+      const settings = await storage.getSettings();
+      // env var takes priority (matches Plesk-only config; DB is dev fallback)
+      const secret = process.env.WESTPAY_WEBHOOK_SECRET || settings.westpayWebhookSecret || "";
+
+      if (!secret) {
+        console.error("[WestPay webhook] Secret non configuré — requête ignorée");
+        return res.status(200).json({ received: true }); // 200 so WestPay doesn't retry endlessly
+      }
+
+      // Verify HMAC-SHA256 over the raw JSON body
+      const rawBody: Buffer | undefined = (req as any).rawBody;
+      const bodyStr = rawBody ? rawBody.toString("utf8") : JSON.stringify(req.body);
+      const expected = crypto.createHmac("sha256", secret).update(bodyStr).digest("hex");
+
+      let sigValid = false;
+      try {
+        sigValid =
+          signature.length === expected.length &&
+          crypto.timingSafeEqual(Buffer.from(signature, "hex"), Buffer.from(expected, "hex"));
+      } catch {
+        sigValid = false;
+      }
+
+      if (!sigValid) {
+        console.error("[WestPay webhook] Signature invalide");
+        return res.status(401).json({ error: "Signature invalide" });
+      }
+
+      if (event === "payment.confirmed") {
+        const { txId, amount, payer, country } = req.body;
+        const numAmount  = Number(amount);
+        const payerPhone = payer ? String(payer).replace(/^\+/, "") : null;
+
+        const deposit = await storage.findProcessingWestpayDeposit(numAmount, payerPhone, country || "");
+        if (deposit) {
+          await storage.approveWestpayDeposit(deposit.id, txId, payer || null);
+          console.log(
+            `[WestPay webhook] Dépôt #${deposit.id} approuvé — ${numAmount} FCFA (txId: ${txId})`,
+          );
+        } else {
+          console.warn(
+            `[WestPay webhook] Aucun dépôt en attente pour amount=${numAmount} country=${country}`,
+          );
+        }
+      }
+
+      res.json({ received: true });
+    } catch (error: any) {
+      console.error("[WestPay webhook] Erreur:", error.message);
+      res.status(500).json({ message: "Internal error" });
     }
   });
 

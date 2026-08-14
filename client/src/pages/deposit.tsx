@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, CheckCircle2, Loader2, ClipboardList, Copy } from "lucide-react";
-import { Link } from "wouter";
+import { ChevronLeft, CheckCircle2, Loader2, ClipboardList, Copy, ExternalLink } from "lucide-react";
+import { Link, useSearch } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -93,8 +93,21 @@ export default function DepositPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // ── WestPay return-URL detection ──────────────────────────────────
+  const searchString = useSearch();
+  const searchParams = new URLSearchParams(searchString);
+  const wpDepositId  = searchParams.get("wp_deposit");
+  const wpReturn     = searchParams.get("wp_return");
+  const wpStatus     = searchParams.get("status"); // success | failure
+
   const [step, setStep] = useState<Step>("amount");
   const [amount, setAmount] = useState<number | "">("");
+  // WestPay state
+  const [wpPending, setWpPending] = useState(false);
+  const [wpDepositIdState, setWpDepositIdState] = useState<number | null>(
+    wpDepositId ? Number(wpDepositId) : null,
+  );
+  const [wpPollingDone, setWpPollingDone] = useState(false);
   // selectedDepositChannel = the Canal (Canal 1, Canal 2…) chosen in step 1
   const [selectedDepositChannel, setSelectedDepositChannel] = useState<DepositChannel | null>(null);
   // selectedChannel = the operator (MTN, Orange…) chosen in step 2
@@ -180,6 +193,44 @@ export default function DepositPage() {
     : user?.country === "BJ" ? "229"
     : user?.country === "ML" ? "223"
     : "225";
+
+  // ── WestPay: initiate & poll ──────────────────────────────────────
+  const westpayMutation = useMutation({
+    mutationFn: async (amt: number) => {
+      const res = await apiRequest("POST", "/api/deposits/westpay/initiate", { amount: amt });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.message || "Erreur"); }
+      return res.json() as Promise<{ depositId: number; payUrl: string }>;
+    },
+    onSuccess: ({ depositId, payUrl }) => {
+      setWpDepositIdState(depositId);
+      window.location.href = payUrl; // redirect to WestPay hosted page
+    },
+    onError: (e: Error) => toast({ title: "Erreur WestPay", description: e.message, variant: "destructive" }),
+  });
+
+  // Poll deposit status when user returns from WestPay
+  useEffect(() => {
+    if (!wpReturn || !wpDepositIdState || wpPollingDone) return;
+    let tries = 0;
+    const poll = setInterval(async () => {
+      tries++;
+      try {
+        const res = await fetch(`/api/deposits/${wpDepositIdState}/verify`, { credentials: "include" });
+        const data = await res.json();
+        if (data.status === "approved") {
+          clearInterval(poll);
+          setWpPollingDone(true);
+          setStep("done");
+          queryClient.invalidateQueries({ queryKey: ["/api/deposits/history"] });
+        } else if (data.status === "rejected" || tries >= 20) {
+          clearInterval(poll);
+          setWpPollingDone(true);
+        }
+      } catch { /* ignore */ }
+    }, 3000);
+    return () => clearInterval(poll);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wpReturn, wpDepositIdState]);
 
   const submitMutation = useMutation({
     mutationFn: async () => {
@@ -364,24 +415,41 @@ export default function DepositPage() {
 
             {isAutomaticDeposit && (
               <div
-                className="rounded-2xl p-4"
+                className="rounded-2xl p-4 space-y-3"
                 style={{
                   background: "linear-gradient(135deg, rgba(232,25,44,0.18), rgba(0,0,0,0.45))",
                   border: "1px solid rgba(232,25,44,0.55)",
                 }}
               >
-                <p className="text-white font-bold text-[15px] mb-1">
-                  Paiement automatique
-                </p>
+                <p className="text-white font-bold text-[15px]">Paiement automatique — WestPay</p>
                 <p className="text-white/70 text-sm leading-relaxed">
-                  Le mode automatique est activé pour votre pays. Les canaux manuels sont masqués.
+                  Vous serez redirigé vers la page de paiement sécurisée WestPay. Entrez votre numéro Mobile Money et validez via USSD. Votre solde est crédité automatiquement après confirmation.
                 </p>
-                <div
-                  className="mt-3 rounded-xl px-3 py-2.5 text-sm font-semibold"
-                  style={{ background: "rgba(255,255,255,0.1)", color: "#ff9aa5" }}
+                {/* Return from WestPay — polling */}
+                {wpReturn && !wpPollingDone && (
+                  <div className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold"
+                    style={{ background: "rgba(255,255,255,0.1)", color: "#fde68a" }}>
+                    <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                    Vérification du paiement en cours…
+                  </div>
+                )}
+                <button
+                  onClick={() => {
+                    if (!amount || Number(amount) < minDeposit) {
+                      toast({ title: "Montant invalide", description: `Minimum : ${minDeposit.toLocaleString()} ${CURRENCY}`, variant: "destructive" });
+                      return;
+                    }
+                    westpayMutation.mutate(Number(amount));
+                  }}
+                  disabled={westpayMutation.isPending || (!!wpReturn && !wpPollingDone)}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-white text-sm transition active:scale-95 disabled:opacity-60"
+                  style={{ background: "linear-gradient(90deg, #E8192C 0%, #a01020 100%)", boxShadow: "0 4px 14px rgba(232,25,44,0.4)" }}
+                  data-testid="button-westpay-pay"
                 >
-                  Westpay sera disponible ici après la connexion du service de paiement.
-                </div>
+                  {westpayMutation.isPending
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection…</>
+                    : <><ExternalLink className="w-4 h-4" /> Payer avec WestPay</>}
+                </button>
               </div>
             )}
 

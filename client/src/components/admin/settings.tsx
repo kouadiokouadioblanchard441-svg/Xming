@@ -61,6 +61,9 @@ const settingsSchema = z.object({
   taskLevel3Commission: z.string().min(1, "Commission requise"),
   dailyBonusEnabled: z.boolean(),
   dailyBonusAmount: z.string().min(1, "Montant requis"),
+  // WestPay
+  westpayMerchantSlug: z.string().optional(),
+  westpayWebhookSecret: z.string().optional(),
   // Popup d'accueil
   popupTitle: z.string().optional(),
   popupTelegramLabel: z.string().optional(),
@@ -225,6 +228,8 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       taskLevel3Commission: "1",
       dailyBonusEnabled: true,
       dailyBonusAmount: "50",
+      westpayMerchantSlug: "",
+      westpayWebhookSecret: "",
     },
   });
 
@@ -280,6 +285,8 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       popupLine5:             settings.popupLine5             ?? "",
       popupLine6:             settings.popupLine6             ?? "",
       popupLine7:             settings.popupLine7             ?? "",
+      westpayMerchantSlug:    settings.westpayMerchantSlug    ?? "",
+      westpayWebhookSecret:   settings.westpayWebhookSecret   ?? "",
     });
   // "form" est intentionnellement absent des dépendances : l'objet change à
   // chaque render et provoquerait une boucle infinie de réinitialisations.
@@ -941,6 +948,46 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 </FormItem>
               )} />
             ))}
+          </CardContent>
+        </Card>
+
+        {/* ── WestPay ── */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              💳 WestPay — Dépôts automatiques
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-xs text-gray-400">
+              Configurez votre compte WestPay pour activer les dépôts automatiques Mobile Money.
+              Le slug marchand se trouve dans votre tableau de bord WestPay.
+              Le secret webhook est généré automatiquement à la création de votre URL webhook.
+            </p>
+            <FormField control={form.control} name="westpayMerchantSlug" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Slug marchand WestPay</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="ex : xpeng" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="westpayWebhookSecret" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Secret webhook WestPay (HMAC-SHA256)</FormLabel>
+                <FormControl>
+                  <Input {...field} type="password" placeholder="Secret copié depuis le dashboard WestPay" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <p className="text-[11px] text-gray-500 leading-5">
+              URL webhook à configurer dans WestPay :{" "}
+              <code className="bg-gray-100 px-1 py-0.5 rounded text-gray-700 break-all">
+                https://votre-domaine.com/api/webhook/westpay
+              </code>
+            </p>
           </CardContent>
         </Card>
 

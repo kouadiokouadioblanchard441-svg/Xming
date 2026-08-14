@@ -346,6 +346,8 @@ export async function seed() {
     { key: "omnipayEnabled", value: "false" },
     { key: "omnipayChannelName", value: "OmniPay" },
     { key: "omnipayCallbackKey", value: "" },
+    { key: "westpayMerchantSlug", value: "" },
+    { key: "westpayWebhookSecret", value: "" },
     // VIP descriptions & advantages (insert only — never force-update)
     { key: "vip0Description", value: "Membre inscrit n'ayant pas encore investi." },
     { key: "vip0Advantages", value: "Accès à la plateforme. Possibilité de déposer et d'investir." },
