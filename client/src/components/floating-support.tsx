@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRef, useState, useEffect } from "react";
 import { useI18n } from "@/lib/i18n";
+import supportAvatar from "@assets/xpeng-support-avatar-3d.png";
 
 interface SettingsLinks {
   supportLink: string;
@@ -107,7 +108,7 @@ export function FloatingSupport({ bottomOffset = 24 }: FloatingSupportProps) {
       }}
     >
       <img
-        src="/support-avatar_2.png"
+        src={supportAvatar}
         alt={t.customerService}
         draggable={false}
         style={{
