@@ -28,4 +28,17 @@ document.addEventListener("dragstart", (e) => {
   }
 });
 
-createRoot(document.getElementById("root")!).render(<App />);
+const root = createRoot(document.getElementById("root")!);
+root.render(<App />);
+
+// Supprime le splash screen natif dès que React a rendu le premier frame
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    const splash = document.getElementById("app-splash");
+    if (splash) {
+      splash.style.transition = "opacity 0.25s ease";
+      splash.style.opacity = "0";
+      setTimeout(() => splash.remove(), 260);
+    }
+  });
+});
