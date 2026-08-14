@@ -4,12 +4,14 @@ import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getContent } from "@/lib/content";
-import { Bell, DollarSign, ArrowUp, CalendarCheck, ClipboardList } from "lucide-react";
+import { Bell, DollarSign, ArrowUp, CalendarCheck, ClipboardList, ChevronRight } from "lucide-react";
 import { FloatingSupport } from "@/components/floating-support";
 import { FloatingWheel } from "@/components/floating-wheel";
 import BannerCarousel from "@/components/banner-carousel";
 import { useI18n } from "@/lib/i18n";
 import popupMascot from "@assets/popup-mascot.png";
+import productImgFallback from "@assets/vestas_112v_closeup_1783210181172.jpg";
+import type { Product } from "@shared/schema";
 
 /* ─── Palette ─────────────────────────────────────────── */
 const BG      = "#000";
@@ -53,6 +55,14 @@ export default function HomePage() {
   const { data: settings } = useQuery<Record<string, string>>({
     queryKey: ["/api/settings"],
   });
+
+  const { data: allProducts } = useQuery<Product[]>({
+    queryKey: ["/api/products"],
+  });
+  /* 3 premiers produits payants triés par prix croissant */
+  const specialProducts = (allProducts || [])
+    .filter(p => !p.isFree)
+    .slice(0, 3);
 
   useEffect(() => {
     setShowPopup(true);
@@ -286,8 +296,68 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* ── Bannière 2 ── */}
-        <BannerCarousel images={banner2Images} height={200} rounded />
+        {/* ── Produits spéciaux ── */}
+        <div>
+          {/* Titre */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 4, height: 18, borderRadius: 2, background: ACCENT }} />
+              <span style={{ color: "#fff", fontSize: 16, fontWeight: 800, letterSpacing: 0.3 }}>
+                Produits spéciaux
+              </span>
+            </div>
+            <button
+              onClick={() => navigate("/invest")}
+              style={{ display: "flex", alignItems: "center", gap: 2, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            >
+              <span style={{ color: ACCENT, fontSize: 12, fontWeight: 600 }}>Voir tout</span>
+              <ChevronRight size={14} color={ACCENT} />
+            </button>
+          </div>
+
+          {/* 3 cartes produit */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+            {specialProducts.map((product) => {
+              const img = product.imageUrl || productImgFallback;
+              return (
+                <div
+                  key={product.id}
+                  onClick={() => navigate("/invest")}
+                  style={{
+                    background: CARD_BG,
+                    borderRadius: 14,
+                    overflow: "hidden",
+                    cursor: "pointer",
+                    border: "1px solid #222",
+                  }}
+                  className="active:scale-95 transition-transform"
+                >
+                  {/* Image */}
+                  <div style={{ width: "100%", height: 80, background: "#1a1a1a", overflow: "hidden" }}>
+                    <img
+                      src={img}
+                      alt={product.name}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  </div>
+
+                  {/* Infos */}
+                  <div style={{ padding: "8px 7px 9px" }}>
+                    <p style={{ color: "#fff", fontSize: 11, fontWeight: 700, marginBottom: 5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {product.name}
+                    </p>
+                    <p style={{ color: ACCENT, fontSize: 10, fontWeight: 700, marginBottom: 2 }}>
+                      {Number(product.dailyEarnings).toLocaleString()}/j
+                    </p>
+                    <p style={{ color: "#888", fontSize: 9 }}>
+                      {Number(product.price).toLocaleString()} FCFA
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
       </div>
 
