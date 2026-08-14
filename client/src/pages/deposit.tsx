@@ -308,7 +308,7 @@ export default function DepositPage() {
               <Link href="/deposits-history">
                 <button className="mt-auto flex items-center gap-1.5 text-white/55 text-xs hover:text-white/75 transition">
                   <ClipboardList className="w-3.5 h-3.5" />
-                  enregistrer
+                  dépôt
                 </button>
               </Link>
             </div>
