@@ -291,37 +291,13 @@ export default function DepositPage() {
           <div className="space-y-5">
             {/* Olive balance card */}
             <div
-              className="relative overflow-hidden rounded-2xl p-5"
+              className="relative aspect-square overflow-hidden rounded-2xl p-5 flex flex-col"
               style={{
                 background:
                   "linear-gradient(135deg, #333333 0%, #111111 55%, #000000 100%)",
                 boxShadow: "0 6px 24px rgba(0,0,0,0.35)",
-                minHeight: 110,
               }}
             >
-              {/* Decorative F circles */}
-              <div
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-24 h-24 rounded-full flex items-center justify-center"
-                style={{
-                  background: "rgba(255,255,255,0.07)",
-                  border: "1.5px solid rgba(255,255,255,0.15)",
-                }}
-              >
-                <div
-                  className="w-16 h-16 rounded-full flex items-center justify-center"
-                  style={{
-                    background: "rgba(255,255,255,0.09)",
-                    border: "1.5px solid rgba(255,255,255,0.2)",
-                  }}
-                >
-                  <span
-                    className="font-black text-2xl italic select-none"
-                    style={{ color: "rgba(255,255,255,0.75)" }}
-                  >
-                    F
-                  </span>
-                </div>
-              </div>
               <p className="text-white/65 text-xs mb-0.5">mon solde</p>
               <p className="text-white font-black text-3xl mb-3">
                 F{" "}
@@ -330,7 +306,7 @@ export default function DepositPage() {
                 })}
               </p>
               <Link href="/deposits-history">
-                <button className="flex items-center gap-1.5 text-white/55 text-xs hover:text-white/75 transition">
+                <button className="mt-auto flex items-center gap-1.5 text-white/55 text-xs hover:text-white/75 transition">
                   <ClipboardList className="w-3.5 h-3.5" />
                   enregistrer
                 </button>
