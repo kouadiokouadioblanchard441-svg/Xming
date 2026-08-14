@@ -180,8 +180,8 @@ function SpecialProductsConfig() {
   function toggle(id: number) {
     setSelectedIds(prev => {
       if (prev.includes(id)) return prev.filter(x => x !== id);
-      if (prev.length >= 3) {
-        toast({ title: "Maximum 3 produits", description: "Désélectionnez un produit avant d'en ajouter un autre.", variant: "destructive" });
+      if (prev.length >= 4) {
+        toast({ title: "Maximum 4 produits", description: "Désélectionnez un produit avant d'en ajouter un autre.", variant: "destructive" });
         return prev;
       }
       return [...prev, id];
@@ -211,8 +211,8 @@ function SpecialProductsConfig() {
               Produits spéciaux (accueil)
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Sélectionnez jusqu'à 3 produits à afficher sur la page d'accueil.
-              ({selectedIds.length}/3 sélectionné{selectedIds.length > 1 ? "s" : ""})
+              Sélectionnez jusqu'à 4 produits à afficher sur la page d'accueil.
+              ({selectedIds.length}/4 sélectionné{selectedIds.length > 1 ? "s" : ""})
             </p>
           </div>
           <Button size="sm" onClick={() => saveMutation.mutate()} disabled={!dirty || saveMutation.isPending} className="gap-1">

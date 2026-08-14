@@ -22,7 +22,7 @@ export default function GiftCodePage() {
     queryKey: ["/api/settings"],
   });
 
-  const groupLink = settings?.groupLink || "https://t.me/vestasgroup";
+  const groupLink = settings?.channelLink || settings?.groupLink || "https://t.me/vestasgroup";
 
   const claimMutation = useMutation({
     mutationFn: async (giftCode: string) => {

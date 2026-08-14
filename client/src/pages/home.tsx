@@ -94,7 +94,7 @@ export default function HomePage() {
   const paidProducts = (allProducts || []).filter(p => !p.isFree);
   const specialProducts = specialIds.length > 0
     ? specialIds.map(id => paidProducts.find(p => p.id === id)).filter(Boolean) as Product[]
-    : paidProducts.slice(0, 3);
+    : paidProducts.slice(0, 4);
 
   useEffect(() => {
     setShowPopup(true);
