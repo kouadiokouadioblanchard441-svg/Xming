@@ -1,22 +1,24 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import landscapeImg from "@assets/composition-isometrique-hypothecaire-images-tas-pieces-monnaie_1786376427298.jpg";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Eye, EyeOff, ChevronLeft } from "lucide-react";
+import { Loader2, Lock, Eye, EyeOff, ChevronLeft } from "lucide-react";
 import { useLocation } from "wouter";
 import { useI18n } from "@/lib/i18n";
+
+const RED = "#E8192C";
 
 export default function ChangePasswordPage() {
   const { t } = useI18n();
   const { toast } = useToast();
   const [, navigate] = useLocation();
+
   const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
+  const [newPassword,     setNewPassword]     = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showCurrent,     setShowCurrent]     = useState(false);
+  const [showNew,         setShowNew]         = useState(false);
+  const [showConfirm,     setShowConfirm]     = useState(false);
 
   const changePasswordMutation = useMutation({
     mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
@@ -29,151 +31,143 @@ export default function ChangePasswordPage() {
     },
     onSuccess: () => {
       toast({ title: t.passwordSuccess, description: t.passwordSuccessDesc });
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
+      setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
       navigate("/account");
     },
-    onError: (error: Error) => {
-      toast({ title: error.message || t.errorOccurred, variant: "destructive" });
-    },
+    onError: (e: Error) => toast({ title: e.message || t.errorOccurred, variant: "destructive" }),
   });
 
   const handleSubmit = () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
-      toast({ title: t.requiredFields, description: t.fillAllFields, variant: "destructive" });
-      return;
+      toast({ title: t.requiredFields, description: t.fillAllFields, variant: "destructive" }); return;
     }
     if (newPassword.length < 6) {
-      toast({ title: t.passwordTooShort, description: t.minSixCharsRequired, variant: "destructive" });
-      return;
+      toast({ title: t.passwordTooShort, description: t.minSixCharsRequired, variant: "destructive" }); return;
     }
     if (newPassword !== confirmPassword) {
-      toast({ title: t.errPasswordMismatch, variant: "destructive" });
-      return;
+      toast({ title: t.errPasswordMismatch, variant: "destructive" }); return;
     }
     changePasswordMutation.mutate({ currentPassword, newPassword });
   };
 
-  return (
-    <div className="flex flex-col min-h-screen" style={{ background: "#000000" }}>
+  const fields = [
+    {
+      placeholder: "Mot de passe actuel",
+      value: currentPassword,
+      onChange: setCurrentPassword,
+      show: showCurrent,
+      toggleShow: () => setShowCurrent(v => !v),
+      testId: "input-current-password",
+    },
+    {
+      placeholder: "Nouveau mot de passe",
+      value: newPassword,
+      onChange: setNewPassword,
+      show: showNew,
+      toggleShow: () => setShowNew(v => !v),
+      testId: "input-new-password",
+    },
+    {
+      placeholder: "Confirmer le nouveau mot de passe",
+      value: confirmPassword,
+      onChange: setConfirmPassword,
+      show: showConfirm,
+      toggleShow: () => setShowConfirm(v => !v),
+      testId: "input-confirm-password",
+    },
+  ];
 
-      {/* ── Header ── */}
+  return (
+    <div className="flex flex-col min-h-screen" style={{ background: "#efefef" }}>
+
+      {/* ══ HEADER rouge ══ */}
       <header
         className="flex items-center px-4 py-4"
-        style={{ background: "#003087" }}
+        style={{ background: RED }}
       >
         <button
           onClick={() => navigate("/account")}
-          className="flex items-center gap-1 text-white mr-4"
+          className="w-9 h-9 flex items-center justify-center active:opacity-70"
           data-testid="button-back"
         >
-          <ChevronLeft className="w-5 h-5" />
-          <span className="text-sm font-medium">{t.back}</span>
+          <ChevronLeft className="w-6 h-6 text-white" strokeWidth={2.5} />
         </button>
-        <h1 className="flex-1 text-center text-white font-bold text-base pr-16">
-          {t.changePassword}
+        <h1 className="flex-1 text-center text-white font-semibold text-base pr-9">
+          Modifier le mot de passe
         </h1>
       </header>
 
-      {/* ── White form card ── */}
-      <div className="flex-1 px-4 pt-6">
-        <div className="bg-white rounded-2xl shadow-sm px-5 py-6 space-y-5">
+      {/* ══ CARTE FORMULAIRE ══ */}
+      <div className="mx-4 mt-5">
+        <div
+          className="bg-white rounded-2xl overflow-hidden"
+          style={{ boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}
+        >
+          {fields.map((field, i) => (
+            <div key={i}>
+              {/* Séparateur */}
+              {i > 0 && <div style={{ height: 1, background: "#f0f0f0", marginLeft: 48 }} />}
 
-          {/* Old password */}
-          <div>
-            <label className="block text-sm text-gray-700 mb-2">
-              {t.oldPassword}
-            </label>
-            <div className="relative">
-              <input
-                type={showCurrent ? "text" : "password"}
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder={t.currentPasswordPlaceholder}
-                className="w-full border border-gray-200 rounded-xl px-4 py-4 text-sm text-gray-800 outline-none focus:border-gray-400 bg-white pr-11"
-                data-testid="input-current-password"
-              />
-              <button
-                type="button"
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
-                onClick={() => setShowCurrent(!showCurrent)}
-              >
-                {showCurrent ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
+              {/* Ligne champ */}
+              <div className="flex items-center px-4" style={{ height: 58 }}>
+                {/* Icône cadenas */}
+                <Lock
+                  style={{ width: 18, height: 18, color: "#9ca3af", flexShrink: 0, marginRight: 12 }}
+                />
+
+                {/* Input */}
+                <input
+                  type={field.show ? "text" : "password"}
+                  value={field.value}
+                  onChange={e => field.onChange(e.target.value)}
+                  placeholder={field.placeholder}
+                  className="flex-1 outline-none bg-transparent text-sm"
+                  style={{ color: "#333", caretColor: RED }}
+                  data-testid={field.testId}
+                />
+
+                {/* Œil */}
+                <button
+                  type="button"
+                  onClick={field.toggleShow}
+                  className="pl-2 flex items-center active:opacity-60"
+                >
+                  {field.show
+                    ? <EyeOff style={{ width: 18, height: 18, color: "#9ca3af" }} />
+                    : <Eye    style={{ width: 18, height: 18, color: "#9ca3af" }} />
+                  }
+                </button>
+              </div>
             </div>
-          </div>
-
-          {/* New password */}
-          <div>
-            <label className="block text-sm text-gray-700 mb-2">
-              {t.newPassword}
-            </label>
-            <div className="relative">
-              <input
-                type={showNew ? "text" : "password"}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder={t.newPasswordPlaceholder}
-                className="w-full border border-gray-200 rounded-xl px-4 py-4 text-sm text-gray-800 outline-none focus:border-gray-400 bg-white pr-11"
-                data-testid="input-new-password"
-              />
-              <button
-                type="button"
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
-                onClick={() => setShowNew(!showNew)}
-              >
-                {showNew ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Confirm password */}
-          <div>
-            <label className="block text-sm text-gray-700 mb-2">
-              {t.confirmNewPassword}
-            </label>
-            <div className="relative">
-              <input
-                type={showConfirm ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder={t.confirmNewPasswordPlaceholder}
-                className="w-full border border-gray-200 rounded-xl px-4 py-4 text-sm text-gray-800 outline-none focus:border-gray-400 bg-white pr-11"
-                data-testid="input-confirm-password"
-              />
-              <button
-                type="button"
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
-                onClick={() => setShowConfirm(!showConfirm)}
-              >
-                {showConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Submit button */}
-          <button
-            onClick={handleSubmit}
-            disabled={changePasswordMutation.isPending}
-            className="w-full py-4 rounded-xl text-white font-bold text-base disabled:opacity-50 mt-2"
-            style={{ background: "#003087" }}
-            data-testid="button-change-password-submit"
-          >
-            {changePasswordMutation.isPending ? (
-              <span className="flex items-center justify-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                {t.processing}
-              </span>
-            ) : (
-              t.confirm
-            )}
-          </button>
-
+          ))}
         </div>
       </div>
 
-      <img src={landscapeImg} alt="Finance" className="w-full object-contain bg-white" style={{ maxHeight: 220 }} />
+      {/* ══ BOUTON CONFIRMER ══ */}
+      <div className="px-6 mt-8">
+        <button
+          onClick={handleSubmit}
+          disabled={changePasswordMutation.isPending}
+          className="w-full font-bold text-white text-lg disabled:opacity-50 active:scale-95 transition-transform"
+          style={{
+            background: RED,
+            borderRadius: 999,
+            height: 56,
+            boxShadow: "0 4px 14px rgba(232,25,44,0.35)",
+          }}
+          data-testid="button-change-password-submit"
+        >
+          {changePasswordMutation.isPending ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              {t.processing}
+            </span>
+          ) : (
+            "Confirmer"
+          )}
+        </button>
+      </div>
+
     </div>
   );
 }
