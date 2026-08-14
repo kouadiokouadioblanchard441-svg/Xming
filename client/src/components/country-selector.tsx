@@ -1,5 +1,4 @@
 import { useRef, useEffect } from "react";
-import { getFlagEmoji } from "@/lib/world-countries";
 import { FALLBACK_COUNTRIES } from "@/lib/countries";
 
 interface CountrySelectorProps {
@@ -19,7 +18,6 @@ export function CountrySelector({
 }: CountrySelectorProps) {
   const popupRef = useRef<HTMLDivElement>(null);
 
-  // Ferme le popup au clic en dehors
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -46,24 +44,24 @@ export function CountrySelector({
 
   return (
     <>
-      {/* Overlay transparent cliquable */}
+      {/* Overlay transparent */}
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
-      {/* Popup compact centré */}
+      {/* Popup — aligné à gauche sous le bouton indicatif */}
       <div
         ref={popupRef}
         className="fixed z-50"
         style={{
+          /* Aligné sur le bord gauche du champ téléphone */
           top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          background: "#fff",
-          borderRadius: 16,
-          boxShadow: "0 8px 40px rgba(0,0,0,0.22)",
-          minWidth: 140,
-          maxWidth: 200,
+          left: "5%",
+          transform: "translateY(-50%)",
+          background: "#111",
+          borderRadius: 12,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.40)",
+          minWidth: 110,
           overflow: "hidden",
-          padding: "8px 0",
+          padding: "6px 0",
         }}
       >
         {sourceList.map((country, index) => {
@@ -81,26 +79,22 @@ export function CountrySelector({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 8,
-                height: 48,
-                background: isSelected ? "#f4f4f4" : "transparent",
+                height: 46,
+                background: isSelected ? "rgba(255,255,255,0.12)" : "transparent",
                 border: "none",
                 cursor: "pointer",
                 borderBottom:
                   index < sourceList.length - 1
-                    ? "1px solid #f0f0f0"
+                    ? "1px solid rgba(255,255,255,0.08)"
                     : "none",
               }}
             >
-              <span style={{ fontSize: 18, lineHeight: 1 }}>
-                {getFlagEmoji(country.code)}
-              </span>
               <span
                 style={{
                   fontSize: 17,
                   fontWeight: isSelected ? 700 : 500,
-                  color: isSelected ? "#000" : "#222",
-                  letterSpacing: "0.03em",
+                  color: "#ffffff",
+                  letterSpacing: "0.05em",
                   fontFamily: "monospace",
                 }}
               >
