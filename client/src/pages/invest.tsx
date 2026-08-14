@@ -148,70 +148,113 @@ export default function InvestPage() {
         )}
       </div>
 
-      {/* Purchase confirm modal */}
+      {/* ══ Purchase confirm modal ══ */}
       {confirmProduct && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center px-5 bg-black/60"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/60"
+          style={{ alignItems: "center" }}
           onClick={() => setConfirmProduct(null)}
         >
           <div
-            className="w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl"
-            style={{ background: "linear-gradient(160deg, #E8192C 0%, #001a40 100%)" }}
+            className="w-full mx-4 rounded-3xl overflow-hidden shadow-2xl"
+            style={{ background: "#ffffff", maxWidth: 420 }}
             onClick={e => e.stopPropagation()}
           >
-            <div className="pt-6 px-6 pb-3">
-              <h3 className="text-white text-2xl font-black">{confirmProduct.name}</h3>
-              <p className="text-white/70 text-sm mt-1">{t.investConfirmDesc}</p>
+            {/* ── Image produit centrée ── */}
+            <div
+              className="flex items-center justify-center"
+              style={{ background: "#f8f8f8", height: 200 }}
+            >
+              <img
+                src={confirmProduct.imageUrl || productImgFallback}
+                alt={confirmProduct.name}
+                style={{ height: 180, maxWidth: "90%", objectFit: "contain" }}
+              />
             </div>
 
-            <div className="flex items-center gap-4 px-6 py-3">
-              <div className="w-28 h-24 rounded-2xl overflow-hidden shrink-0 shadow-lg">
-                <img
-                  src={confirmProduct.imageUrl || productImgFallback}
-                  alt={confirmProduct.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1 space-y-1.5">
-                <div>
-                  <p className="text-white/60 text-xs">{t.price}</p>
-                  <p className="text-white font-bold text-sm">{currency} {Number(confirmProduct.price).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-white/60 text-xs">{t.dailyRevenue}</p>
-                  <p className="text-white font-bold text-sm">{currency} {Number(confirmProduct.dailyEarnings).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-white/60 text-xs">{t.totalRevenue}</p>
-                  <p className="text-white font-bold text-sm">{currency} {Number(confirmProduct.totalReturn).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-white/60 text-xs">{t.investCycleDays}</p>
-                  <p className="text-white font-bold text-sm">{confirmProduct.cycleDays} {t.ordersDaysLbl}</p>
-                </div>
-              </div>
+            {/* ── Prix + nom ── */}
+            <div className="px-5 pt-4 pb-2">
+              <p
+                className="font-black"
+                style={{ fontSize: 24, color: "#E8192C", lineHeight: 1.2 }}
+              >
+                {currency} {Number(confirmProduct.price).toLocaleString()}
+              </p>
+              <p style={{ fontSize: 14, color: "#555", marginTop: 2 }}>
+                {confirmProduct.name}
+              </p>
             </div>
 
-            <div className="mx-6 mb-3">
-              {balance < parseFloat(String(confirmProduct.price)) ? (
-                <div className="flex items-center gap-2 p-2.5 bg-red-500/20 border border-red-400/30 rounded-xl">
-                  <AlertTriangle className="w-4 h-4 text-red-300 shrink-0" />
-                  <p className="text-xs text-red-200">
-                    {t.investInsufficient.replace("{0}", formatCurrency(parseFloat(String(confirmProduct.price)) - balance, user.country))}
+            {/* ── Séparateur ── */}
+            <div style={{ height: 1, background: "#f0f0f0", margin: "0 20px" }} />
+
+            {/* ── Description ── */}
+            <div className="px-5 py-3 text-center">
+              <p style={{ fontSize: 13, color: "#333", fontWeight: 600 }}>
+                Revenus crédités toutes les 24 h
+              </p>
+              <p style={{ fontSize: 12, color: "#888", marginTop: 3, lineHeight: 1.5 }}>
+                Vous pouvez acheter plusieurs appareils pour augmenter vos revenus
+              </p>
+            </div>
+
+            {/* ── Alerte solde insuffisant ── */}
+            {balance < parseFloat(String(confirmProduct.price)) && (
+              <div className="mx-5 mb-2 flex items-center gap-2 p-2.5 rounded-xl"
+                style={{ background: "#fff2f2", border: "1px solid #fca5a5" }}>
+                <AlertTriangle className="w-4 h-4 shrink-0" style={{ color: "#E8192C" }} />
+                <p className="text-xs" style={{ color: "#E8192C" }}>
+                  {t.investInsufficient.replace("{0}", formatCurrency(parseFloat(String(confirmProduct.price)) - balance, user.country))}
+                </p>
+              </div>
+            )}
+
+            {/* ── Stats 3 colonnes ── */}
+            <div
+              className="flex"
+              style={{
+                margin: "0 20px 16px",
+                border: "1px solid #eee",
+                borderRadius: 12,
+                overflow: "hidden",
+              }}
+            >
+              {[
+                { value: `${confirmProduct.cycleDays} jours`, label: "Durée" },
+                { value: `${currency} ${Number(confirmProduct.dailyEarnings).toLocaleString()}`, label: "Revenu quotidien" },
+                { value: `${currency} ${Number(confirmProduct.totalReturn).toLocaleString()}`, label: "Revenu total" },
+              ].map((stat, i) => (
+                <div
+                  key={i}
+                  className="flex-1 flex flex-col items-center py-3"
+                  style={{ borderRight: i < 2 ? "1px solid #eee" : "none" }}
+                >
+                  <p style={{ fontSize: 13, fontWeight: 800, color: "#E8192C", lineHeight: 1.3 }}>
+                    {stat.value}
+                  </p>
+                  <p style={{ fontSize: 11, color: "#888", marginTop: 2, textAlign: "center", lineHeight: 1.3 }}>
+                    {stat.label}
                   </p>
                 </div>
-              ) : (
-                <p className="text-white/70 text-xs text-center font-semibold">
-                  {t.investOnePerDay}
-                </p>
-              )}
+              ))}
             </div>
 
-            <div className="flex gap-3 px-6 pb-6 pt-1">
+            {/* ── Boutons ── */}
+            <div
+              className="flex"
+              style={{ borderTop: "1px solid #f0f0f0" }}
+            >
               <button
                 onClick={() => setConfirmProduct(null)}
-                className="flex-1 py-3 rounded-full font-semibold text-sm"
-                style={{ background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.8)" }}
+                className="flex-1 font-semibold active:opacity-70 transition-opacity"
+                style={{
+                  padding: "17px 0",
+                  fontSize: 16,
+                  color: "#555",
+                  background: "#e8e8e8",
+                  border: "none",
+                  borderBottomLeftRadius: 24,
+                }}
                 data-testid="button-cancel-purchase"
               >
                 {t.cancel}
@@ -219,8 +262,14 @@ export default function InvestPage() {
               <button
                 onClick={() => purchaseMutation.mutate(confirmProduct.id)}
                 disabled={purchaseMutation.isPending || balance < parseFloat(String(confirmProduct.price))}
-                className="flex-1 py-3 rounded-full text-white font-bold text-sm flex items-center justify-center gap-1 disabled:opacity-50"
-                style={{ background: "#E8192C" }}
+                className="flex-1 font-bold text-white flex items-center justify-center gap-2 active:opacity-80 disabled:opacity-50 transition-opacity"
+                style={{
+                  padding: "17px 0",
+                  fontSize: 16,
+                  background: "#E8192C",
+                  border: "none",
+                  borderBottomRightRadius: 24,
+                }}
                 data-testid="button-confirm-purchase"
               >
                 {purchaseMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
