@@ -98,17 +98,31 @@ function BannedMessage() {
   );
 }
 
+/** Spinner de chargement unifié — fond noir, cercle blanc */
+function AuthLoadingScreen() {
+  return (
+    <div style={{
+      position: "fixed", inset: 0, background: "#000",
+      display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center", zIndex: 9999,
+    }}>
+      <img src="/xpeng-logo-white.svg" alt="XPENG"
+        style={{ height: 32, marginBottom: 36, opacity: 0.95 }} />
+      <svg width="44" height="44" viewBox="0 0 44 44" fill="none"
+        style={{ animation: "xpeng-spin 0.8s linear infinite" }}>
+        <circle cx="22" cy="22" r="18" stroke="rgba(255,255,255,0.15)" strokeWidth="4"/>
+        <path d="M22 4 A18 18 0 0 1 40 22" stroke="#ffffff" strokeWidth="4" strokeLinecap="round"/>
+      </svg>
+      <style>{`@keyframes xpeng-spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   const [location] = useLocation();
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (isLoading) return <AuthLoadingScreen />;
 
   if (!user) {
     return <Redirect to="/login" />;
@@ -134,13 +148,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function BankerRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (isLoading) return <AuthLoadingScreen />;
 
   if (!user) return <Redirect to="/login" />;
   if (!(user as any).isBanker && !user.isAdmin) return <Redirect to="/" />;
@@ -151,13 +159,7 @@ function BankerRoute({ children }: { children: React.ReactNode }) {
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (isLoading) return <AuthLoadingScreen />;
 
   if (!user || !user.isAdmin) {
     return <Redirect to="/" />;
@@ -169,13 +171,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (isLoading) return <AuthLoadingScreen />;
 
   if (user) {
     return <Redirect to="/" />;
