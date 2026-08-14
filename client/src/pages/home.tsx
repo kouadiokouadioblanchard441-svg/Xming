@@ -12,7 +12,6 @@ import { useI18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCurrency } from "@/lib/countries";
-import popupMascot from "@assets/popup-mascot.png";
 import productImgFallback from "@assets/vestas_112v_closeup_1783210181172.jpg";
 import type { Product } from "@shared/schema";
 
@@ -110,8 +109,6 @@ export default function HomePage() {
   const currency      = "FCFA";
 
   const telegramGroupLink = settings?.groupLink || "https://t.me/vestasgroup";
-  const popupMascotUrl    = settings?.popupMascotUrl?.trim() || "";
-
   const minDeposit    = settings?.minDeposit    || "3000";
   const minWithdrawal = settings?.minWithdrawal || "1000";
   const fees          = settings?.withdrawalFees || "10";
@@ -128,16 +125,15 @@ export default function HomePage() {
     catch { return ["/banner/banner2.jpg"]; }
   })();
 
+  const popupTitle = getContent(settings, "popupTitle", "Plate-forme");
   const popupLines: string[] = [
-    getContent(settings, "popupLine1", `✨✨ Lancement officiel de la plateforme XPENG ✨✨`),
-    getContent(settings, "popupLine2", `🔻 Invitez vos amis à investir et gagnez jusqu'à ${lvl1}% de commissions. Les revenus passifs ne sont plus un simple rêve.`),
-    getContent(settings, "popupLine3", `🎁 Bonus de connexion quotidienne disponible chaque jour`),
-    getContent(settings, "popupLine4", `🤝 Dépôt minimum : ${parseInt(minDeposit).toLocaleString()} FCFA`),
-    getContent(settings, "popupLine5", `💚 Retrait minimum : ${parseInt(minWithdrawal).toLocaleString()} FCFA`),
-    getContent(settings, "popupLine6", `⚙️ Frais de retrait : ${fees}%`),
-    getContent(settings, "popupLine7", `🍀 Retraits disponibles du Lundi au Vendredi de 10h à 16h ; max 1 retrait/jour.`),
-    getContent(settings, "popupLine8", `👥 Commissions : ${lvl1}% – ${lvl2}% – ${lvl3}%`),
-    getContent(settings, "popupLine9", `📌 Les gains sont crédités automatiquement chaque jour.`),
+    getContent(settings, "popupLine1", `✨ Bienvenue chez XPENG !`),
+    getContent(settings, "popupLine2", `✔️ L'application de gestion de patrimoine et d'investissement la plus fiable !`),
+    getContent(settings, "popupLine3", `➤ Les nouveaux utilisateurs reçoivent un bonus à l'inscription.`),
+    getContent(settings, "popupLine4", `➤ Gagnez des commissions de ${lvl1} %, ${lvl2} % et ${lvl3} % respectivement pour chaque ami parrainé.`),
+    getContent(settings, "popupLine5", `➤ Dépôts et retraits 24 h/24 et 7 j/7.`),
+    getContent(settings, "popupLine6", `➤ Bénéficiez de rendements stables sur vos investissements pendant 100 jours maximum.`),
+    getContent(settings, "popupLine7", `↪ Commencez à bâtir votre patrimoine dès aujourd'hui !`),
   ];
 
   const quickActions = [
@@ -153,46 +149,77 @@ export default function HomePage() {
       {/* ══════ POPUP ══════ */}
       {showPopup && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center px-5"
-          style={{ background: "rgba(0,0,0,0.80)" }}
+          className="fixed inset-0 z-[100] flex items-center justify-center px-[18px]"
+          style={{ background: "rgba(0,0,0,0.82)" }}
           onClick={() => setShowPopup(false)}
         >
           <div
-            className="w-full rounded-3xl overflow-hidden shadow-2xl flex flex-col"
-            style={{ background: "#fff", maxWidth: 340, maxHeight: "80vh" }}
+            className="w-full overflow-hidden shadow-2xl flex flex-col"
+            style={{
+              background: "#dedede",
+              maxWidth: 424,
+              maxHeight: "calc(100vh - 36px)",
+              borderRadius: 18,
+              padding: "14px 10px 20px",
+            }}
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex justify-center pt-5 pb-1">
-              <img
-                src={popupMascotUrl || popupMascot}
-                alt="mascot"
-                style={{ width: 64, height: 64, objectFit: "contain" }}
-              />
-            </div>
-            <div className="flex-1 overflow-y-auto px-4 pb-3 pt-2">
+            <h2
+              style={{
+                color: "#303030",
+                fontSize: 28,
+                lineHeight: 1.15,
+                fontWeight: 800,
+                textAlign: "center",
+                margin: "0 0 22px",
+              }}
+            >
+              {popupTitle}
+            </h2>
+            <div className="flex-1 overflow-y-auto px-5">
               {popupLines.map((line, i) => (
-                <p key={i} className="text-gray-800 leading-relaxed mb-2" style={{ fontSize: 13 }}>
+                <p
+                  key={i}
+                  className="text-gray-900"
+                  style={{
+                    fontSize: 15,
+                    lineHeight: 1.52,
+                    margin: i === popupLines.length - 1 ? "18px 0 0" : "0 0 18px",
+                  }}
+                >
                   {line}
                 </p>
               ))}
             </div>
-            <div className="shrink-0 flex items-center px-4 py-3 gap-2" style={{ borderTop: "1px solid #f3f4f6" }}>
+            <div className="shrink-0 flex flex-col gap-[18px] px-0 pt-4">
               <a
                 href={telegramGroupLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowPopup(false)}
-                className="flex items-center justify-center gap-1.5 font-bold text-white rounded-xl"
-                style={{ flex: "1 1 0", height: 44, background: "#0088cc", fontSize: 13.5 }}
+                className="flex items-center justify-center gap-2 font-medium rounded-md active:scale-[0.99] transition-transform"
+                style={{
+                  width: "100%",
+                  height: 45,
+                  background: "#fff",
+                  color: "#222",
+                  fontSize: 16,
+                }}
                 data-testid="button-popup-telegram"
               >
                 <SiTelegram style={{ width: 16, height: 16 }} />
-                Telegram &gt;
+                Groupes Telegram
               </a>
               <button
                 onClick={() => setShowPopup(false)}
-                className="flex items-center justify-center font-extrabold"
-                style={{ flex: "1 1 0", height: 44, background: "transparent", color: ACCENT, fontSize: 16 }}
+                className="flex items-center justify-center font-semibold rounded-md active:scale-[0.99] transition-transform"
+                style={{
+                  width: "100%",
+                  height: 45,
+                  background: `linear-gradient(135deg, ${ACCENT} 0%, #a90919 100%)`,
+                  color: "#fff",
+                  fontSize: 16,
+                }}
                 data-testid="button-popup-agree"
               >
                 D'accord
