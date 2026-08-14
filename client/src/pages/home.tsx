@@ -126,6 +126,8 @@ export default function HomePage() {
   })();
 
   const popupTitle = getContent(settings, "popupTitle", "Plate-forme");
+  const popupTelegramLabel = getContent(settings, "popupTelegramLabel", "Groupes Telegram");
+  const popupConfirmLabel = getContent(settings, "popupConfirmLabel", "thankyou");
   const popupLines: string[] = [
     getContent(settings, "popupLine1", `✨ Bienvenue chez XPENG !`),
     getContent(settings, "popupLine2", `✔️ L'application de gestion de patrimoine et d'investissement la plus fiable !`),
@@ -208,7 +210,7 @@ export default function HomePage() {
                 data-testid="button-popup-telegram"
               >
                 <SiTelegram style={{ width: 16, height: 16 }} />
-                Groupes Telegram
+                {popupTelegramLabel}
               </a>
               <button
                 onClick={() => setShowPopup(false)}
@@ -222,7 +224,7 @@ export default function HomePage() {
                 }}
                 data-testid="button-popup-agree"
               >
-                D'accord
+                {popupConfirmLabel}
               </button>
             </div>
           </div>

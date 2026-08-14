@@ -62,7 +62,9 @@ const settingsSchema = z.object({
   dailyBonusEnabled: z.boolean(),
   dailyBonusAmount: z.string().min(1, "Montant requis"),
   // Popup d'accueil
-  popupMascotUrl: z.string().optional(),
+  popupTitle: z.string().optional(),
+  popupTelegramLabel: z.string().optional(),
+  popupConfirmLabel: z.string().optional(),
   popupLine1: z.string().optional(),
   popupLine2: z.string().optional(),
   popupLine3: z.string().optional(),
@@ -70,8 +72,6 @@ const settingsSchema = z.object({
   popupLine5: z.string().optional(),
   popupLine6: z.string().optional(),
   popupLine7: z.string().optional(),
-  popupLine8: z.string().optional(),
-  popupLine9: z.string().optional(),
 });
 
 type SettingsForm = z.infer<typeof settingsSchema>;
@@ -198,6 +198,9 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       groupType: "telegram",
       groupLabel: "Groupe de discussion",
       popupButtonLabel: "Cliquez ici pour rejoindre le groupe Telegram",
+      popupTitle: "Plate-forme",
+      popupTelegramLabel: "Groupes Telegram",
+      popupConfirmLabel: "thankyou",
       floatingSupportTarget: "support1",
       supportEnabled: true,
       support2Enabled: true,
@@ -267,7 +270,9 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       taskLevel3Commission:   settings.taskLevel3Commission   ?? "1",
       dailyBonusEnabled:      settings.dailyBonusEnabled      !== "false",
       dailyBonusAmount:       settings.dailyBonusAmount       ?? "50",
-      popupMascotUrl:         settings.popupMascotUrl         ?? "",
+      popupTitle:             settings.popupTitle             ?? "",
+      popupTelegramLabel:     settings.popupTelegramLabel     ?? "",
+      popupConfirmLabel:      settings.popupConfirmLabel      ?? "",
       popupLine1:             settings.popupLine1             ?? "",
       popupLine2:             settings.popupLine2             ?? "",
       popupLine3:             settings.popupLine3             ?? "",
@@ -275,8 +280,6 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       popupLine5:             settings.popupLine5             ?? "",
       popupLine6:             settings.popupLine6             ?? "",
       popupLine7:             settings.popupLine7             ?? "",
-      popupLine8:             settings.popupLine8             ?? "",
-      popupLine9:             settings.popupLine9             ?? "",
     });
   // "form" est intentionnellement absent des dépendances : l'objet change à
   // chaque render et provoquerait une boucle infinie de réinitialisations.
@@ -897,15 +900,23 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-xs text-gray-400">
-              Personnalisez le contenu du popup qui s'affiche à l'ouverture de l'application. Laissez un champ vide pour utiliser la valeur par défaut.
+              Personnalisez tous les textes du popup qui s'affiche à l'ouverture de l'application. Laissez un champ vide pour utiliser la valeur par défaut.
             </p>
-            <FormField control={form.control} name="popupMascotUrl" render={({ field }) => (
-              <FormItem>
-                <FormLabel>URL de la mascotte (image)</FormLabel>
-                <FormControl><Input {...field} placeholder="https://... ou laisser vide pour la mascotte par défaut" /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
+            {([
+              { name: "popupTitle" as const, label: "Titre du popup", placeholder: "Plate-forme" },
+              { name: "popupTelegramLabel" as const, label: "Texte du bouton Telegram", placeholder: "Groupes Telegram" },
+              { name: "popupConfirmLabel" as const, label: "Texte du bouton de confirmation", placeholder: "thankyou" },
+            ]).map(({ name, label, placeholder }) => (
+              <FormField key={name} control={form.control} name={name} render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{label}</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder={placeholder} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            ))}
             {([
               { name: "popupLine1" as const, label: "Ligne 1 — Lancement officiel", placeholder: "✨✨ Lancement officiel de la plateforme XPENG ✨✨" },
               { name: "popupLine2" as const, label: "Ligne 2 — Invitation parrainage", placeholder: "🔻 Invitez vos amis à investir et gagnez jusqu'à 25% de commissions..." },
@@ -914,8 +925,6 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               { name: "popupLine5" as const, label: "Ligne 5 — Retrait minimum", placeholder: "💚 Retrait minimum : 1 000 FCFA" },
               { name: "popupLine6" as const, label: "Ligne 6 — Frais de retrait", placeholder: "⚙️ Frais de retrait : 10%" },
               { name: "popupLine7" as const, label: "Ligne 7 — Horaires retraits", placeholder: "🍀 Retraits disponibles du Lundi au Vendredi de 10h à 16h" },
-              { name: "popupLine8" as const, label: "Ligne 8 — Commissions", placeholder: "👥 Commissions de parrainage : 25% – 1% – 1%" },
-              { name: "popupLine9" as const, label: "Ligne 9 — Remarque", placeholder: "📌 Remarque : Les gains sont automatiquement crédités chaque jour." },
             ]).map(({ name, label, placeholder }) => (
               <FormField key={name} control={form.control} name={name} render={({ field }) => (
                 <FormItem>
