@@ -161,7 +161,10 @@ export default function WalletPage() {
       <div className="flex flex-col min-h-screen bg-white relative">
 
         {/* Header */}
-        <header className="flex items-center px-4 py-4" style={{ background: "#000000" }}>
+        <header
+          className="flex items-center px-4 py-4"
+          style={{ background: "linear-gradient(135deg, #E8192C 0%, #a01020 100%)" }}
+        >
           <button
             onClick={() => { setShowForm(false); setSelectedOperator(""); setHolderName(""); setAccountNumber(""); }}
             className="p-1"
@@ -246,8 +249,8 @@ export default function WalletPage() {
               width: "72%",
               height: 54,
               borderRadius: 999,
-              background: "#000000",
-              boxShadow: "0 4px 16px rgba(45,56,22,0.35)",
+              background: "linear-gradient(135deg, #E8192C, #a01020)",
+              boxShadow: "0 4px 16px rgba(232,25,44,0.35)",
             }}
             data-testid="button-confirm-wallet"
           >
@@ -304,10 +307,13 @@ export default function WalletPage() {
      LIST VIEW
   ══════════════════════════════════════════ */
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: "#000000" }}>
+    <div className="flex flex-col min-h-screen" style={{ background: "#f5f5f5" }}>
 
-      {/* Header */}
-      <header className="flex items-center px-4 py-4" style={{ background: "#1e2e0a" }}>
+      {/* Header — dégradé rouge plateforme */}
+      <header
+        className="flex items-center px-4 py-4"
+        style={{ background: "linear-gradient(135deg, #E8192C 0%, #a01020 100%)" }}
+      >
         <Link href={backLink}>
           <button className="p-1" data-testid="button-back">
             <ChevronLeft className="w-6 h-6 text-white" strokeWidth={2.5} />
@@ -321,7 +327,7 @@ export default function WalletPage() {
       <div className="px-4 pt-4 pb-10">
         {isLoading ? (
           <div className="flex justify-center py-16">
-            <Loader2 className="w-6 h-6 animate-spin text-white" />
+            <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#E8192C" }} />
           </div>
         ) : wallets && wallets.length > 0 ? (
           <div className="space-y-3">
@@ -334,7 +340,7 @@ export default function WalletPage() {
                 className={`rounded-2xl overflow-hidden ${selectMode ? "cursor-pointer active:opacity-90" : ""}`}
                 style={{
                   background: theme.bg,
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
                 }}
                 data-testid={`wallet-card-${wallet.id}`}
               >
@@ -394,8 +400,8 @@ export default function WalletPage() {
             {!selectMode && (
               <button
                 onClick={() => setShowForm(true)}
-                className="w-full py-4 rounded-2xl text-white font-bold text-sm border border-white/30 active:opacity-80 transition mt-2"
-                style={{ background: "rgba(255,255,255,0.1)" }}
+                className="w-full py-4 rounded-2xl text-white font-bold text-sm active:opacity-80 transition mt-2"
+                style={{ background: "linear-gradient(135deg, #E8192C, #a01020)", boxShadow: "0 4px 14px rgba(232,25,44,0.35)" }}
                 data-testid="button-add-wallet"
               >
                 + Lier un nouveau compte
@@ -405,14 +411,18 @@ export default function WalletPage() {
         ) : (
           /* Empty state */
           <div className="flex flex-col items-center justify-center py-16 gap-4">
-            <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
-              <CreditCard className="w-8 h-8 text-white/60" />
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg, #E8192C22, #E8192C44)" }}
+            >
+              <CreditCard className="w-10 h-10" style={{ color: "#E8192C" }} />
             </div>
-            <p className="text-white/60 text-sm text-center">Aucun compte de retrait lié</p>
+            <p className="text-gray-500 text-sm text-center font-medium">Aucun compte de retrait lié</p>
+            <p className="text-gray-400 text-xs text-center">Ajoutez un compte Mobile Money pour retirer vos gains</p>
             <button
               onClick={() => setShowForm(true)}
-              className="mt-2 px-8 py-3 rounded-full text-white font-bold text-sm active:scale-95 transition"
-              style={{ background: "#000000" }}
+              className="mt-2 px-10 py-3 rounded-full text-white font-bold text-sm active:scale-95 transition"
+              style={{ background: "linear-gradient(135deg, #E8192C, #a01020)", boxShadow: "0 4px 14px rgba(232,25,44,0.35)" }}
               data-testid="button-add-wallet"
             >
               Lier un compte bancaire
