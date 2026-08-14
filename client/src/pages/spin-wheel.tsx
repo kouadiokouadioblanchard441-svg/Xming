@@ -10,6 +10,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
 import { ChevronLeft, ChevronDown, ChevronUp, Trophy } from "lucide-react";
+import { getUserAvatar } from "@/lib/avatar";
 import {
   DEFAULT_SPIN_WHEEL_SEGMENTS,
   type SpinWheelSegment,
@@ -17,21 +18,21 @@ import {
 
 /* ── Fake winners ticker ────────────────────────────────────── */
 const FAKE_WINNERS = [
-  { phone: "0546******846", amount: "200F",   avatar: "/avatars/winner-1.jpg" },
-  { phone: "0707******231", amount: "500F",   avatar: "/avatars/winner-2.jpg" },
-  { phone: "0102******978", amount: "1 000F", avatar: "/avatars/winner-3.jpg" },
-  { phone: "0503******412", amount: "200F",   avatar: "/avatars/winner-4.jpg" },
-  { phone: "0749******065", amount: "2 000F", avatar: "/avatars/winner-5.jpg" },
-  { phone: "0101******339", amount: "500F",   avatar: "/avatars/winner-6.jpg" },
-  { phone: "0564******187", amount: "200F",   avatar: "/avatars/winner-7.jpg" },
-  { phone: "0767******824", amount: "1 000F", avatar: "/avatars/winner-8.jpg" },
-  { phone: "0505******553", amount: "200F",   avatar: "/avatars/winner-1.jpg" },
-  { phone: "0103******710", amount: "5 000F", avatar: "/avatars/winner-2.jpg" },
-  { phone: "0748******293", amount: "500F",   avatar: "/avatars/winner-3.jpg" },
-  { phone: "0546******001", amount: "200F",   avatar: "/avatars/winner-4.jpg" },
-  { phone: "0707******668", amount: "1 000F", avatar: "/avatars/winner-5.jpg" },
-  { phone: "0101******452", amount: "200F",   avatar: "/avatars/winner-6.jpg" },
-  { phone: "0505******317", amount: "2 000F", avatar: "/avatars/winner-7.jpg" },
+  { phone: "0546******846", amount: "200F" },
+  { phone: "0707******231", amount: "500F" },
+  { phone: "0102******978", amount: "1 000F" },
+  { phone: "0503******412", amount: "200F" },
+  { phone: "0749******065", amount: "2 000F" },
+  { phone: "0101******339", amount: "500F" },
+  { phone: "0564******187", amount: "200F" },
+  { phone: "0767******824", amount: "1 000F" },
+  { phone: "0505******553", amount: "200F" },
+  { phone: "0103******710", amount: "5 000F" },
+  { phone: "0748******293", amount: "500F" },
+  { phone: "0546******001", amount: "200F" },
+  { phone: "0707******668", amount: "1 000F" },
+  { phone: "0101******452", amount: "200F" },
+  { phone: "0505******317", amount: "2 000F" },
 ];
 
 function WinnersTicker() {
@@ -46,7 +47,7 @@ function WinnersTicker() {
         className="flex items-center gap-2 px-4 py-2 border-b"
         style={{ borderColor: "#f3f4f6", background: "#f9fafb" }}
       >
-        <span className="text-xs font-bold uppercase tracking-wide" style={{ color: "#b45309" }}>
+        <span className="text-xs font-bold uppercase tracking-wide" style={{ color: "#E8192C" }}>
           🏆 Derniers gagnants
         </span>
       </div>
@@ -72,16 +73,16 @@ function WinnersTicker() {
             >
               <div className="flex items-center gap-2">
                 <img
-                  src={w.avatar}
+                  src={getUserAvatar((idx % 20) + 1)}
                   alt=""
                   className="w-8 h-8 rounded-full object-cover shrink-0"
-                  style={{ border: "2px solid #fbbf24" }}
+                  style={{ border: "2px solid #E8192C" }}
                 />
                 <span className="text-sm font-medium tracking-wide font-mono text-gray-700">
                   {w.phone}
                 </span>
               </div>
-              <span className="text-sm font-extrabold" style={{ color: "#d97706" }}>
+              <span className="text-sm font-extrabold" style={{ color: "#E8192C" }}>
                 + {w.amount}
               </span>
             </div>
@@ -516,18 +517,55 @@ export default function SpinWheelPage() {
           </Link>
           <span
             className="ml-3 font-bold text-base"
-            style={{ color: "#FFD700" }}
+             style={{ color: "#E8192C" }}
           >
             Roue de la fortune
           </span>
         </header>
 
-        {/* ── Wheel ── */}
+         {/* ── Description + actions au-dessus de la roue ── */}
+         <div className="mx-4 mb-3">
+           <p className="text-center text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.78)" }}>
+             Tournez la roue et tentez de gagner des récompenses en FCFA.
+           </p>
+           <div className="grid grid-cols-2 gap-3 mt-3">
+             <button
+               onClick={() => setShowHistory(true)}
+               className="flex items-center justify-center gap-2 rounded-2xl py-3 font-bold text-white active:scale-95 transition-transform"
+               style={{
+                 background: "linear-gradient(135deg, #E8192C 0%, #a90919 100%)",
+                 boxShadow: "0 5px 14px rgba(232,25,44,0.3)",
+               }}
+               data-testid="button-wheel-invite-top"
+             >
+               <span className="w-7 h-7 rounded-full flex items-center justify-center text-xl leading-none" style={{ background: "rgba(255,255,255,0.18)" }}>
+                 +
+               </span>
+               Inviter
+             </button>
+             <button
+               onClick={() => setShowRules(true)}
+               className="flex items-center justify-center gap-2 rounded-2xl py-3 font-bold text-white active:scale-95 transition-transform"
+               style={{
+                 background: "rgba(255,255,255,0.12)",
+                 border: "1px solid rgba(232,25,44,0.8)",
+               }}
+               data-testid="button-wheel-rules-top"
+             >
+               <span className="w-7 h-7 rounded-full flex items-center justify-center text-base font-black" style={{ background: "#E8192C" }}>
+                 ?
+               </span>
+               Règles
+             </button>
+           </div>
+         </div>
+
+         {/* ── Wheel ── */}
         <div className="flex flex-col items-center pt-2 px-4 mb-5">
           <div
             style={{
               borderRadius: "50%",
-              boxShadow: "0 0 32px rgba(255,215,0,0.25), 0 10px 36px rgba(0,0,0,0.5)",
+               boxShadow: "0 0 32px rgba(232,25,44,0.3), 0 10px 36px rgba(0,0,0,0.5)",
             }}
           >
             <canvas
@@ -562,28 +600,6 @@ export default function SpinWheelPage() {
           </div>
         </div>
 
-        {/* ── Rules bar ── */}
-        <div className="mx-4 mb-3">
-          <div
-            className="flex items-center justify-between rounded-2xl px-4 py-3"
-            style={{
-              background: "rgba(255,255,255,0.97)",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
-            }}
-          >
-            <span className="text-sm text-gray-600">
-              Consultez les règles du jeu
-            </span>
-            <button
-              onClick={() => setShowRules(true)}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-white text-base font-bold shrink-0 active:scale-90 transition-transform"
-              style={{ background: "#E63946" }}
-            >
-              ?
-            </button>
-          </div>
-        </div>
-
         {/* ── Balance / Gratuit row ── */}
         <div className="mx-4 mb-3">
           <div
@@ -597,11 +613,11 @@ export default function SpinWheelPage() {
                 className="flex items-center gap-2 active:opacity-70 transition-opacity"
                 onClick={() => setShowBalanceHistory(v => !v)}
               >
-                <Trophy className="w-4 h-4 text-amber-500" />
+                <Trophy className="w-4 h-4" style={{ color: "#E8192C" }} />
                 <span className="text-sm text-gray-700 font-medium">Balance</span>
                 <span
                   className="px-3 py-0.5 rounded-full text-sm font-bold text-white"
-                  style={{ background: "#3d8a40" }}
+                  style={{ background: "#E8192C" }}
                 >
                   {wheelTotalWon.toLocaleString("fr-FR", { maximumFractionDigits: 0 })} FCFA
                 </span>
@@ -615,17 +631,10 @@ export default function SpinWheelPage() {
                 <span className="text-sm text-gray-700 font-medium">Gratuit</span>
                 <span
                   className="px-3 py-0.5 rounded-full text-sm font-bold text-white"
-                  style={{ background: "#3d8a40" }}
+                  style={{ background: "#E8192C" }}
                 >
                   {spinTokens}
                 </span>
-                <button
-                  onClick={() => setShowHistory(true)}
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-white text-base font-bold shrink-0 active:scale-90 transition-transform"
-                  style={{ background: "#E63946" }}
-                >
-                  +
-                </button>
               </div>
             </div>
 
@@ -650,7 +659,7 @@ export default function SpinWheelPage() {
                               <p className="text-[10px] text-gray-400">{dateStr}</p>
                             </div>
                           </div>
-                          <span className="text-sm font-extrabold" style={{ color: "#16a34a" }}>
+                           <span className="text-sm font-extrabold" style={{ color: "#E8192C" }}>
                             +{Number(tx.amount).toLocaleString("fr-FR")} FCFA
                           </span>
                         </div>
