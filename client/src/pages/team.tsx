@@ -8,9 +8,20 @@ import { useI18n } from "@/lib/i18n";
 import xpengInvite   from "@assets/xpeng-team-invite.png";
 import xpengProgress from "@assets/xpeng-team-progress.png";
 
-/* ── Palette ─────────────────────────────────── */
-const GREEN   = "#4CAF50";
-const GREENDARK = "#388E3C";
+/* ── Palette plateforme (identique à l'inscription) ──────── */
+const RED    = "#E8192C";          // rouge accent XPENG
+const BLACK  = "#000000";
+const PAGE_BG = "linear-gradient(to bottom, #000000 0%, #1a1a1a 30%, #4a4a4a 60%, #c0c0c0 85%, #f5f5f5 100%)";
+const INPUT_STYLE: React.CSSProperties = {
+  background: "#ffffff",
+  borderRadius: 10,
+  border: "none",
+  boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
+  display: "flex",
+  alignItems: "center",
+  overflow: "hidden",
+  height: 50,
+};
 
 interface TeamStats {
   level1Count: number;
@@ -39,8 +50,8 @@ export default function TeamPage() {
 
   if (!user) return null;
 
-  const countryInfo = getCountryByCode(user.country);
-  const currency    = countryInfo?.currency || "FCFA";
+  const countryInfo  = getCountryByCode(user.country);
+  const currency     = countryInfo?.currency || "FCFA";
   const referralCode = user.referralCode || "";
   const referralLink = `${window.location.origin}/#/register?invite_code=${referralCode}`;
 
@@ -48,53 +59,37 @@ export default function TeamPage() {
   const lv2Rate = settings?.level2Commission || "2";
   const lv3Rate = settings?.level3Commission || "1";
 
-  const totalUsers =
-    (stats?.level1Count || 0) +
-    (stats?.level2Count || 0) +
-    (stats?.level3Count || 0);
+  const totalUsers      = (stats?.level1Count || 0) + (stats?.level2Count || 0) + (stats?.level3Count || 0);
   const totalCommission = stats?.totalCommission || 0;
 
-  const copyCode = () => {
-    navigator.clipboard.writeText(referralCode);
-    toast({ title: "Code copié !" });
-  };
-  const copyLink = () => {
-    navigator.clipboard.writeText(referralLink);
-    toast({ title: "Lien copié !" });
-  };
+  const copyCode = () => { navigator.clipboard.writeText(referralCode); toast({ title: "Code copié !" }); };
+  const copyLink = () => { navigator.clipboard.writeText(referralLink);  toast({ title: "Lien copié !" }); };
 
   return (
     <div
       className="flex flex-col min-h-full pb-20"
-      style={{ background: "#f5f5f5" }}
+      style={{ background: PAGE_BG, minHeight: "100vh" }}
     >
-
       {/* ══ Stats 3 colonnes ══ */}
       <div
         className="flex"
-        style={{ background: "#fff", borderBottom: "1px solid #e0e0e0" }}
+        style={{ background: "rgba(0,0,0,0.55)", borderBottom: "1px solid rgba(255,255,255,0.1)" }}
       >
         {[
-          { label: "Utilisateurs", val: stats?.level1Count || 0 },
-          { label: "Utilisateurs", val: stats?.level2Count || 0 },
-          { label: "Utilisateurs", val: stats?.level3Count || 0 },
+          { users: stats?.level1Count || 0, rewards: (stats?.level1Commission || 0).toFixed(0) },
+          { users: stats?.level2Count || 0, rewards: (stats?.level2Commission || 0).toFixed(0) },
+          { users: stats?.level3Count || 0, rewards: (stats?.level3Commission || 0).toFixed(0) },
         ].map((col, i) => (
           <div
             key={i}
             className="flex-1 flex flex-col items-center py-3"
-            style={{
-              borderRight: i < 2 ? "1px solid #e0e0e0" : "none",
-            }}
+            style={{ borderRight: i < 2 ? "1px solid rgba(255,255,255,0.12)" : "none" }}
           >
-            <p style={{ fontSize: 13, color: "#333", lineHeight: 1.4 }}>
-              Utilisateurs : {col.val}
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.8)", lineHeight: 1.5 }}>
+              Utilisateurs : {col.users}
             </p>
-            <p style={{ fontSize: 13, color: "#333", lineHeight: 1.4 }}>
-              Récompenses : {i === 0
-                ? (stats?.level1Commission || 0).toFixed(0)
-                : i === 1
-                  ? (stats?.level2Commission || 0).toFixed(0)
-                  : (stats?.level3Commission || 0).toFixed(0)}
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.8)", lineHeight: 1.5 }}>
+              Récompenses : {col.rewards}
             </p>
           </div>
         ))}
@@ -103,55 +98,46 @@ export default function TeamPage() {
       {/* ══ Boutons navigation ══ */}
       <div
         className="flex gap-3 px-4 py-3"
-        style={{ background: "#fff" }}
+        style={{ background: "rgba(0,0,0,0.35)" }}
       >
         <button
           onClick={() => navigate("/tasks")}
-          className="flex-1 text-center font-semibold rounded-full py-2"
-          style={{
-            border: `1.5px solid ${GREEN}`,
-            color: GREEN,
-            fontSize: 13,
-            background: "#fff",
-          }}
+          className="flex-1 text-center font-semibold rounded-full py-2 active:scale-95 transition-transform"
+          style={{ border: `1.5px solid ${RED}`, color: RED, fontSize: 13, background: "transparent" }}
           data-testid="button-task-center"
         >
           Centre des tâches &gt;
         </button>
         <button
           onClick={() => navigate("/members")}
-          className="flex-1 text-center font-semibold rounded-full py-2"
-          style={{
-            border: `1.5px solid ${GREEN}`,
-            color: GREEN,
-            fontSize: 13,
-            background: "#fff",
-          }}
+          className="flex-1 text-center font-semibold rounded-full py-2 active:scale-95 transition-transform"
+          style={{ border: `1.5px solid ${RED}`, color: RED, fontSize: 13, background: "transparent" }}
           data-testid="button-team-history"
         >
           Historique d'équipe &gt;
         </button>
       </div>
 
-      <div className="px-3 pt-2 space-y-3">
+      <div className="px-4 pt-3 space-y-4">
 
         {/* ══ Carte invitation ══ */}
         <div
-          className="rounded-2xl bg-white shadow-sm overflow-hidden"
-          style={{ border: "1px solid #e8e8e8" }}
+          className="rounded-2xl overflow-hidden"
+          style={{
+            background: "#ffffff",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.45)",
+            borderRadius: 14,
+          }}
         >
-          {/* Header */}
+          {/* En-tête */}
           <div className="flex items-start gap-3 px-4 pt-4 pb-3">
             <img
               src={xpengInvite}
               alt="XPENG"
-              style={{ width: 72, height: 72, objectFit: "contain", flexShrink: 0 }}
+              style={{ width: 70, height: 70, objectFit: "contain", flexShrink: 0 }}
             />
-            <div className="flex-1 min-w-0">
-              <p
-                className="font-bold leading-snug"
-                style={{ fontSize: 15, color: "#111", marginBottom: 4 }}
-              >
+            <div className="flex-1 min-w-0 pt-1">
+              <p className="font-bold leading-snug" style={{ fontSize: 15, color: "#111", marginBottom: 4 }}>
                 Commencez à inviter des amis maintenant
               </p>
               <p style={{ fontSize: 12, color: "#777" }}>
@@ -160,13 +146,14 @@ export default function TeamPage() {
             </div>
           </div>
 
-          {/* Code row */}
+          {/* Ligne code */}
           <div className="flex items-center gap-2 px-4 pb-3">
             <div
-              className="flex-1 flex items-center justify-center rounded-full py-2"
+              className="flex-1 flex items-center justify-center rounded-full"
               style={{
-                border: `1.5px solid ${GREEN}`,
-                color: GREEN,
+                height: 44,
+                border: `1.5px solid ${RED}`,
+                color: RED,
                 fontSize: 14,
                 fontWeight: 600,
                 background: "#fff",
@@ -174,51 +161,38 @@ export default function TeamPage() {
                 overflow: "hidden",
               }}
             >
-              <span className="truncate px-2" data-testid="text-referral-code">
-                {referralCode}
-              </span>
+              <span className="truncate px-3" data-testid="text-referral-code">{referralCode}</span>
             </div>
             <button
               onClick={copyCode}
-              className="shrink-0 font-semibold rounded-lg py-2 px-4 active:scale-95 transition-transform"
-              style={{
-                background: GREEN,
-                color: "#fff",
-                fontSize: 14,
-                border: "none",
-              }}
+              className="shrink-0 font-semibold rounded-xl py-2 px-4 active:scale-95 transition-transform"
+              style={{ background: BLACK, color: "#fff", fontSize: 14, height: 44 }}
               data-testid="button-copy-code"
             >
               Copier
             </button>
           </div>
 
-          {/* Link row */}
+          {/* Ligne lien */}
           <div className="flex items-center gap-2 px-4 pb-4">
             <div
-              className="flex-1 flex items-center rounded-full py-2"
+              className="flex-1 flex items-center rounded-full"
               style={{
-                border: "1.5px solid #ccc",
+                height: 44,
+                border: "1.5px solid #ddd",
                 color: "#555",
                 fontSize: 12,
-                background: "#fff",
+                background: "#f9f9f9",
                 minWidth: 0,
                 overflow: "hidden",
               }}
             >
-              <span className="truncate px-3" data-testid="text-referral-link">
-                {referralLink}
-              </span>
+              <span className="truncate px-3" data-testid="text-referral-link">{referralLink}</span>
             </div>
             <button
               onClick={copyLink}
-              className="shrink-0 font-semibold rounded-lg py-2 px-4 active:scale-95 transition-transform"
-              style={{
-                background: GREEN,
-                color: "#fff",
-                fontSize: 14,
-                border: "none",
-              }}
+              className="shrink-0 font-semibold rounded-xl py-2 px-4 active:scale-95 transition-transform"
+              style={{ background: RED, color: "#fff", fontSize: 14, height: 44 }}
               data-testid="button-copy-link"
             >
               Copier
@@ -228,41 +202,41 @@ export default function TeamPage() {
 
         {/* ══ Carte Ma progression ══ */}
         <div
-          className="rounded-2xl overflow-hidden shadow-sm"
-          style={{ background: GREEN }}
+          className="rounded-2xl overflow-hidden"
+          style={{
+            background: `linear-gradient(135deg, ${BLACK} 0%, #1a1a1a 60%, ${RED}55 100%)`,
+            boxShadow: `0 4px 20px rgba(232,25,44,0.35)`,
+            borderRadius: 14,
+            border: `1px solid ${RED}44`,
+          }}
         >
           <div className="flex items-center justify-between px-5 py-5">
             {/* Left */}
             <div className="flex flex-col gap-4">
-              <p
-                className="font-bold"
-                style={{ fontSize: 18, color: "#fff", marginBottom: 6 }}
-              >
+              <p className="font-bold" style={{ fontSize: 18, color: "#fff", marginBottom: 2 }}>
                 Ma progression
               </p>
 
-              {/* Utilisateurs */}
               <div>
-                <p style={{ fontSize: 22, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>
+                <p style={{ fontSize: 24, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>
                   {totalUsers}
                 </p>
                 <button
                   onClick={() => navigate("/members")}
-                  style={{ fontSize: 13, color: "#ffffffcc", textDecoration: "underline" }}
+                  style={{ fontSize: 13, color: RED, fontWeight: 600 }}
                   data-testid="button-total-users"
                 >
                   Utilisateurs totaux &gt;
                 </button>
               </div>
 
-              {/* Récompenses */}
               <div>
-                <p style={{ fontSize: 20, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>
+                <p style={{ fontSize: 22, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>
                   {currency} {totalCommission.toFixed(0)}
                 </p>
                 <button
                   onClick={() => navigate("/team-details")}
-                  style={{ fontSize: 13, color: "#ffffffcc", textDecoration: "underline" }}
+                  style={{ fontSize: 13, color: RED, fontWeight: 600 }}
                   data-testid="button-total-rewards"
                 >
                   Récompenses totales &gt;
@@ -281,26 +255,31 @@ export default function TeamPage() {
 
         {/* ══ Bloc texte règles ══ */}
         <div
-          className="rounded-2xl bg-white shadow-sm px-4 py-5"
-          style={{ border: "1px solid #e8e8e8" }}
+          className="rounded-2xl px-4 py-5"
+          style={{
+            background: "#ffffff",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
+            borderRadius: 14,
+          }}
         >
-          <p style={{ fontSize: 14, color: "#333", lineHeight: 1.8 }}>
-            Lorsqu'un ami que vous invitez s'inscrit et investit, vous recevez
-            immédiatement une prime de <strong>{lv1Rate} %</strong> sur son investissement.
-          </p>
-          <p style={{ fontSize: 14, color: "#333", lineHeight: 1.8, marginTop: 8 }}>
-            Lorsque les membres de votre équipe de deuxième niveau investissent,
-            vous recevez une prime de <strong>{lv2Rate} %</strong>.
-          </p>
-          <p style={{ fontSize: 14, color: "#333", lineHeight: 1.8, marginTop: 8 }}>
-            Lorsque les membres de votre équipe de troisième niveau investissent,
-            vous recevez une prime de <strong>{lv3Rate} %</strong>.
-          </p>
-          <p style={{ fontSize: 14, color: "#333", lineHeight: 1.8, marginTop: 8 }}>
-            Une fois que les membres de votre équipe ont investi, la prime est
-            immédiatement créditée sur votre compte et vous pouvez la retirer
-            immédiatement.
-          </p>
+          {[
+            `Lorsqu'un ami que vous invitez s'inscrit et investit, vous recevez immédiatement une prime de ${lv1Rate} % sur son investissement.`,
+            `Lorsque les membres de votre équipe de deuxième niveau investissent, vous recevez une prime de ${lv2Rate} %.`,
+            `Lorsque les membres de votre équipe de troisième niveau investissent, vous recevez une prime de ${lv3Rate} %.`,
+            "Une fois que les membres de votre équipe ont investi, la prime est immédiatement créditée sur votre compte et vous pouvez la retirer immédiatement.",
+          ].map((text, i) => (
+            <p
+              key={i}
+              style={{
+                fontSize: 14,
+                color: "#333",
+                lineHeight: 1.7,
+                marginTop: i > 0 ? 10 : 0,
+              }}
+            >
+              {text}
+            </p>
+          ))}
         </div>
 
       </div>
