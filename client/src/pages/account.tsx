@@ -4,25 +4,39 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getCountryByCode } from "@/lib/countries";
-import { Loader2, Shield, ChevronRight, Download } from "lucide-react";
+import { Loader2, Shield, Download } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 
-import { getUserAvatar } from "@/lib/avatar";
-import iconRecords from "@assets/mine-mod-records-DgHXSKa1_1782689837747.png";
-import iconGift from "@assets/téléchargement_(66)_1782689859239.png";
-import iconAbout from "@assets/mine-mod-aboutus-xnaBhqOq_1782689895455.png";
-import iconCS from "@assets/mine-mod-cs-DtBQ0Sp0_1782689895410.png";
-import iconWithdraw from "@assets/withdraw-icon-DFsum39V_(1)_1782689895379.png";
-import iconChangePwd from "@assets/mine-mod-change-pwd-D4tL_Aft_1782689895436.png";
-import iconWallet from "@assets/portefeuille-chaud-3d-icon-png-download-9878550_1783248791774.png";
-import iconRevenu from "@assets/3309927_1783248791847.png";
-import iconRecharger from "@assets/1-1_1783245823715.png";
-import iconRetraits from "@assets/2-1_1783245823825.png";
-import iconRules from "@assets/mine-mod-records-DgHXSKa1_1782689837747.png";
+import iconRecords    from "@assets/mine-mod-records-DgHXSKa1_1782689837747.png";
+import iconGift       from "@assets/téléchargement_(66)_1782689859239.png";
+import iconAbout      from "@assets/mine-mod-aboutus-xnaBhqOq_1782689895455.png";
+import iconCS         from "@assets/mine-mod-cs-DtBQ0Sp0_1782689895410.png";
+import iconChangePwd  from "@assets/mine-mod-change-pwd-D4tL_Aft_1782689895436.png";
+import iconBankCard   from "@assets/mine-mod-bankcard-CLOhqwHj_1782689182780.png";
+import iconRecharger  from "@assets/1-1_1783245823715.png";
+import iconRetraits   from "@assets/2-1_1783245823825.png";
+import iconRules      from "@assets/mine-mod-records-DgHXSKa1_1782689837747.png";
+import checkinBanner  from "@assets/xpeng-checkin-banner.jpg";
+
+/* ── Palette plateforme ──────────────────────────── */
+const RED   = "#E8192C";
+const BLACK = "#000000";
+
+/* ── Icône de service dans un cercle coloré ──────── */
+function ServiceIcon({ src, alt, color = RED }: { src: string; alt: string; color?: string }) {
+  return (
+    <div
+      className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 mx-auto"
+      style={{ background: color }}
+    >
+      <img src={src} alt={alt} className="w-7 h-7 object-contain" style={{ filter: "brightness(0) invert(1)" }} />
+    </div>
+  );
+}
 
 export default function AccountPage() {
   const { user, logout } = useAuth();
@@ -30,15 +44,15 @@ export default function AccountPage() {
   const { t } = useI18n();
   const [, navigate] = useLocation();
   const [showPinModal, setShowPinModal] = useState(false);
-  const [adminPin, setAdminPin] = useState("");
+  const [adminPin, setAdminPin]         = useState("");
   const [installPrompt, setInstallPrompt] = useState<any>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [installing, setInstalling] = useState(false);
+  const [isInstalled, setIsInstalled]     = useState(false);
+  const [installing, setInstalling]       = useState(false);
 
   useEffect(() => {
     if ((window as any)._installPrompt) setInstallPrompt((window as any)._installPrompt);
-    if ((window as any)._appInstalled) setIsInstalled(true);
-    const onPrompt = (e: any) => { e.preventDefault(); setInstallPrompt(e); };
+    if ((window as any)._appInstalled)  setIsInstalled(true);
+    const onPrompt    = (e: any) => { e.preventDefault(); setInstallPrompt(e); };
     const onInstalled = () => { setIsInstalled(true); setInstallPrompt(null); };
     window.addEventListener("beforeinstallprompt", onPrompt);
     window.addEventListener("appinstalled", onInstalled);
@@ -59,266 +73,279 @@ export default function AccountPage() {
         setInstallPrompt(null);
         toast({ title: "Application installée avec succès !" });
       }
-    } finally {
-      setInstalling(false);
-    }
+    } finally { setInstalling(false); }
   };
 
-  const { data: products } = useQuery<any[]>({
-    queryKey: ["/api/user/products"],
-  });
-
-  const { data: settings } = useQuery<Record<string, string>>({
-    queryKey: ["/api/settings"],
-  });
-
-  const { data: teamStats } = useQuery<{ level1Count: number; level2Count: number; level3Count: number }>({
-    queryKey: ["/api/team/stats"],
-  });
+  const { data: products } = useQuery<any[]>({ queryKey: ["/api/user/products"] });
+  const { data: settings } = useQuery<Record<string, string>>({ queryKey: ["/api/settings"] });
 
   const verifyPinMutation = useMutation({
     mutationFn: async (pin: string) => {
       const res = await apiRequest("POST", "/api/admin/verify-pin", { pin });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || t.incorrectPin);
-      }
+      if (!res.ok) { const d = await res.json(); throw new Error(d.message || t.incorrectPin); }
       return res.json();
     },
-    onSuccess: () => {
-      setShowPinModal(false);
-      setAdminPin("");
-      navigate("/admin");
-    },
-    onError: (error: Error) => {
-      toast({ title: error.message, variant: "destructive" });
-    },
+    onSuccess: () => { setShowPinModal(false); setAdminPin(""); navigate("/admin"); },
+    onError: (e: Error) => toast({ title: e.message, variant: "destructive" }),
   });
 
   const handleAdminClick = () => {
-    if (user?.isAdminPasswordRequired === false) {
-      navigate("/admin");
-      return;
-    }
+    if (user?.isAdminPasswordRequired === false) { navigate("/admin"); return; }
     setShowPinModal(true);
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/login");
-  };
+  const handleLogout = async () => { await logout(); navigate("/login"); };
 
   if (!user) return null;
 
-  const balance = parseFloat(user.balance || "0");
+  const balance       = parseFloat(user.balance || "0");
   const totalEarnings = parseFloat(user.totalEarnings || "0");
-  const country = getCountryByCode(user.country);
-  const currency = "FCFA";
+  const country       = getCountryByCode(user.country);
+  const currency      = country?.currency || "FCFA";
+  const phonePrefix   = country?.phonePrefix ? `+${country.phonePrefix} ` : "";
 
-  const phonePrefix = country?.phonePrefix || "";
-
-  // VIP label : produit actif avec le sortOrder le plus élevé
-  const vipLabel: string | null = (() => {
-    if (!products || products.length === 0) return null;
+  /* VIP level : "Lv1" / "Lv2" … basé sur le produit actif le plus élevé */
+  const vipLabel: string = (() => {
+    if (!products || products.length === 0) return "Lv1";
     const active = products.filter((p: any) => p.status === "active" || p.daysRemaining > 0);
-    if (active.length === 0) return null;
-    const top = [...active].sort(
-      (a: any, b: any) => (b.product?.sortOrder ?? 0) - (a.product?.sortOrder ?? 0)
-    )[0];
-    return top?.product?.name ?? null;
+    if (active.length === 0) return "Lv1";
+    const top = [...active].sort((a: any, b: any) => (b.product?.sortOrder ?? 0) - (a.product?.sortOrder ?? 0))[0];
+    const name = top?.product?.name ?? "Lv1";
+    return name;
   })();
 
-  // 3 boutons rapides
+  /* 3 actions rapides en haut */
   const quickItems = [
-    { icon: iconRecharger, label: t.deposit, href: "/deposit", white: true },
-    { icon: iconRetraits, label: t.withdraw, href: "/withdrawal", white: true },
-    { icon: iconRecords, label: t.history, href: "/history", white: false },
+    { icon: iconRecharger, label: "Recharger", href: "/deposit",    white: true },
+    { icon: iconRetraits,  label: "Retirer",   href: "/withdrawal", white: true },
+    { icon: iconRecords,   label: "Historique", href: "/history",   white: false },
   ];
 
-  // 8 options d'origine
-  const gridItems = [
-    { icon: iconRecharger, label: t.deposit, href: "/deposit", white: true },
-    { icon: iconRetraits, label: t.withdraw, href: "/withdrawal", white: true },
-    { icon: iconRecords, label: t.history, href: "/history", white: false },
-    { icon: iconChangePwd, label: t.security, href: "/change-password", white: false },
-    { icon: iconGift, label: t.redeem, href: "/gift-code", white: false },
-    { icon: iconCS, label: t.customerService, href: "/service", white: false },
-    { icon: iconAbout, label: t.about, href: "/about", white: false },
-    { icon: iconWithdraw, label: t.wallet, href: "/wallet", white: false },
+  /* grille 4×2 services */
+  const services = [
+    { icon: iconAbout,     label: "À propos",               href: "/about",           },
+    { icon: iconRules,     label: "Réglementation",          href: "/rules",           },
+    { icon: iconRecords,   label: "Historique",              href: "/history",         },
+    { icon: iconCS,        label: "Service client",          href: "/service",         },
+    { icon: iconRecharger, label: "Télécharger l'app",       href: null, install: true },
+    { icon: iconBankCard,  label: "Lier une carte bancaire", href: "/wallet",          },
+    { icon: iconChangePwd, label: "Changer le mot de passe", href: "/change-password", },
+    { icon: iconGift,      label: "Échanger un cadeau",      href: "/gift-code",       },
   ];
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: "#000000" }}>
-      <div className="flex-1 overflow-y-auto pb-16">
+    <div className="flex flex-col min-h-screen" style={{ background: "#f0f0f0" }}>
+      <div className="flex-1 overflow-y-auto pb-20">
 
-        {/* ── Profile top section ── */}
-        <div style={{ background: "#000000" }}>
-          <div className="flex items-center justify-between px-5 pt-6 pb-5">
-            {/* Bouton VIP — haut à droite */}
-            <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white/40 shrink-0">
-                <img src={getUserAvatar(user.id)} alt="avatar" className="w-full h-full object-cover" />
-              </div>
-              <div>
-                {/* Badge VIP basé sur le produit acheté */}
-                {vipLabel && (
-                  <div className="mb-1">
-                    <span
-                      className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-[12px] font-black tracking-wider"
-                      style={{
-                        background: "#ffffff",
-                        color: "#000000",
-                        border: "1.5px solid rgba(255,255,255,0.5)",
-                      }}
+        {/* ══ HEADER avec courbe ══ */}
+        <div
+          style={{
+            background: `linear-gradient(160deg, ${RED} 0%, #a01020 50%, ${BLACK} 100%)`,
+            borderBottomLeftRadius: "50% 28px",
+            borderBottomRightRadius: "50% 28px",
+            paddingBottom: 36,
+            position: "relative",
+          }}
+        >
+          {/* Bouton Se déconnecter — haut droite */}
+          <div className="flex justify-end px-4 pt-4 pb-2">
+            <button
+              onClick={handleLogout}
+              className="font-semibold active:scale-95 transition-transform"
+              style={{
+                border: "1.5px solid rgba(255,255,255,0.85)",
+                borderRadius: 999,
+                color: "#fff",
+                fontSize: 13,
+                padding: "6px 18px",
+                background: "transparent",
+              }}
+              data-testid="button-logout"
+            >
+              Se déconnecter
+            </button>
+          </div>
+
+          {/* Logo XPENG cercle — bas gauche */}
+          <div className="px-4">
+            <div
+              className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center"
+              style={{ background: "#fff", border: "2.5px solid rgba(255,255,255,0.9)" }}
+            >
+              <img src="/xpeng-logo-black.svg" alt="XPENG" style={{ width: 44, height: 28, objectFit: "contain" }} />
+            </div>
+          </div>
+        </div>
+
+        {/* ══ INFOS PROFIL ══ */}
+        <div style={{ background: "#fff" }} className="px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Gauche : téléphone + badge */}
+            <div>
+              <p className="font-bold text-base" style={{ color: "#111" }} data-testid="text-phone">
+                {phonePrefix}{user.phone}
+              </p>
+              <span
+                className="inline-block mt-1.5 px-3 py-0.5 rounded-full text-white text-xs font-bold"
+                style={{ background: RED }}
+              >
+                {vipLabel}
+              </span>
+            </div>
+
+            {/* Droite : 3 actions rapides */}
+            <div className="flex items-end gap-5">
+              {quickItems.map((item, i) => (
+                item.href ? (
+                  <Link href={item.href} key={i}>
+                    <button
+                      className="flex flex-col items-center gap-1.5 active:opacity-70 transition-opacity"
+                      data-testid={`button-quick-${i}`}
                     >
-                      ★ {vipLabel}
-                    </span>
-                  </div>
-                )}
-                <p className="text-white font-bold text-base leading-tight drop-shadow" data-testid="text-phone">
-                  {phonePrefix}{user.phone}
-                </p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <p className="text-white/80 text-xs drop-shadow">ID : {user.referralCode}</p>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(user.referralCode || "");
-                      const el = document.getElementById("copy-id-feedback");
-                      if (el) { el.style.opacity = "1"; setTimeout(() => { el.style.opacity = "0"; }, 1200); }
-                    }}
-                    className="px-1.5 py-0.5 rounded text-[10px] font-bold leading-none active:scale-95 transition-transform"
-                    style={{ background: "rgba(255,255,255,0.25)", color: "white" }}
-                  >
-                    Copier
-                  </button>
-                  <span
-                    id="copy-id-feedback"
-                    className="text-[10px] font-bold transition-opacity duration-300"
-                    style={{ color: "#86efac", opacity: 0 }}
-                  >
-                    ✓
-                  </span>
-                </div>
-
-              </div>
-            </div>
-
-          </div>
-
-          {/* ── 2 cartes balance d'origine ── */}
-          <div className="px-4 pb-5 grid grid-cols-2 gap-3">
-            <div className="rounded-2xl px-4 py-4" style={{ background: "#000000" }}>
-              <p className="text-white/70 text-xs font-semibold mb-2 uppercase tracking-wide">{t.accountBalanceLabel}</p>
-              <p className="text-white font-black text-2xl leading-tight" data-testid="text-balance">
-                {balance.toFixed(2)}
-              </p>
-              <p className="text-white/60 text-[11px] mt-1">{currency}</p>
-            </div>
-            <div className="rounded-2xl px-4 py-4" style={{ background: "#000000" }}>
-              <p className="text-white/70 text-xs font-semibold mb-2 uppercase tracking-wide">{t.revenueLabel}</p>
-              <p className="text-white font-black text-2xl leading-tight" data-testid="text-earnings">
-                {totalEarnings.toFixed(2)}
-              </p>
-              <p className="text-white/60 text-[11px] mt-1">{currency}</p>
+                      <div
+                        className="w-12 h-12 rounded-full flex items-center justify-center"
+                        style={{
+                          background: i === 0 ? RED : "#e8e8e8",
+                        }}
+                      >
+                        <img
+                          src={item.icon}
+                          alt={item.label}
+                          className="w-6 h-6 object-contain"
+                          style={
+                            i === 0
+                              ? { filter: "brightness(0) invert(1)" }
+                              : { filter: "brightness(0.5)" }
+                          }
+                        />
+                      </div>
+                      <span className="text-[11px]" style={{ color: "#555" }}>{item.label}</span>
+                    </button>
+                  </Link>
+                ) : null
+              ))}
             </div>
           </div>
         </div>
 
-        {/* ── 3 boutons rapides ── */}
-        <div className="mx-4 mb-5 grid grid-cols-3 gap-3">
-          {quickItems.map((item, idx) => (
-            <Link href={item.href} key={idx}>
+        {/* ══ BANNER POINTAGE QUOTIDIEN ══ */}
+        <div
+          className="relative overflow-hidden mx-0"
+          style={{ height: 170 }}
+        >
+          <img
+            src={checkinBanner}
+            alt="Pointage"
+            className="w-full h-full object-cover"
+          />
+          {/* Overlay gradient gauche */}
+          <div
+            className="absolute inset-0"
+            style={{ background: "linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)" }}
+          />
+          {/* Texte */}
+          <div className="absolute inset-0 flex flex-col justify-center px-5">
+            <p className="text-white font-black text-lg leading-tight mb-1">
+              Pointage quotidien
+            </p>
+            <p className="text-white/80 text-xs leading-snug mb-4" style={{ maxWidth: 180 }}>
+              Connectez-vous chaque jour pour obtenir des récompenses
+            </p>
+            <Link href="/checkin">
               <button
-                className="flex flex-col items-center gap-2 rounded-2xl py-4 w-full active:opacity-80"
-                style={{ background: "rgba(0,0,0,0.45)" }}
-                data-testid={`button-quick-${idx}`}
+                className="font-semibold active:scale-95 transition-transform"
+                style={{
+                  background: RED,
+                  color: "#fff",
+                  borderRadius: 999,
+                  padding: "7px 20px",
+                  fontSize: 13,
+                  border: "none",
+                  display: "inline-block",
+                }}
               >
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center shadow"
-                  style={{ background: "linear-gradient(135deg, #000000, #000000)" }}
+                Pointer maintenant &gt;
+              </button>
+            </Link>
+          </div>
+        </div>
+
+        {/* ══ 2 CARTES SOLDE ══ */}
+        <div className="grid grid-cols-2 gap-0" style={{ background: "#fff" }}>
+          {/* Solde du compte */}
+          <div
+            className="flex flex-col px-5 py-5"
+            style={{ borderRight: "1px solid #f0f0f0", borderBottom: "1px solid #f0f0f0" }}
+          >
+            <p className="font-black text-xl mb-1" style={{ color: "#111" }} data-testid="text-balance">
+              {currency} {balance.toLocaleString("fr-FR", { minimumFractionDigits: 0 })}
+            </p>
+            <div style={{ flexGrow: 1 }} />
+            <Link href="/deposit">
+              <button className="text-sm font-semibold mt-4" style={{ color: "#333" }}>
+                Solde du compte &gt;
+              </button>
+            </Link>
+          </div>
+
+          {/* Revenus cumulés */}
+          <div
+            className="flex flex-col px-5 py-5"
+            style={{ borderBottom: "1px solid #f0f0f0" }}
+          >
+            <p className="font-black text-xl mb-1" style={{ color: "#111" }} data-testid="text-earnings">
+              {currency} {totalEarnings.toLocaleString("fr-FR", { minimumFractionDigits: 0 })}
+            </p>
+            <div style={{ flexGrow: 1 }} />
+            <Link href="/team-details">
+              <button className="text-sm font-semibold mt-4" style={{ color: "#333" }}>
+                Revenus cumulés &gt;
+              </button>
+            </Link>
+          </div>
+        </div>
+
+        {/* ══ MES SERVICES ══ */}
+        <div className="mt-3" style={{ background: "#fff" }}>
+          <p className="px-4 pt-4 pb-3 font-bold text-base" style={{ color: "#111" }}>
+            Mes services
+          </p>
+
+          <div className="grid grid-cols-4 px-2 pb-4">
+            {services.map((item, i) => {
+              const content = (
+                <button
+                  key={i}
+                  className="flex flex-col items-center gap-2 py-3 active:opacity-70 transition-opacity w-full"
+                  data-testid={`button-service-${i}`}
+                  onClick={item.install ? handleInstall : undefined}
                 >
-                  <img
-                    src={item.icon}
-                    alt={item.label}
-                    className="w-7 h-7 object-contain"
-                    style={item.white ? undefined : { filter: "brightness(0) invert(1)" }}
-                  />
-                </div>
-                <span className="text-white/90 text-[11px] font-medium text-center leading-tight px-1">{item.label}</span>
-              </button>
-            </Link>
-          ))}
+                  <ServiceIcon src={item.icon} alt={item.label} color={i % 2 === 0 ? RED : "#555"} />
+                  <span
+                    className="text-center leading-snug"
+                    style={{ fontSize: 11, color: "#444", maxWidth: 72 }}
+                  >
+                    {item.label}
+                  </span>
+                </button>
+              );
+
+              return item.href ? (
+                <Link href={item.href} key={i}>{content}</Link>
+              ) : (
+                <div key={i}>{content}</div>
+              );
+            })}
+          </div>
         </div>
 
-
-        {/* ── Section Service (liste en gras) ── */}
-        <div className="mx-4 mt-4 rounded-2xl overflow-hidden" style={{ background: "rgba(0,0,0,0.45)" }}>
-          {[
-            { icon: iconCS,        label: t.customerService, href: "/service",         white: false },
-            { icon: iconChangePwd, label: t.security,        href: "/change-password", white: false },
-            { icon: iconGift,      label: t.redeem,          href: "/gift-code",       white: false },
-            { icon: iconAbout,     label: t.about,           href: "/about",           white: false },
-            { icon: iconRules,     label: t.companyLabel,    href: "/company",         white: false },
-            { icon: iconWithdraw,  label: t.wallet,          href: "/wallet",          white: false },
-          ].map((item, idx) => (
-            <Link href={item.href} key={idx}>
-              <button
-                className="flex items-center gap-3 w-full px-4 py-4 active:opacity-70 border-b border-white/5 last:border-0"
-                data-testid={`button-service-${idx}`}
-              >
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, #000000, #000000)" }}>
-                  <img
-                    src={item.icon}
-                    alt={item.label}
-                    className="w-5 h-5 object-contain"
-                    style={item.white ? undefined : { filter: "brightness(0) invert(1)" }}
-                  />
-                </div>
-                <span className="flex-1 text-white font-bold text-sm text-left">{item.label}</span>
-                <ChevronRight className="w-4 h-4 text-white/40 shrink-0" />
-              </button>
-            </Link>
-          ))}
-
-          {/* ── Application (PWA install) ── */}
-          <button
-            onClick={handleInstall}
-            disabled={isInstalled || installing}
-            className="flex items-center gap-3 w-full px-4 py-4 active:opacity-70 border-t border-white/5"
-            data-testid="button-install-pwa"
-          >
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, #000000, #000000)" }}>
-              <Download className="w-5 h-5 text-white" />
-            </div>
-            <span className="flex-1 text-white font-bold text-sm text-left">Application</span>
-            {installing ? (
-              <Loader2 className="w-4 h-4 text-white/60 animate-spin shrink-0" />
-            ) : isInstalled ? (
-              <span className="text-gray-400 text-xs font-bold shrink-0">Installée ✓</span>
-            ) : (
-              <Download className="w-4 h-4 text-white/40 shrink-0" />
-            )}
-          </button>
-        </div>
-
-        {/* ── Déconnexion ── */}
-        <div className="mx-4 mt-3">
-          <button
-            onClick={handleLogout}
-            className="w-full py-4 rounded-2xl text-sm font-bold border-2 border-red-600 text-red-600 bg-white active:bg-red-50"
-            data-testid="button-logout"
-          >
-            {t.logout}
-          </button>
-        </div>
-
-        {/* ── Admin button ── */}
+        {/* ══ ADMIN ══ */}
         {user.isAdmin && (
           <div className="mx-4 mt-3 mb-4">
             <button
               onClick={handleAdminClick}
-              className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl"
-              style={{ background: "linear-gradient(135deg, #E8192C, #E8192C)" }}
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl active:scale-95 transition-transform"
+              style={{ background: RED }}
               data-testid="button-admin"
             >
               <Shield className="w-5 h-5 text-white" />
@@ -327,18 +354,26 @@ export default function AccountPage() {
           </div>
         )}
 
+        {/* Install feedback */}
+        {installing && (
+          <div className="flex justify-center py-2">
+            <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+          </div>
+        )}
+        {isInstalled && (
+          <p className="text-center text-xs text-gray-400 pb-2">Application installée ✓</p>
+        )}
+
       </div>
 
-      {/* ── Admin PIN modal ── */}
+      {/* ══ Admin PIN modal ══ */}
       <Dialog open={showPinModal} onOpenChange={setShowPinModal}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-center">{t.adminAccessCode}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground text-center">
-              {t.adminPinHint}
-            </p>
+            <p className="text-sm text-muted-foreground text-center">{t.adminPinHint}</p>
             <Input
               type="password"
               value={adminPin}
@@ -350,15 +385,12 @@ export default function AccountPage() {
             />
             <Button
               onClick={() => {
-                if (adminPin.length < 4) {
-                  toast({ title: t.pinMinLength, variant: "destructive" });
-                  return;
-                }
+                if (adminPin.length < 4) { toast({ title: t.pinMinLength, variant: "destructive" }); return; }
                 verifyPinMutation.mutate(adminPin);
               }}
               disabled={verifyPinMutation.isPending || adminPin.length < 4}
               className="w-full"
-              style={{ backgroundColor: "#E8192C" }}
+              style={{ backgroundColor: RED }}
               data-testid="button-verify-pin"
             >
               {verifyPinMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}

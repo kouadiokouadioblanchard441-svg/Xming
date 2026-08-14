@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="XPENG — Plateforme d'investissement" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="XPENG" />
+    <meta property="og:description" content="XPENG — Plateforme d'investissement" />
+    <meta property="og:site_name" content="XPENG" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="XPENG" />
+    <meta name="twitter:description" content="XPENG — Plateforme d'investissement" />
+    
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.json" />
+    <script>
+      window._installPrompt = null;
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        window._installPrompt = e;
+      });
+      window.addEventListener('appinstalled', function() {
+        window._appInstalled = true;
+      });
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js');
+        });
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
+    <title>XPENG</title>
+    <script type="module" crossorigin src="/assets/index-Bl1Yn-3w.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CI1vF0-4.css">
+  </head>
+  <body>
+    <!-- Splash screen natif : visible immédiatement, supprimé dès que React monte -->
+    <div id="app-splash" style="
+      position:fixed;inset:0;z-index:99999;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      background:#000;
+    ">
+      <img src="/xpeng-logo-white.svg" alt="XPENG"
+           style="height:36px;width:auto;margin-bottom:40px;opacity:.95;" />
+      <!-- Spinner SVG animé noir/blanc -->
+      <svg width="44" height="44" viewBox="0 0 44 44" fill="none"
+           xmlns="http://www.w3.org/2000/svg"
+           style="animation:xpeng-spin 0.8s linear infinite;">
+        <circle cx="22" cy="22" r="18" stroke="rgba(255,255,255,0.15)" stroke-width="4"/>
+        <path d="M22 4 A18 18 0 0 1 40 22" stroke="#ffffff" stroke-width="4"
+              stroke-linecap="round"/>
+      </svg>
+      <style>
+        @keyframes xpeng-spin { to { transform: rotate(360deg); } }
+        html, body {
+          margin: 0;
+          background: #000;
+          /* Bloque le pull-to-refresh natif Android (cercle orange/jaune) */
+          overscroll-behavior-y: none;
+          overscroll-behavior-x: none;
+        }
+      </style>
+    </div>
+
+    <div id="root"></div>
+  </body>
+</html>
