@@ -291,7 +291,7 @@ export default function DepositPage() {
           <div className="space-y-5">
             {/* Olive balance card */}
             <div
-              className="relative aspect-square overflow-hidden rounded-2xl p-5 flex flex-col"
+              className="relative w-full max-w-[280px] mx-auto aspect-square overflow-hidden rounded-2xl p-5 flex flex-col"
               style={{
                 background:
                   "linear-gradient(135deg, #333333 0%, #111111 55%, #000000 100%)",
@@ -809,13 +809,16 @@ export default function DepositPage() {
               className="text-center font-bold text-sm"
               style={{ color: "#A855F7" }}
             >
-              Instructions de charge
+              Instructions de dépôt
             </p>
-            <p className="text-white/50 text-xs text-center mt-1 leading-5">
-              Montant minimum de recharge {minDeposit.toLocaleString()} FAFC.
-              Veuillez remplir complètement les informations selon les invites
-              pour éviter une arrivée retardée ou une charge infructueuse.
-            </p>
+            <div className="mt-2 space-y-1 text-white/65 text-xs leading-5 text-left">
+              <p>1. Le montant minimum est de {minDeposit.toLocaleString()} {CURRENCY}.</p>
+              <p>2. Sélectionnez le canal et l&apos;opérateur que vous allez utiliser.</p>
+              <p>3. Transférez exactement le montant indiqué vers le numéro affiché.</p>
+              <p>4. Utilisez le même numéro de téléphone que celui du transfert.</p>
+              <p>5. Saisissez ensuite l&apos;identifiant de transaction reçu par SMS.</p>
+              <p className="text-white/45">Une information incorrecte peut retarder la validation du dépôt.</p>
+            </div>
           </div>
         </div>
       )}
