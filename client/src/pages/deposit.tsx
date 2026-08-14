@@ -291,26 +291,34 @@ export default function DepositPage() {
           <div className="space-y-5">
             {/* Olive balance card */}
             <div
-              className="relative w-full max-w-[220px] mx-auto aspect-square overflow-hidden rounded-2xl p-4 flex flex-col"
+              className="relative overflow-hidden rounded-2xl p-5"
               style={{
                 background:
-                  "linear-gradient(135deg, #333333 0%, #111111 55%, #000000 100%)",
-                boxShadow: "0 6px 24px rgba(0,0,0,0.35)",
+                  "linear-gradient(135deg, #1a1a1a 0%, #000000 100%)",
+                boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
               }}
             >
-              <p className="text-white/65 text-xs mb-0.5">mon solde</p>
-              <p className="text-white font-black text-3xl mb-3">
-                F{" "}
-                {(user.balance || 0).toLocaleString("fr-FR", {
-                  minimumFractionDigits: 2,
-                })}
-              </p>
-              <Link href="/deposits-history">
-                <button className="mt-auto flex items-center gap-1.5 text-white/55 text-xs hover:text-white/75 transition">
-                  <ClipboardList className="w-3.5 h-3.5" />
-                  dépôt
-                </button>
-              </Link>
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: "linear-gradient(120deg, rgba(255,255,255,0.12) 0%, transparent 60%)",
+                }}
+              />
+              <div className="relative">
+                <p className="text-white/65 text-xs mb-0.5">mon solde</p>
+                <p className="text-white font-black text-3xl mb-3">
+                  {CURRENCY}{" "}
+                  {(user.balance || 0).toLocaleString("fr-FR", {
+                    minimumFractionDigits: 2,
+                  })}
+                </p>
+                <Link href="/deposits-history">
+                  <button className="flex items-center gap-1.5 text-white/55 text-xs hover:text-white/75 transition">
+                    <ClipboardList className="w-3.5 h-3.5" />
+                    dépôt
+                  </button>
+                </Link>
+              </div>
             </div>
 
             {/* Amount label + input */}
