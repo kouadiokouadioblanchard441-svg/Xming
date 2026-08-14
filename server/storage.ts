@@ -606,10 +606,12 @@ export class DatabaseStorage implements IStorage {
       try {
         const freshUser = await this.getUser(userId);
         if (freshUser) {
+          const newBalance      = parseFloat(freshUser.balance      || "0") + totalEarnings;
           const newTodayEarnings = parseFloat(freshUser.todayEarnings || "0") + totalEarnings;
           const newTotalEarnings = parseFloat(freshUser.totalEarnings || "0") + totalEarnings;
-          
+
           await this.updateUser(userId, {
+            balance:       newBalance.toFixed(2),
             todayEarnings: newTodayEarnings.toFixed(2),
             totalEarnings: newTotalEarnings.toFixed(2),
           });
