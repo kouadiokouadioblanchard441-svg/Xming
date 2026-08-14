@@ -8,8 +8,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Loader2, Save, Trash2, Image as ImageIcon } from "lucide-react";
+import { Loader2, Save, Trash2, Image as ImageIcon, Star, CheckCircle2 } from "lucide-react";
 import ImageUploader from "@/components/admin/image-uploader";
+import type { Product } from "@shared/schema";
 
 /* ── Mini preview card ──────────────────────────────────────────────────── */
 function ThumbCard({
@@ -156,18 +157,122 @@ function BannerSlotEditor({
   );
 }
 
+/* ── Produits spéciaux selector ─────────────────────────────────────────── */
+function SpecialProductsConfig() {
+  const { toast } = useToast();
+  const { data: settings } = useQuery<Record<string, string>>({ queryKey: ["/api/settings"] });
+  const { data: products }  = useQuery<Product[]>({ queryKey: ["/api/products"] });
+
+  const paidProducts = (products || []).filter(p => !p.isFree);
+
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [dirty, setDirty] = useState(false);
+
+  useEffect(() => {
+    if (!settings) return;
+    try {
+      const parsed = JSON.parse(settings.specialProductIds || "[]");
+      setSelectedIds(Array.isArray(parsed) ? parsed.map(Number) : []);
+    } catch { setSelectedIds([]); }
+    setDirty(false);
+  }, [settings]);
+
+  function toggle(id: number) {
+    setSelectedIds(prev => {
+      if (prev.includes(id)) return prev.filter(x => x !== id);
+      if (prev.length >= 3) {
+        toast({ title: "Maximum 3 produits", description: "Désélectionnez un produit avant d'en ajouter un autre.", variant: "destructive" });
+        return prev;
+      }
+      return [...prev, id];
+    });
+    setDirty(true);
+  }
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("POST", "/api/admin/settings", { key: "specialProductIds", value: JSON.stringify(selectedIds) });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+      setDirty(false);
+      toast({ title: "✅ Produits spéciaux sauvegardés" });
+    },
+    onError: (e: Error) => toast({ title: "Erreur", description: e.message, variant: "destructive" }),
+  });
+
+  return (
+    <Card className="border-2 border-primary/20">
+      <CardContent className="p-4 space-y-4">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h3 className="font-bold text-base flex items-center gap-2">
+              <Star className="w-4 h-4 text-primary" />
+              Produits spéciaux (accueil)
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Sélectionnez jusqu'à 3 produits à afficher sur la page d'accueil.
+              ({selectedIds.length}/3 sélectionné{selectedIds.length > 1 ? "s" : ""})
+            </p>
+          </div>
+          <Button size="sm" onClick={() => saveMutation.mutate()} disabled={!dirty || saveMutation.isPending} className="gap-1">
+            {saveMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+            Sauvegarder
+          </Button>
+        </div>
+
+        {paidProducts.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-4">Aucun produit payant disponible.</p>
+        ) : (
+          <div className="space-y-2">
+            {paidProducts.map(p => {
+              const isSelected = selectedIds.includes(p.id);
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => toggle(p.id)}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors"
+                  style={{
+                    background: isSelected ? "hsl(var(--primary)/0.08)" : "transparent",
+                    borderColor: isSelected ? "hsl(var(--primary)/0.5)" : "hsl(var(--border))",
+                  }}
+                >
+                  {p.imageUrl ? (
+                    <img src={p.imageUrl} alt={p.name} className="w-12 h-12 rounded-lg object-cover shrink-0 border" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                      <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm truncate">{p.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Prix : {Number(p.price).toLocaleString()} FCFA · Revenu/j : {Number(p.dailyEarnings).toLocaleString()} FCFA
+                    </p>
+                  </div>
+                  {isSelected && <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 /* ── Main export ────────────────────────────────────────────────────────── */
 export default function AdminBannerConfig() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-bold">Bannières de la page d'accueil</h2>
+        <h2 className="text-lg font-bold">Bannières & Produits vedettes</h2>
         <p className="text-sm text-muted-foreground">
-          Uploadez vos images depuis votre galerie. Elles défilent automatiquement toutes les 3,5 s.
+          Gérez la bannière principale et les produits affichés sur la page d'accueil.
         </p>
       </div>
       <BannerSlotEditor label="🖼 Bannière du haut (pleine largeur)" settingKey="banner1Images" />
-      <BannerSlotEditor label="🖼 Bannière du milieu (carte arrondie)" settingKey="banner2Images" />
+      <SpecialProductsConfig />
     </div>
   );
 }

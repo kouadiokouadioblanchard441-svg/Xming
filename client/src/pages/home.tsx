@@ -59,10 +59,18 @@ export default function HomePage() {
   const { data: allProducts } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
-  /* 3 premiers produits payants triés par prix croissant */
-  const specialProducts = (allProducts || [])
-    .filter(p => !p.isFree)
-    .slice(0, 3);
+
+  /* Produits spéciaux : IDs choisis dans l'admin, sinon les 3 premiers */
+  const specialIds: number[] = (() => {
+    try {
+      const parsed = JSON.parse(settings?.specialProductIds || "[]");
+      return Array.isArray(parsed) ? parsed.map(Number) : [];
+    } catch { return []; }
+  })();
+  const paidProducts = (allProducts || []).filter(p => !p.isFree);
+  const specialProducts = specialIds.length > 0
+    ? specialIds.map(id => paidProducts.find(p => p.id === id)).filter(Boolean) as Product[]
+    : paidProducts.slice(0, 3);
 
   useEffect(() => {
     setShowPopup(true);

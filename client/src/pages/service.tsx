@@ -119,20 +119,18 @@ export default function ServicePage() {
           style={{
             background: "#fff",
             borderRadius: 999,
-            padding: "6px 24px",
+            padding: "6px 28px",
             marginTop: 16,
             marginBottom: 10,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
           }}
         >
-          <img
-            src="/xpeng-logo-black.svg"
-            alt="XPENG"
-            style={{ height: 20, objectFit: "contain" }}
-          />
+          <span style={{ fontWeight: 900, fontSize: 18, color: "#111", letterSpacing: 3, fontFamily: "sans-serif" }}>
+            XPENG
+          </span>
         </div>
 
         {/* Personnages XPENG */}
