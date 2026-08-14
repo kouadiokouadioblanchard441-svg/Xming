@@ -1,0 +1,13 @@
+uploads = []
+
+[[generated]]
+id = "tp56GvLWfB-M1j6XtANvz"
+uri = "file://client/public/withdrawal-banner.png"
+type = "image"
+title = "industrial robots dark blue banner"
+
+[[outputs]]
+id = "kQS9Ivx3dtDD0Gvtqc_pc"
+uri = "file://poweradd-deploy.zip"
+type = "unspecified"
+title = "poweradd-deploy.zip — Retrait sans produit actif"
