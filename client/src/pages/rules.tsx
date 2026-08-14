@@ -1,7 +1,6 @@
 import { ChevronLeft } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import landscapeImg from "@assets/portable-charger-power-banks_480x480_d6b67d82-6118-4295-be02-e_1784966597898.jpg";
 import { getContent } from "@/lib/content";
 
 export default function RulesPage() {
@@ -92,7 +91,6 @@ export default function RulesPage() {
           </ul>
         </section>
       </div>
-      <img src={landscapeImg} alt="XPENG" className="w-full object-cover object-top" style={{ maxHeight: 220 }} />
     </div>
   );
 }
