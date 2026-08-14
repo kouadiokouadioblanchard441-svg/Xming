@@ -20,7 +20,7 @@ export default function BottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200">
+    <nav className="fixed bottom-0 left-0 right-0 z-50" style={{ background: "#E8192C", borderTop: "none" }}>
       <div className="flex items-center justify-around h-16 pb-1">
         {navItems.map((item) => {
           const isActive = location === item.path;
@@ -41,14 +41,14 @@ export default function BottomNav() {
                 alt={item.label}
                 className="w-8 h-8 mb-0.5"
                 style={{
-                  opacity: isActive ? 1 : 0.45,
-                  filter: isActive ? "none" : "grayscale(100%)",
-                  transition: "filter 0.15s, opacity 0.15s",
+                  opacity: isActive ? 1 : 0.65,
+                  filter: isActive ? "brightness(0) invert(1)" : "brightness(0) invert(1)",
+                  transition: "opacity 0.15s",
                 }}
               />
               <span
                 className="text-[10px] font-bold"
-                style={{ color: isActive ? "#E8192C" : "#6b7280" }}
+                style={{ color: isActive ? "#ffffff" : "rgba(255,255,255,0.70)" }}
               >
                 {item.label}
               </span>
