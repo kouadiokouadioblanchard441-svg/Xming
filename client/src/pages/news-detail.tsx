@@ -5,23 +5,21 @@ import { useI18n } from "@/lib/i18n";
 export const NEWS_ARTICLES = [
   {
     id: "1",
-    title: "Asus : une expertise technologique depuis 1989",
-    summary: "Fondée en 1989, Asus est aujourd'hui l'un des leaders mondiaux de la technologie, reconnu pour l'innovation et la qualité de ses produits.",
-    body: `Asus a été fondée en 1989 à Taïpei, Taïwan, par quatre anciens ingénieurs d'Acer.
+    title: "XPENG : une expertise technologique innovante",
+    summary: "XPENG développe des solutions technologiques innovantes, reconnues pour leur design, leur performance et leur qualité.",
+    body: `XPENG développe des solutions technologiques pensées pour accompagner les usages modernes.
 
-Dès ses débuts, l'entreprise s'est démarquée par la fabrication de cartes mères de haute qualité, avant de s'étendre aux ordinateurs portables, smartphones, écrans et solutions réseau.
+La marque s'appuie sur l'innovation, le design et la fiabilité pour proposer une expérience simple et performante.
 
-Aujourd'hui, Asus est présent dans plus de 50 pays et emploie plus de 17 000 personnes dans le monde.
-
-Notre plateforme s'appuie sur la force de la marque Asus pour offrir des opportunités d'investissement fiables et accessibles à tous.`,
+Notre plateforme s'appuie sur l'identité XPENG pour offrir une expérience d'investissement claire et accessible.`,
     image: "",
     date: "Source officielle",
   },
   {
     id: "2",
-    title: "Les produits d'investissement Asus",
+    title: "Les produits d'investissement XPENG",
     summary: "La plateforme propose une gamme complète de produits d'investissement avec des rendements journaliers attractifs.",
-    body: `La plateforme Asus propose plusieurs niveaux de produits adaptés à chaque investisseur :
+    body: `La plateforme XPENG propose plusieurs niveaux de produits adaptés à chaque investisseur :
 
 - VIP 1 à VIP 3 : produits d'entrée de gamme, accessibles dès 600 FCFA
 - VIP 4 à VIP 6 : produits intermédiaires avec des rendements élevés
@@ -36,8 +34,8 @@ Les gains peuvent être retirés via Mobile Money après validation par notre é
   {
     id: "3",
     title: "Qualité, transparence et service",
-    summary: "Asus s'engage pour la transparence, la sécurité et la satisfaction de chaque membre de la plateforme.",
-    body: `La plateforme Asus repose sur trois piliers fondamentaux :
+    summary: "XPENG s'engage pour la transparence, la sécurité et la satisfaction de chaque membre de la plateforme.",
+    body: `La plateforme XPENG repose sur trois piliers fondamentaux :
 
 1. **Transparence** — Tous les montants, frais et conditions sont clairement affichés avant toute transaction.
 
@@ -45,7 +43,7 @@ Les gains peuvent être retirés via Mobile Money après validation par notre é
 
 3. **Support** — Notre équipe est disponible 7j/7 pour répondre à toutes vos questions et vous accompagner.
 
-Rejoignez des milliers de membres qui font confiance à Asus pour faire fructifier leur capital.`,
+Rejoignez les membres qui font confiance à XPENG pour faire fructifier leur capital.`,
     image: "",
     date: "Qualité & service",
   },

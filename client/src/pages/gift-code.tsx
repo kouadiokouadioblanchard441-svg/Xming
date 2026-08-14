@@ -74,7 +74,7 @@ export default function GiftCodePage() {
       <div className="relative">
         <img
           src="/gift-banner.png"
-          alt="ASUS"
+          alt="XPENG"
           className="w-full h-36 object-contain"
           style={{ background: "linear-gradient(135deg, #000000, #000000)" }}
           data-testid="img-gift-banner"

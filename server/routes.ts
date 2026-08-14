@@ -897,7 +897,7 @@ export async function registerRoutes(
         return res.status(400).json({ message: `Montant minimum: ${minDeposit.toLocaleString()} USDT` });
       }
 
-      const orderId = `poweradd-${user.id}-${Date.now()}`;
+      const orderId = `xpeng-${user.id}-${Date.now()}`;
       const ipnCallbackUrl = getNowPaymentsCallbackUrl();
 
       // Stablecoins whose value is pegged 1:1 to USD.
@@ -1352,8 +1352,8 @@ export async function registerRoutes(
           address: wallet.accountNumber,
           currency: "usdtbsc",
           amount: netAmount,
-          uniqueExternalId: `poweradd-withdrawal-${withdrawal.id}`,
-          description: `PowerAdd withdrawal ${withdrawal.id}`,
+          uniqueExternalId: `xpeng-withdrawal-${withdrawal.id}`,
+          description: `XPENG withdrawal ${withdrawal.id}`,
         });
         const payoutItem = payout.withdrawals?.[0];
         const batchId = payout.id || payoutItem?.batchWithdrawalId || payoutItem?.batch_withdrawal_id;

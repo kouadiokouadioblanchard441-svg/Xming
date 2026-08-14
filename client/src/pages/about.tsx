@@ -10,7 +10,7 @@ export default function AboutPage() {
 
   const pageTitle = getContent(settings, "content_about_pageTitle", "À propos");
   const s1Title   = getContent(settings, "content_about_s1Title",   "Qui sommes-nous ?");
-  const s1Text1   = getContent(settings, "content_about_s1Text1",   "Asus est une entreprise technologique mondiale fondée en 1989, reconnue pour ses produits innovants dans les domaines de l'informatique, des smartphones et des solutions numériques.");
+  const s1Text1   = getContent(settings, "content_about_s1Text1",   "XPENG est une entreprise technologique innovante qui développe des solutions de mobilité et des services numériques.");
   const s1Text2   = getContent(settings, "content_about_s1Text2",   "Notre plateforme d'investissement vous permet de faire fructifier votre capital grâce à des produits performants et une gestion transparente.");
   const s2Title   = getContent(settings, "content_about_s2Title",   "Nos produits & solutions");
   const s2Text    = getContent(settings, "content_about_s2Text",    "La plateforme propose une gamme de produits d'investissement allant de l'entrée de gamme au premium, avec des rendements journaliers adaptés à chaque profil.");

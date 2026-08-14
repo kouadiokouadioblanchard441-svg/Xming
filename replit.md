@@ -1,4 +1,4 @@
-# SoleaPay / PowerAdd
+# XPENG
 
 ## Project Overview
 Full-stack investment and payments platform. Express + TypeScript backend, React + Vite frontend, PostgreSQL (Supabase) via Drizzle ORM, Passport.js session auth, NowPayments crypto integration.

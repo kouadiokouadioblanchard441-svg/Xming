@@ -907,7 +907,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               </FormItem>
             )} />
             {([
-              { name: "popupLine1" as const, label: "Ligne 1 — Lancement officiel", placeholder: "✨✨ Lancement officiel de la plateforme ASUS (4 août 2026)✨✨" },
+              { name: "popupLine1" as const, label: "Ligne 1 — Lancement officiel", placeholder: "✨✨ Lancement officiel de la plateforme XPENG ✨✨" },
               { name: "popupLine2" as const, label: "Ligne 2 — Invitation parrainage", placeholder: "🔻 Invitez vos amis à investir et gagnez jusqu'à 25% de commissions..." },
               { name: "popupLine3" as const, label: "Ligne 3 — Bonus connexion", placeholder: "🎁 Bonus de connexion quotidienne disponible chaque jour" },
               { name: "popupLine4" as const, label: "Ligne 4 — Dépôt minimum", placeholder: "🤝 Dépôt minimum : 3 000 FCFA" },

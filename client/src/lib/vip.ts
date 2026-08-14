@@ -1,4 +1,4 @@
-// ── Système VIP ASUS ────────────────────────────────────────────────────────
+// ── Système VIP XPENG ───────────────────────────────────────────────────────
 
 export interface TeamStats {
   level1Count: number;

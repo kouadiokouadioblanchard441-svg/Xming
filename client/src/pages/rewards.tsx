@@ -136,7 +136,7 @@ export default function RewardsPage() {
         </div>
 
       </div>
-      <img src={landscapeImg} alt="ASUS" className="w-full object-cover object-top" style={{ maxHeight: 220 }} />
+      <img src={landscapeImg} alt="XPENG" className="w-full object-cover object-top" style={{ maxHeight: 220 }} />
     </div>
   );
 }

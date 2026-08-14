@@ -9,7 +9,7 @@ import { useI18n } from "@/lib/i18n";
 import { ChevronLeft, Loader2, Trophy, CheckCircle2 } from "lucide-react";
 import { Link } from "wouter";
 import type { Task } from "@shared/schema";
-const poweraddLogo = "/poweradd/poweradd-logo-official.png";
+const xpengLogo = "/xpeng-logo-white.svg";
 import trophyImg from "@assets/piedestal-realiste-trophees-gobelets-metal-composition-rubans-_1785098538437.jpg";
 import iconBronze from "@assets/344464_1773318022355.png";
 import iconArgent from "@assets/817729_1773318022328.png";
@@ -114,7 +114,7 @@ export default function TasksPage() {
             </button>
           </Link>
           <div className="flex-1 flex justify-center">
-            <img src={poweraddLogo} alt="Power Add" className="h-8 object-contain" />
+            <img src={xpengLogo} alt="XPENG" className="h-8 object-contain" />
           </div>
           <div className="w-9" />
         </div>

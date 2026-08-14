@@ -78,7 +78,7 @@ export default function HomePage() {
   })();
 
   const popupLines: string[] = [
-    getContent(settings, "popupLine1", `✨✨ Lancement officiel de la plateforme ASUS (4 août 2026) ✨✨`),
+    getContent(settings, "popupLine1", `✨✨ Lancement officiel de la plateforme XPENG ✨✨`),
     getContent(settings, "popupLine2", `🔻 Invitez vos amis à investir et gagnez jusqu'à ${lvl1}% de commissions sur les investissements. Les revenus passifs ne sont plus un simple rêve.`),
     getContent(settings, "popupLine3", `🎁 Bonus de connexion quotidienne disponible chaque jour`),
     getContent(settings, "popupLine4", `🤝 Dépôt minimum : ${parseInt(minDeposit).toLocaleString()} FCFA`),
@@ -165,8 +165,8 @@ export default function HomePage() {
         overlay={
           <div className="flex items-end pb-4 pl-4 h-full">
             <img
-              src="/asus-logo-white.svg"
-              alt="ASUS"
+              src="/xpeng-logo-white.svg"
+              alt="XPENG"
               className="h-10 object-contain drop-shadow-lg"
             />
           </div>

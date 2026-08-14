@@ -10,7 +10,7 @@ import { useLocation } from "wouter";
 import { useI18n } from "@/lib/i18n";
 import type { Product } from "@shared/schema";
 
-const poweraddLogo = "/poweradd/poweradd-logo-official.png";
+const xpengLogo = "/xpeng-logo-white.svg";
 import serviceIcon from "@assets/20260311_214852_1773265973964.png";
 import productImgFallback from "@assets/vestas_112v_closeup_1783210181172.jpg";
 
@@ -64,7 +64,7 @@ export default function InvestPage() {
 
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 shadow-sm" style={{ background: "linear-gradient(135deg, #E8192C 0%, #001a40 100%)" }}>
-        <img src={poweraddLogo} alt="Power Add" className="h-8 w-auto object-contain" style={{ filter: "brightness(0) invert(1)" }} />
+        <img src={xpengLogo} alt="XPENG" className="h-8 w-auto object-contain" />
         <button onClick={() => navigate("/service")} className="flex items-center justify-center" data-testid="button-service">
           <img src={serviceIcon} alt={t.customerService} className="w-8 h-8 object-contain" />
         </button>
