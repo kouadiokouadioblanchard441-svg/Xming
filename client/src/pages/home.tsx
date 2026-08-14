@@ -208,7 +208,7 @@ export default function HomePage() {
       {/* ══════ CORPS ══════ */}
       <div className="flex-1 flex flex-col pb-24" style={{ gap: 12, padding: "14px 12px 0" }}>
 
-        {/* ── Titre "Mon compte" ── */}
+        {/* ── Titre "Mon solde" ── */}
         <p
           style={{
             textAlign: "center",
@@ -219,7 +219,7 @@ export default function HomePage() {
             marginBottom: 2,
           }}
         >
-          Mon compte
+          Mon solde
         </p>
 
         {/* ── Deux cartes solde côte à côte ── */}
