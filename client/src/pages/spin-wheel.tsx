@@ -93,9 +93,9 @@ function WinnersTicker() {
 }
 
 /* ── Palette ────────────────────────────────────────────────── */
-const BG_TOP    = "#3d4e1a";
+const BG_TOP    = "#3b0b12";
 const BG_MID    = "#000000";
-const BG_BOT    = "#1a2208";
+const BG_BOT    = "#160407";
 
 /* ── Segments ──────────────────────────────────────────────── */
 const N   = DEFAULT_SPIN_WHEEL_SEGMENTS.length;
@@ -110,21 +110,21 @@ function drawCoinStack(
 ) {
   for (let i = 2; i >= 0; i--) {
     const oy = -i * r * 0.55;
-    // Edge shadow
+    // Jeton rouge/noir, assorti à la nouvelle roue
     ctx.beginPath();
     ctx.ellipse(x, y - oy + r * 0.28, r, r * 0.28, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "#A07200";
+    ctx.fillStyle = "#530812";
     ctx.fill();
-    // Coin face gradient
+    // Face du jeton avec effet glossy
     const g = ctx.createRadialGradient(x - r * 0.3, y - oy - r * 0.3, 0, x, y - oy, r);
-    g.addColorStop(0, "#FFF9A0");
-    g.addColorStop(0.45, "#FFD700");
-    g.addColorStop(1, "#C89A05");
+    g.addColorStop(0, "#ff6b78");
+    g.addColorStop(0.45, "#E8192C");
+    g.addColorStop(1, "#650713");
     ctx.beginPath();
     ctx.arc(x, y - oy, r, 0, Math.PI * 2);
     ctx.fillStyle = g;
     ctx.fill();
-    ctx.strokeStyle = "#A07200";
+    ctx.strokeStyle = "#ffb0b7";
     ctx.lineWidth = 0.8;
     ctx.stroke();
   }
@@ -142,7 +142,7 @@ function drawWheel(
   const cx  = W / 2;
   const cy  = W / 2;
 
-  const outerR  = cx - 5;          // outer gold ring edge
+  const outerR  = cx - 5;          // outer metallic ring edge
   const segR    = outerR - 26;     // segment outer radius
   const sepR    = segR * 0.30;     // inner separator ring radius
   const centerR = sepR * 0.82;     // GO button radius
@@ -160,18 +160,18 @@ function drawWheel(
   ctx.fill();
   ctx.restore();
 
-  /* ── Outer gold ring ── */
+  /* ── Outer metallic black ring ── */
   const ringGrad = ctx.createLinearGradient(cx - outerR, cy - outerR, cx + outerR, cy + outerR);
-  ringGrad.addColorStop(0,    "#C89A05");
-  ringGrad.addColorStop(0.25, "#FFD700");
-  ringGrad.addColorStop(0.50, "#FFF8A0");
-  ringGrad.addColorStop(0.75, "#FFD700");
-  ringGrad.addColorStop(1,    "#C89A05");
+  ringGrad.addColorStop(0,    "#555555");
+  ringGrad.addColorStop(0.25, "#111111");
+  ringGrad.addColorStop(0.50, "#343434");
+  ringGrad.addColorStop(0.75, "#080808");
+  ringGrad.addColorStop(1,    "#000000");
   ctx.beginPath();
   ctx.arc(cx, cy, outerR, 0, 2 * Math.PI);
   ctx.fillStyle = ringGrad;
   ctx.fill();
-  ctx.strokeStyle = "#A07200";
+  ctx.strokeStyle = "#777777";
   ctx.lineWidth = 2;
   ctx.stroke();
 
@@ -182,11 +182,10 @@ function drawWheel(
     const end   = start + ARC;
     const midA  = start + ARC / 2;
 
-    // Use admin-configured colors (fallback to classic alternating if not set)
-    const DEFAULT_FILLS = ["#F5C518", "#FFFDE7"];
-    const DEFAULT_TEXTS = ["#5C3D00", "#7C5200"];
-    const fillColor = seg.color || DEFAULT_FILLS[i % 2];
-    const textColor = seg.dark  || DEFAULT_TEXTS[i % 2];
+    // Palette XPENG : rouge, noir et blanc, tout en gardant la structure admin
+    const DEFAULT_FILLS = ["#E8192C", "#111111", "#f7f7f7", "#8f101d"];
+    const fillColor = DEFAULT_FILLS[i % DEFAULT_FILLS.length];
+    const textColor = fillColor === "#f7f7f7" ? "#222222" : "#ffffff";
 
     /* Segment fill */
     ctx.beginPath();
@@ -195,7 +194,7 @@ function drawWheel(
     ctx.closePath();
     ctx.fillStyle = fillColor;
     ctx.fill();
-    ctx.strokeStyle = "#D4A800";
+    ctx.strokeStyle = "#292929";
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -253,16 +252,16 @@ function drawWheel(
     ctx.restore();
   }
 
-  /* ── Inner separator gold ring ── */
+  /* ── Inner metallic separator ring ── */
   const sepGrad = ctx.createRadialGradient(cx, cy, centerR, cx, cy, sepR);
-  sepGrad.addColorStop(0,    "#FFF8A0");
-  sepGrad.addColorStop(0.45, "#FFD700");
-  sepGrad.addColorStop(1,    "#C89A05");
+  sepGrad.addColorStop(0,    "#626262");
+  sepGrad.addColorStop(0.45, "#1e1e1e");
+  sepGrad.addColorStop(1,    "#050505");
   ctx.beginPath();
   ctx.arc(cx, cy, sepR, 0, 2 * Math.PI);
   ctx.fillStyle = sepGrad;
   ctx.fill();
-  ctx.strokeStyle = "#A07200";
+  ctx.strokeStyle = "#d9a83e";
   ctx.lineWidth = 2;
   ctx.stroke();
 
@@ -271,9 +270,9 @@ function drawWheel(
   const flameTop  = flameBase - sepR * 0.70;
   const flameW    = sepR * 0.38;
   const flameG    = ctx.createLinearGradient(cx, flameTop, cx, flameBase);
-  flameG.addColorStop(0,   "#FF9820");
-  flameG.addColorStop(0.6, "#E63946");
-  flameG.addColorStop(1,   "#C0392B");
+  flameG.addColorStop(0,   "#ff6673");
+  flameG.addColorStop(0.6, "#E8192C");
+  flameG.addColorStop(1,   "#8f101d");
   ctx.beginPath();
   ctx.moveTo(cx, flameTop);
   ctx.bezierCurveTo(
@@ -297,9 +296,9 @@ function drawWheel(
     cx - centerR * 0.3, cy - centerR * 0.3, 0,
     cx, cy, centerR,
   );
-  btnG.addColorStop(0,   "#FF9820");
-  btnG.addColorStop(0.4, "#E63946");
-  btnG.addColorStop(1,   "#A01E28");
+  btnG.addColorStop(0,   "#ff6673");
+  btnG.addColorStop(0.4, "#E8192C");
+  btnG.addColorStop(1,   "#650713");
   ctx.beginPath();
   ctx.arc(cx, cy, centerR, 0, 2 * Math.PI);
   ctx.fillStyle = btnG;
