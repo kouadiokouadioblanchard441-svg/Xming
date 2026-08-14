@@ -39,8 +39,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
     <title>XPENG</title>
-    <script type="module" crossorigin src="/assets/index-gSfoWa3H.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DKbgxJjD.css">
+    <script type="module" crossorigin src="/assets/index-DDFIDWkg.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-mbHoUBY7.css">
   </head>
   <body>
     <!-- Splash screen natif : visible immédiatement, supprimé dès que React monte -->
@@ -61,7 +61,13 @@
       </svg>
       <style>
         @keyframes xpeng-spin { to { transform: rotate(360deg); } }
-        body { margin:0; background:#000; }
+        html, body {
+          margin: 0;
+          background: #000;
+          /* Bloque le pull-to-refresh natif Android (cercle orange/jaune) */
+          overscroll-behavior-y: none;
+          overscroll-behavior-x: none;
+        }
       </style>
     </div>
 

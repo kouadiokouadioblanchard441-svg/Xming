@@ -161,8 +161,18 @@
     @apply border-border;
   }
 
+  html {
+    /* Empêche le pull-to-refresh natif du navigateur (cercle orange/jaune Android) */
+    overscroll-behavior-y: none;
+    /* Fond noir pendant tout le chargement, évite le flash blanc */
+    background-color: #000;
+  }
+
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    /* Idem sur body pour couvrir tous les cas */
+    overscroll-behavior-y: none;
+    overscroll-behavior-x: none;
   }
 }
 

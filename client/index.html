@@ -59,7 +59,13 @@
       </svg>
       <style>
         @keyframes xpeng-spin { to { transform: rotate(360deg); } }
-        body { margin:0; background:#000; }
+        html, body {
+          margin: 0;
+          background: #000;
+          /* Bloque le pull-to-refresh natif Android (cercle orange/jaune) */
+          overscroll-behavior-y: none;
+          overscroll-behavior-x: none;
+        }
       </style>
     </div>
 
