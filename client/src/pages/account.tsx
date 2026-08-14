@@ -21,6 +21,7 @@ import iconRecharger  from "@assets/1-1_1783245823715.png";
 import iconRetraits   from "@assets/2-1_1783245823825.png";
 import iconRules      from "@assets/mine-mod-records-DgHXSKa1_1782689837747.png";
 import checkinBanner  from "@assets/xpeng-checkin-banner.jpg";
+import avatar3D       from "@assets/xpeng-avatar-3d.png";
 
 /* ── Palette plateforme ──────────────────────────── */
 const RED   = "#E8192C";
@@ -172,7 +173,7 @@ export default function AccountPage() {
               className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center"
               style={{ background: "#fff", border: "2.5px solid rgba(255,255,255,0.9)" }}
             >
-              <img src="/xpeng-logo-black.svg" alt="XPENG" style={{ width: 44, height: 28, objectFit: "contain" }} />
+              <img src={avatar3D} alt="Avatar" style={{ width: 64, height: 64, objectFit: "cover" }} />
             </div>
           </div>
         </div>
