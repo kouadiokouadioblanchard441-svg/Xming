@@ -1030,6 +1030,7 @@ export class DatabaseStorage implements IStorage {
         id: user.id,
         fullName: user.fullName,
         phone: user.phone,
+        referralCode: user.referralCode,
         country: user.country,
         balance: user.balance,
         hasActiveProduct: user.hasActiveProduct,

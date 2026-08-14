@@ -1,21 +1,25 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import landscapeImg from "@assets/portable-charger-power-banks_480x480_d6b67d82-6118-4295-be02-e_1784966597898.jpg";
 import { useLocation } from "wouter";
-import { ChevronLeft, User } from "lucide-react";
-import { getUserAvatar } from "@/lib/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ChevronLeft, FileText } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { getCountryByCode } from "@/lib/countries";
 import { useI18n } from "@/lib/i18n";
 
+/* ── Palette XPENG ─────────────────────────────────── */
+const RED  = "#E8192C";
+const GRAY = "#f5f5f5";
+
+/* ── Types ──────────────────────────────────────────── */
 interface TeamMember {
   id: number;
   fullName: string;
   phone: string;
+  referralCode: string;
   country: string;
   createdAt: string;
   totalInvested: number;
+  bonusFromMember: number;
+  hasDeposited: boolean;
 }
 
 interface TeamDetails {
@@ -27,191 +31,260 @@ interface TeamDetails {
   totalLevel3Invested: number;
 }
 
-function maskPhone(phone: string): string {
-  if (phone.length <= 4) return phone;
-  const last4 = phone.slice(-4);
-  return `******${last4}`;
-}
-
+/* ── Helpers ─────────────────────────────────────────── */
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  const dd = String(date.getDate()).padStart(2, "0");
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const yyyy = date.getFullYear();
-  const hh = String(date.getHours()).padStart(2, "0");
-  const min = String(date.getMinutes()).padStart(2, "0");
-  const ss = String(date.getSeconds()).padStart(2, "0");
-  return `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;
+  if (!dateStr) return "-";
+  const d = new Date(dateStr);
+  const dd  = String(d.getDate()).padStart(2, "0");
+  const mm  = String(d.getMonth() + 1).padStart(2, "0");
+  const yy  = String(d.getFullYear()).slice(2);
+  const hh  = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${dd}/${mm}/${yy} ${hh}:${min}`;
 }
 
-const GREEN = "#E8192C";
-const GREEN_BG = "#d9f5e4";
+function isToday(dateStr: string): boolean {
+  const d   = new Date(dateStr);
+  const now = new Date();
+  return (
+    d.getDate()     === now.getDate()    &&
+    d.getMonth()    === now.getMonth()   &&
+    d.getFullYear() === now.getFullYear()
+  );
+}
 
+/* ── Empty state illustration ────────────────────────── */
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-20">
+      {/* Document stack SVG (fidèle à la capture) */}
+      <svg width="90" height="90" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="18" y="22" width="44" height="54" rx="4" stroke="#ccc" strokeWidth="2" fill="#f9f9f9" />
+        <rect x="24" y="16" width="44" height="54" rx="4" stroke="#ccc" strokeWidth="2" fill="#fff" />
+        <line x1="32" y1="36" x2="60" y2="36" stroke="#ddd" strokeWidth="2" strokeLinecap="round" />
+        <line x1="32" y1="44" x2="60" y2="44" stroke="#ddd" strokeWidth="2" strokeLinecap="round" />
+        <line x1="32" y1="52" x2="50" y2="52" stroke="#ddd" strokeWidth="2" strokeLinecap="round" />
+        {/* petits + */}
+        <text x="10" y="22" fill="#ccc" fontSize="10" fontWeight="bold">+</text>
+        <text x="68" y="30" fill="#ccc" fontSize="10" fontWeight="bold">+</text>
+        <text x="14" y="60" fill="#ccc" fontSize="10" fontWeight="bold">+</text>
+        <text x="72" y="62" fill="#ccc" fontSize="10" fontWeight="bold">+</text>
+        {/* petits ○ */}
+        <circle cx="18" cy="50" r="3" stroke="#ddd" strokeWidth="1.5" fill="none" />
+        <circle cx="74" cy="44" r="3" stroke="#ddd" strokeWidth="1.5" fill="none" />
+      </svg>
+      <p style={{ color: "#aaa", fontSize: 14, marginTop: 10, fontWeight: 500 }}>
+        Aucun enregistrement
+      </p>
+    </div>
+  );
+}
+
+/* ── Main component ──────────────────────────────────── */
 export default function TeamDetailsPage() {
   const [activeLevel, setActiveLevel] = useState<1 | 2 | 3>(1);
-  const [, navigate] = useLocation();
-  const { user } = useAuth();
-  const { t } = useI18n();
+  const [, navigate]  = useLocation();
+  const { user }      = useAuth();
+  const { t }         = useI18n();
 
   const { data: team, isLoading } = useQuery<TeamDetails>({
     queryKey: ["/api/team/details"],
   });
 
-  const country = getCountryByCode(user?.country || "");
   const currency = "FCFA";
 
   const levels = [
-    {
-      num: 1 as const,
-      label: t.teamLevel1,
-      members: team?.level1 || [],
-      totalInvested: team?.totalLevel1Invested || 0,
-    },
-    {
-      num: 2 as const,
-      label: t.teamLevel2,
-      members: team?.level2 || [],
-      totalInvested: team?.totalLevel2Invested || 0,
-    },
-    {
-      num: 3 as const,
-      label: t.teamLevel3,
-      members: team?.level3 || [],
-      totalInvested: team?.totalLevel3Invested || 0,
-    },
+    { num: 1 as const, label: "Niveau 1", members: team?.level1 || [] },
+    { num: 2 as const, label: "Niveau 2", members: team?.level2 || [] },
+    { num: 3 as const, label: "Niveau 3", members: team?.level3 || [] },
   ];
 
-  const activeData = levels[activeLevel - 1];
-  const members = activeData.members;
-  const memberCount = members.length;
-  const totalInvested = activeData.totalInvested;
+  const members     = levels[activeLevel - 1].members;
+  const totalCount  = members.length;
+  const activeCount = members.filter(m => m.hasDeposited).length;
+
+  const todayMembers      = members.filter(m => m.createdAt && isToday(m.createdAt));
+  const todayCount        = todayMembers.length;
+  const todayActiveCount  = todayMembers.filter(m => m.hasDeposited).length;
+
+  const totalCommission = members.reduce((s, m) => s + (m.bonusFromMember || 0), 0);
+  const todayCommission = todayMembers.reduce((s, m) => s + (m.bonusFromMember || 0), 0);
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: "#0d0d0d" }}>
+    <div className="flex flex-col min-h-screen" style={{ background: "#fff" }}>
 
-      {/* ── Header ── */}
-      <div className="bg-white flex items-center px-4 py-4 shadow-sm">
+      {/* ══ HEADER ══ */}
+      <div
+        className="flex items-center px-4 py-3"
+        style={{ background: "#fff", borderBottom: "1px solid #f0f0f0" }}
+      >
         <button
           onClick={() => navigate("/team")}
-          className="p-1 text-gray-600"
+          className="w-9 h-9 flex items-center justify-center active:opacity-70"
           data-testid="button-back-team"
         >
-          <ChevronLeft className="w-6 h-6" />
+          <ChevronLeft className="w-6 h-6 text-gray-700" strokeWidth={2.5} />
         </button>
         <h1
-          className="flex-1 text-center font-bold text-base pr-7"
-          style={{ color: GREEN }}
+          className="flex-1 text-center font-bold text-base pr-9"
+          style={{ color: "#111" }}
           data-testid="text-page-title"
         >
-          {t.teamHistoryTitle}
+          Parrainage Niveau {activeLevel}
         </h1>
       </div>
 
-      {/* ── Level tabs ── */}
-      <div className="bg-white border-b border-gray-100 flex">
-        {levels.map((level) => (
+      {/* ══ NIVEAU TABS ══ */}
+      <div className="flex" style={{ background: "#fff", borderBottom: "1px solid #eee" }}>
+        {levels.map(lv => (
           <button
-            key={level.num}
-            onClick={() => setActiveLevel(level.num)}
-            className="flex-1 py-3 text-center text-sm font-medium relative"
-            style={{ color: activeLevel === level.num ? GREEN : "#9ca3af" }}
-            data-testid={`tab-level-${level.num}`}
+            key={lv.num}
+            onClick={() => setActiveLevel(lv.num)}
+            className="flex-1 py-3 text-center text-sm font-semibold relative transition-colors"
+            style={{ color: activeLevel === lv.num ? RED : "#9ca3af" }}
+            data-testid={`tab-level-${lv.num}`}
           >
-            {level.label}
-            {activeLevel === level.num && (
+            {lv.label}
+            {activeLevel === lv.num && (
               <span
                 className="absolute bottom-0 left-4 right-4 h-0.5 rounded-full"
-                style={{ backgroundColor: GREEN }}
+                style={{ background: RED }}
               />
             )}
           </button>
         ))}
       </div>
 
-      {/* ── Stats row ── */}
-      <div className="mx-3 mt-3 flex gap-3">
-        {/* Membres */}
-        <div className="flex-1 bg-white rounded-2xl shadow-sm px-4 py-3">
-          <p className="text-xs text-gray-400 mb-1">{t.teamMembersLabel}</p>
-          <p className="text-3xl font-black text-gray-900" data-testid="text-member-count">
-            {isLoading ? "—" : memberCount}
-          </p>
+      {/* ══ STATS CARD ══ */}
+      <div className="mx-3 mt-4 rounded-2xl overflow-hidden" style={{ background: GRAY }}>
+        {/* En-tête colonnes */}
+        <div
+          className="grid"
+          style={{ gridTemplateColumns: "1fr 1fr 1fr", padding: "12px 16px 8px" }}
+        >
+          <span />
+          <span style={{ fontSize: 12, color: "#666", textAlign: "center", fontStyle: "italic" }}>
+            Nb. de filleuls
+          </span>
+          <span style={{ fontSize: 12, color: "#666", textAlign: "right", fontStyle: "italic" }}>
+            Ma Commission
+          </span>
         </div>
 
-        {/* Dépôts */}
-        <div className="flex-1 bg-white rounded-2xl shadow-sm px-4 py-3">
-          <p className="text-xs text-gray-400 mb-1">{t.teamDepositsLabel}</p>
-          <p
-            className="text-xl font-black"
-            style={{ color: GREEN }}
-            data-testid="text-total-invested"
-          >
-            {isLoading
-              ? "—"
-              : `${currency} ${Number(totalInvested).toLocaleString()}`}
-          </p>
+        {/* Ligne Total */}
+        <div
+          className="grid"
+          style={{ gridTemplateColumns: "1fr 1fr 1fr", padding: "6px 16px 6px", borderTop: "1px solid #e8e8e8" }}
+        >
+          <span style={{ fontSize: 13, color: "#444", fontStyle: "italic" }}>Total</span>
+          <span style={{ fontSize: 13, color: "#111", fontWeight: 600, textAlign: "center" }} data-testid="text-total-count">
+            {isLoading ? "—" : `${activeCount}/${totalCount}`}
+          </span>
+          <span style={{ fontSize: 13, color: "#111", fontWeight: 600, textAlign: "right" }} data-testid="text-total-commission">
+            {isLoading ? "—" : `${currency} ${totalCommission.toLocaleString()}`}
+          </span>
+        </div>
+
+        {/* Ligne Aujourd'hui */}
+        <div
+          className="grid"
+          style={{ gridTemplateColumns: "1fr 1fr 1fr", padding: "6px 16px 14px", borderTop: "1px solid #e8e8e8" }}
+        >
+          <span style={{ fontSize: 13, color: "#444", fontStyle: "italic" }}>Aujourd'hui</span>
+          <span style={{ fontSize: 13, color: "#111", fontWeight: 600, textAlign: "center" }} data-testid="text-today-count">
+            {isLoading ? "—" : `${todayActiveCount}/${todayCount}`}
+          </span>
+          <span style={{ fontSize: 13, color: "#111", fontWeight: 600, textAlign: "right" }} data-testid="text-today-commission">
+            {isLoading ? "—" : `${currency} ${todayCommission.toLocaleString()}`}
+          </span>
         </div>
       </div>
 
-      {/* ── Members list ── */}
-      <div className="mx-3 mt-3 mb-8 flex-1 space-y-2">
-        {isLoading ? (
-          Array(5).fill(0).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full rounded-2xl" />
-          ))
-        ) : members.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm text-center py-14 px-6">
-            <div
-              className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
-              style={{ backgroundColor: GREEN_BG }}
-            >
-              <User className="w-7 h-7" style={{ color: GREEN }} />
-            </div>
-            <p className="text-gray-500 text-sm font-medium">
-              {t.membersNoneAtLevel.replace("{0}", String(activeLevel))}
-            </p>
-            <p className="text-gray-400 text-xs mt-1">
-              {t.membersInviteFriends}
-            </p>
+      {/* ══ EN-TÊTES TABLEAU ══ */}
+      <div
+        className="flex mx-3 mt-4"
+        style={{ borderBottom: "1px solid #e8e8e8", paddingBottom: 8 }}
+      >
+        {["Date", "Code", "Dépôt total", "Ma Commission"].map((col, i) => (
+          <div
+            key={i}
+            className="flex-1 text-center"
+            style={{
+              fontSize: 12,
+              color: "#999",
+              borderRight: i < 3 ? "1px solid #e8e8e8" : "none",
+              padding: "0 4px",
+              lineHeight: 1.3,
+            }}
+          >
+            {col}
           </div>
+        ))}
+      </div>
+
+      {/* ══ LISTE FILLEULS ══ */}
+      <div className="flex-1 overflow-y-auto pb-20">
+        {isLoading ? (
+          <div className="space-y-2 mx-3 mt-3">
+            {Array(4).fill(0).map((_, i) => (
+              <div key={i} className="h-12 rounded-xl bg-gray-100 animate-pulse" />
+            ))}
+          </div>
+        ) : members.length === 0 ? (
+          <EmptyState />
         ) : (
-          members.map((member) => (
+          members.map((member, idx) => (
             <div
               key={member.id}
-              className="bg-white rounded-2xl shadow-sm flex items-center px-4 py-3 gap-3"
+              className="flex mx-0"
+              style={{
+                borderBottom: "1px solid #f5f5f5",
+                background: idx % 2 === 0 ? "#fff" : "#fafafa",
+              }}
               data-testid={`team-member-${member.id}`}
             >
-              {/* Avatar */}
-              <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 border-2" style={{ borderColor: GREEN }}>
-                <img src={getUserAvatar(member.id)} alt="avatar" className="w-full h-full object-cover" />
+              {/* Date */}
+              <div className="flex-1 flex items-center justify-center py-3 px-1"
+                style={{ borderRight: "1px solid #f0f0f0" }}>
+                <span style={{ fontSize: 10, color: "#555", textAlign: "center", lineHeight: 1.3 }}>
+                  {formatDate(member.createdAt)}
+                </span>
               </div>
 
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p
-                  className="text-sm font-semibold text-gray-800 truncate"
-                  data-testid={`text-member-phone-${member.id}`}
+              {/* Code de parrainage */}
+              <div className="flex-1 flex items-center justify-center py-3 px-1"
+                style={{ borderRight: "1px solid #f0f0f0" }}>
+                <span
+                  style={{ fontSize: 11, fontWeight: 700, color: RED, textAlign: "center" }}
+                  data-testid={`text-member-code-${member.id}`}
                 >
-                  {t.teamMemberAccount} {maskPhone(member.phone)}
-                </p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {t.teamMemberDate} {formatDate(member.createdAt)}
-                </p>
+                  {member.referralCode || "-"}
+                </span>
               </div>
 
-              {/* Amount */}
-              <p
-                className="text-sm font-bold shrink-0 text-gray-700"
-                data-testid={`text-member-invested-${member.id}`}
-              >
-                {currency} {Number(member.totalInvested).toLocaleString()}
-              </p>
+              {/* Dépôt total */}
+              <div className="flex-1 flex items-center justify-center py-3 px-1"
+                style={{ borderRight: "1px solid #f0f0f0" }}>
+                <span style={{ fontSize: 11, color: "#333", fontWeight: 600, textAlign: "center" }}
+                  data-testid={`text-member-invested-${member.id}`}>
+                  {Number(member.totalInvested).toLocaleString()}
+                </span>
+              </div>
+
+              {/* Ma commission */}
+              <div className="flex-1 flex items-center justify-center py-3 px-1">
+                <span
+                  style={{ fontSize: 11, fontWeight: 700, color: RED, textAlign: "center" }}
+                  data-testid={`text-member-bonus-${member.id}`}
+                >
+                  {Number(member.bonusFromMember || 0).toLocaleString()}
+                </span>
+              </div>
             </div>
           ))
         )}
       </div>
 
-      <img src={landscapeImg} alt="XPENG" className="w-full object-cover object-top" style={{ maxHeight: 220 }} />
     </div>
   );
 }
