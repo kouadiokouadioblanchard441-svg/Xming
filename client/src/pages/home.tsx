@@ -2,13 +2,16 @@ import { useAuth } from "@/lib/auth";
 import { SiTelegram } from "react-icons/si";
 import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { getContent } from "@/lib/content";
-import { Bell, DollarSign, ArrowUp, CalendarCheck, ClipboardList, ChevronRight } from "lucide-react";
+import { Bell, DollarSign, ArrowUp, CalendarCheck, ClipboardList, ChevronRight, Loader2, AlertTriangle } from "lucide-react";
 import { FloatingSupport } from "@/components/floating-support";
 import { FloatingWheel } from "@/components/floating-wheel";
 import BannerCarousel from "@/components/banner-carousel";
 import { useI18n } from "@/lib/i18n";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { formatCurrency } from "@/lib/countries";
 import popupMascot from "@assets/popup-mascot.png";
 import productImgFallback from "@assets/vestas_112v_closeup_1783210181172.jpg";
 import type { Product } from "@shared/schema";
@@ -47,10 +50,31 @@ function CircleIcon({ children }: { children: React.ReactNode }) {
 }
 
 export default function HomePage() {
-  const { user }     = useAuth();
+  const { user, refreshUser } = useAuth();
   const { t }        = useI18n();
+  const { toast }    = useToast();
   const [, navigate] = useLocation();
-  const [showPopup, setShowPopup] = useState(false);
+  const [showPopup, setShowPopup]           = useState(false);
+  const [confirmProduct, setConfirmProduct] = useState<Product | null>(null);
+
+  const purchaseMutation = useMutation({
+    mutationFn: async (productId: number) => {
+      const res = await apiRequest("POST", `/api/products/${productId}/purchase`, {});
+      if (!res.ok) { const d = await res.json(); throw new Error(d.message || t.errorOccurred); }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/products"] });
+      refreshUser();
+      setConfirmProduct(null);
+      toast({ title: t.purchaseSuccess, description: t.purchaseSuccessDescription });
+    },
+    onError: (e: any) => {
+      setConfirmProduct(null);
+      toast({ title: e.message || t.errorOccurred, variant: "destructive" });
+    },
+  });
 
   const { data: settings } = useQuery<Record<string, string>>({
     queryKey: ["/api/settings"],
@@ -323,43 +347,67 @@ export default function HomePage() {
             </button>
           </div>
 
-          {/* 3 cartes produit */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+          {/* Grille 2 colonnes — même style exact que la page Produits */}
+          <div className="grid grid-cols-2 gap-2">
             {specialProducts.map((product) => {
               const img = product.imageUrl || productImgFallback;
               return (
                 <div
                   key={product.id}
-                  onClick={() => navigate("/invest")}
-                  style={{
-                    background: CARD_BG,
-                    borderRadius: 14,
-                    overflow: "hidden",
-                    cursor: "pointer",
-                    border: "1px solid #222",
-                  }}
-                  className="active:scale-95 transition-transform"
+                  className="bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col"
                 >
-                  {/* Image */}
-                  <div style={{ width: "100%", height: 80, background: "#1a1a1a", overflow: "hidden" }}>
-                    <img
-                      src={img}
-                      alt={product.name}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
+                  {/* Nom */}
+                  <div className="text-center pt-3 pb-1 px-2">
+                    <p className="font-bold text-gray-800 text-sm">{product.name}</p>
                   </div>
 
-                  {/* Infos */}
-                  <div style={{ padding: "8px 7px 9px" }}>
-                    <p style={{ color: "#fff", fontSize: 11, fontWeight: 700, marginBottom: 5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {product.name}
+                  {/* Image */}
+                  <div className="mx-3 my-2 rounded-xl overflow-hidden" style={{ height: 110 }}>
+                    <img src={img} alt={product.name} className="w-full h-full object-cover" />
+                  </div>
+
+                  {/* Stats */}
+                  <div className="px-3 pb-1 space-y-0.5">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-[11px]">{t.price}</span>
+                      <span className="font-bold text-[11px]" style={{ color: ACCENT }}>
+                        FCFA {Number(product.price).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-[11px]">{t.dailyRevenue}</span>
+                      <span className="font-bold text-[11px]" style={{ color: ACCENT }}>
+                        FCFA {Number(product.dailyEarnings).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-[11px]">{t.totalRevenue}</span>
+                      <span className="font-bold text-[11px]" style={{ color: ACCENT }}>
+                        FCFA {Number(product.totalReturn).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-[11px]">{t.period}</span>
+                      <span className="font-bold text-[11px]" style={{ color: ACCENT }}>
+                        {product.cycleDays} {t.ordersDaysLbl}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Prix + bouton Acheter */}
+                  <div className="mt-auto px-3 pb-3 pt-2">
+                    <p className="text-gray-800 font-black text-base text-center mb-2">
+                      FCFA {Number(product.price).toLocaleString()}
                     </p>
-                    <p style={{ color: ACCENT, fontSize: 10, fontWeight: 700, marginBottom: 2 }}>
-                      {Number(product.dailyEarnings).toLocaleString()}/j
-                    </p>
-                    <p style={{ color: "#888", fontSize: 9 }}>
-                      {Number(product.price).toLocaleString()} FCFA
-                    </p>
+                    <div className="flex justify-center">
+                      <button
+                        onClick={() => setConfirmProduct(product)}
+                        className="px-6 py-1.5 rounded-lg text-sm font-bold text-white shadow active:scale-95 transition-transform"
+                        style={{ background: ACCENT }}
+                      >
+                        {t.buy}
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -371,6 +419,95 @@ export default function HomePage() {
 
       <FloatingWheel   bottomOffset={80} />
       <FloatingSupport bottomOffset={80} />
+
+      {/* ══ POPUP CONFIRMATION ACHAT ══ */}
+      {confirmProduct && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          onClick={() => setConfirmProduct(null)}
+        >
+          <div
+            className="w-full mx-4 rounded-3xl overflow-hidden shadow-2xl"
+            style={{ background: "#ffffff", maxWidth: 420 }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Image produit */}
+            <div className="flex items-center justify-center" style={{ background: "#f8f8f8", height: 200 }}>
+              <img
+                src={confirmProduct.imageUrl || productImgFallback}
+                alt={confirmProduct.name}
+                style={{ height: 180, maxWidth: "90%", objectFit: "contain" }}
+              />
+            </div>
+
+            {/* Prix + nom */}
+            <div className="px-5 pt-4 pb-2">
+              <p className="font-black" style={{ fontSize: 24, color: ACCENT, lineHeight: 1.2 }}>
+                FCFA {Number(confirmProduct.price).toLocaleString()}
+              </p>
+              <p style={{ fontSize: 14, color: "#555", marginTop: 2 }}>{confirmProduct.name}</p>
+            </div>
+
+            <div style={{ height: 1, background: "#f0f0f0", margin: "0 20px" }} />
+
+            {/* Description */}
+            <div className="px-5 py-3 text-center">
+              <p style={{ fontSize: 13, color: "#333", fontWeight: 600 }}>Revenus crédités toutes les 24 h</p>
+              <p style={{ fontSize: 12, color: "#888", marginTop: 3, lineHeight: 1.5 }}>
+                Vous pouvez acheter plusieurs appareils pour augmenter vos revenus
+              </p>
+            </div>
+
+            {/* Alerte solde insuffisant */}
+            {user && parseFloat(user.balance || "0") < parseFloat(String(confirmProduct.price)) && (
+              <div className="mx-5 mb-2 flex items-center gap-2 p-2.5 rounded-xl"
+                style={{ background: "#fff2f2", border: "1px solid #fca5a5" }}>
+                <AlertTriangle className="w-4 h-4 shrink-0" style={{ color: ACCENT }} />
+                <p className="text-xs" style={{ color: ACCENT }}>
+                  {t.investInsufficient.replace("{0}", formatCurrency(
+                    parseFloat(String(confirmProduct.price)) - parseFloat(user.balance || "0"), user.country
+                  ))}
+                </p>
+              </div>
+            )}
+
+            {/* Stats 3 colonnes */}
+            <div className="flex" style={{ margin: "0 20px 16px", border: "1px solid #eee", borderRadius: 12, overflow: "hidden" }}>
+              {[
+                { value: `${confirmProduct.cycleDays} jours`, label: "Durée" },
+                { value: `FCFA ${Number(confirmProduct.dailyEarnings).toLocaleString()}`, label: "Revenu quotidien" },
+                { value: `FCFA ${Number(confirmProduct.totalReturn).toLocaleString()}`, label: "Revenu total" },
+              ].map((stat, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center py-3"
+                  style={{ borderRight: i < 2 ? "1px solid #eee" : "none" }}>
+                  <p style={{ fontSize: 13, fontWeight: 800, color: ACCENT, lineHeight: 1.3 }}>{stat.value}</p>
+                  <p style={{ fontSize: 11, color: "#888", marginTop: 2, textAlign: "center", lineHeight: 1.3 }}>{stat.label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Boutons */}
+            <div className="flex" style={{ borderTop: "1px solid #f0f0f0" }}>
+              <button
+                onClick={() => setConfirmProduct(null)}
+                className="flex-1 font-semibold active:opacity-70"
+                style={{ padding: "17px 0", fontSize: 16, color: "#555", background: "#e8e8e8", border: "none", borderBottomLeftRadius: 24 }}
+              >
+                {t.cancel}
+              </button>
+              <button
+                onClick={() => purchaseMutation.mutate(confirmProduct.id)}
+                disabled={purchaseMutation.isPending || (user ? parseFloat(user.balance || "0") < parseFloat(String(confirmProduct.price)) : true)}
+                className="flex-1 font-bold text-white flex items-center justify-center gap-2 active:opacity-80 disabled:opacity-50"
+                style={{ padding: "17px 0", fontSize: 16, background: ACCENT, border: "none", borderBottomRightRadius: 24 }}
+              >
+                {purchaseMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                {t.confirm}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
