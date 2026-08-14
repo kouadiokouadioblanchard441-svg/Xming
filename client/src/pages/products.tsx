@@ -1,12 +1,16 @@
+import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { formatCurrency } from "@/lib/countries";
 import type { Product } from "@shared/schema";
 
 import productImgFallback from "@assets/vestas_112v_closeup_1783210181172.jpg";
+
+const RED = "#E8192C";
 
 interface ProductWithOwnership extends Product {
   isOwned: boolean;
@@ -31,6 +35,8 @@ export default function ProductsPage() {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
+  const [confirmProduct, setConfirmProduct] = useState<ProductWithOwnership | null>(null);
+
   const { data: products, isLoading: productsLoading } = useQuery<ProductWithOwnership[]>({
     queryKey: ["/api/products"],
   });
@@ -48,32 +54,26 @@ export default function ProductsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user/products"] });
       refreshUser();
+      setConfirmProduct(null);
       toast({ title: t.purchaseSuccess, description: t.purchaseSuccessDescription });
     },
     onError: (error: any) => {
+      setConfirmProduct(null);
       toast({ title: error.message || t.errorOccurred, variant: "destructive" });
     },
   });
 
   if (!user) return null;
 
-  const balance = parseFloat(user.balance || "0");
+  const balance  = parseFloat(user.balance || "0");
   const currency = "FCFA";
 
   const paidProducts = (products || []).filter(p => !p.isFree);
   const filtered = paidProducts;
 
+  /* ─── Ouvre toujours le popup — la vérification du solde se fait dedans ─── */
   const handleBuy = (product: ProductWithOwnership) => {
-    if (balance < Number(product.price)) {
-      const manque = (Number(product.price) - balance).toLocaleString();
-      toast({
-        title: t.errorOccurred,
-        description: t.productNeedMore.replace("{0}", `${manque} ${currency}`),
-        variant: "destructive",
-      });
-      return;
-    }
-    purchaseMutation.mutate(product.id);
+    setConfirmProduct(product);
   };
 
   return (
@@ -230,6 +230,100 @@ export default function ProductsPage() {
           })
         )}
       </div>
+
+      {/* ══ POPUP CONFIRMATION ACHAT ══ */}
+      {confirmProduct && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          onClick={() => setConfirmProduct(null)}
+        >
+          <div
+            className="w-full mx-4 rounded-3xl overflow-hidden shadow-2xl"
+            style={{ background: "#ffffff", maxWidth: 420 }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Image produit */}
+            <div className="flex items-center justify-center" style={{ background: "#f8f8f8", height: 200 }}>
+              <img
+                src={confirmProduct.imageUrl || productImgFallback}
+                alt={confirmProduct.name}
+                style={{ height: 180, maxWidth: "90%", objectFit: "contain" }}
+              />
+            </div>
+
+            {/* Prix + nom */}
+            <div className="px-5 pt-4 pb-2">
+              <p className="font-black" style={{ fontSize: 24, color: RED, lineHeight: 1.2 }}>
+                {currency} {Number(confirmProduct.price).toLocaleString()}
+              </p>
+              <p style={{ fontSize: 14, color: "#555", marginTop: 2 }}>{confirmProduct.name}</p>
+            </div>
+
+            {/* Séparateur */}
+            <div style={{ height: 1, background: "#f0f0f0", margin: "0 20px" }} />
+
+            {/* Description */}
+            <div className="px-5 py-3 text-center">
+              <p style={{ fontSize: 13, color: "#333", fontWeight: 600 }}>
+                Revenus crédités toutes les 24 h
+              </p>
+              <p style={{ fontSize: 12, color: "#888", marginTop: 3, lineHeight: 1.5 }}>
+                Vous pouvez acheter plusieurs appareils pour augmenter vos revenus
+              </p>
+            </div>
+
+            {/* Alerte solde insuffisant */}
+            {balance < parseFloat(String(confirmProduct.price)) && (
+              <div className="mx-5 mb-2 flex items-center gap-2 p-2.5 rounded-xl"
+                style={{ background: "#fff2f2", border: "1px solid #fca5a5" }}>
+                <AlertTriangle className="w-4 h-4 shrink-0" style={{ color: RED }} />
+                <p className="text-xs" style={{ color: RED }}>
+                  {t.investInsufficient.replace("{0}", formatCurrency(
+                    parseFloat(String(confirmProduct.price)) - balance, user.country
+                  ))}
+                </p>
+              </div>
+            )}
+
+            {/* Stats 3 colonnes */}
+            <div className="flex" style={{ margin: "0 20px 16px", border: "1px solid #eee", borderRadius: 12, overflow: "hidden" }}>
+              {[
+                { value: `${confirmProduct.cycleDays} jours`, label: "Durée" },
+                { value: `${currency} ${Number(confirmProduct.dailyEarnings).toLocaleString()}`, label: "Revenu quotidien" },
+                { value: `${currency} ${Number(confirmProduct.totalReturn).toLocaleString()}`, label: "Revenu total" },
+              ].map((stat, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center py-3"
+                  style={{ borderRight: i < 2 ? "1px solid #eee" : "none" }}>
+                  <p style={{ fontSize: 13, fontWeight: 800, color: RED, lineHeight: 1.3 }}>{stat.value}</p>
+                  <p style={{ fontSize: 11, color: "#888", marginTop: 2, textAlign: "center", lineHeight: 1.3 }}>{stat.label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Boutons */}
+            <div className="flex" style={{ borderTop: "1px solid #f0f0f0" }}>
+              <button
+                onClick={() => setConfirmProduct(null)}
+                className="flex-1 font-semibold active:opacity-70"
+                style={{ padding: "17px 0", fontSize: 16, color: "#555", background: "#e8e8e8", border: "none", borderBottomLeftRadius: 24 }}
+                data-testid="button-cancel-purchase"
+              >
+                {t.cancel}
+              </button>
+              <button
+                onClick={() => purchaseMutation.mutate(confirmProduct.id)}
+                disabled={purchaseMutation.isPending || balance < parseFloat(String(confirmProduct.price))}
+                className="flex-1 font-bold text-white flex items-center justify-center gap-2 active:opacity-80 disabled:opacity-50"
+                style={{ padding: "17px 0", fontSize: 16, background: RED, border: "none", borderBottomRightRadius: 24 }}
+                data-testid="button-confirm-purchase"
+              >
+                {purchaseMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                {t.confirm}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
