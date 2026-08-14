@@ -15,8 +15,13 @@ export function getDatabaseConfig(
     );
   }
 
+  // Apply SSL for any Supabase connection (both SUPABASE_DATABASE_URL and
+  // DATABASE_URL pointing to supabase.com require SSL)
+  const isSupabase =
+    !!supabaseUrl || databaseUrl.includes("supabase.com") || databaseUrl.includes("pooler.supabase");
+
   return {
     connectionString: databaseUrl,
-    ...(supabaseUrl ? { ssl: { rejectUnauthorized: false } } : {}),
+    ...(isSupabase ? { ssl: { rejectUnauthorized: false } } : {}),
   };
 }
