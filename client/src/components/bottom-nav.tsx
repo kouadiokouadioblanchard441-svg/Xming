@@ -1,27 +1,29 @@
 import { useLocation } from "wouter";
-import { Home, Grid2x2, Star, User } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
-const ACCENT = "#E8192C";
-
-const navItems = [
-  { path: "/",        label: "Accueil",     icon: Home,     testId: "home"     },
-  { path: "/invest",  label: "Séjours",     icon: Grid2x2,  testId: "products" },
-  { path: "/team",    label: "Équipe",      icon: Star,     testId: "team"     },
-  { path: "/account", label: "Mon compte",  icon: User,     testId: "me"       },
-];
+import iconHome    from "@assets/20260312_091332_1773307680527.png";
+import iconProduit from "@assets/nav-produits-new.png";
+import iconGains   from "@assets/nav-gains-new.png";
+import iconEquipe  from "@assets/nav-equipe-new.png";
+import iconCompte  from "@assets/téléchargement_(12)_1770815897017.png";
 
 export default function BottomNav() {
   const [location, navigate] = useLocation();
+  const { t } = useI18n();
+
+  const navItems = [
+    { path: "/",            label: t.home,     testId: "home",     icon: iconHome    },
+    { path: "/invest",      label: t.products, testId: "products", icon: iconProduit },
+    { path: "/my-products", label: t.earnings, testId: "earnings", icon: iconGains   },
+    { path: "/team",        label: t.team,     testId: "team",     icon: iconEquipe  },
+    { path: "/account",     label: t.me,       testId: "me",       icon: iconCompte  },
+  ];
 
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-50"
-      style={{ background: "#111111", borderTop: "1px solid #222" }}
-    >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-around", height: 64, paddingBottom: 4 }}>
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200">
+      <div className="flex items-center justify-around h-16 pb-1">
         {navItems.map((item) => {
           const isActive = location === item.path;
-          const Icon = item.icon;
           return (
             <button
               key={item.path}
@@ -31,34 +33,22 @@ export default function BottomNav() {
                   window.dispatchEvent(new Event("home-tab-clicked"));
                 }
               }}
-              style={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                gap: 3,
-              }}
+              className="flex flex-col items-center justify-center flex-1 h-full"
               data-testid={`nav-${item.testId}`}
             >
-              <Icon
-                size={22}
-                strokeWidth={isActive ? 2.2 : 1.6}
-                color={isActive ? ACCENT : "rgba(255,255,255,0.45)"}
-                style={{ transition: "color 0.15s" }}
+              <img
+                src={item.icon}
+                alt={item.label}
+                className="w-8 h-8 mb-0.5"
+                style={{
+                  opacity: isActive ? 1 : 0.45,
+                  filter: isActive ? "none" : "grayscale(100%)",
+                  transition: "filter 0.15s, opacity 0.15s",
+                }}
               />
               <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: isActive ? 700 : 400,
-                  color: isActive ? ACCENT : "rgba(255,255,255,0.45)",
-                  transition: "color 0.15s",
-                  letterSpacing: "0.01em",
-                }}
+                className="text-[10px] font-bold"
+                style={{ color: isActive ? "#E8192C" : "#6b7280" }}
               >
                 {item.label}
               </span>
