@@ -31,6 +31,11 @@ interface DepositChannel {
   sortOrder: number;
 }
 
+interface CountryConfig {
+  code: string;
+  autoPaymentEnabled?: boolean;
+}
+
 /* ── Stepper ─────────────────────────────────────────────────────── */
 function Stepper({ active }: { active: 1 | 2 | 3 }) {
   const steps = [
@@ -101,6 +106,14 @@ export default function DepositPage() {
     queryKey: ["/api/settings"],
   });
 
+  const { data: countryConfigs = [], isLoading: isCountriesLoading } = useQuery<CountryConfig[]>({
+    queryKey: ["/api/countries"],
+    enabled: !!user,
+  });
+  const currentCountry = countryConfigs.find(country => country.code === user?.country);
+  const isAutomaticDeposit = currentCountry?.autoPaymentEnabled === true;
+  const showManualDepositChannels = !isCountriesLoading && !isAutomaticDeposit;
+
   // Deposit channels (Canal 1, Canal 2…) filtered by the user's country
   const { data: depositChannels = [] } = useQuery<DepositChannel[]>({
     queryKey: ["/api/deposit-channels", user?.country],
@@ -111,7 +124,7 @@ export default function DepositPage() {
       const res = await fetch(url, { credentials: "include" });
       return res.json();
     },
-    enabled: !!user,
+    enabled: !!user && showManualDepositChannels,
   });
 
   // Operators within the selected deposit channel
@@ -124,12 +137,13 @@ export default function DepositPage() {
       );
       return res.json();
     },
-    enabled: !!selectedDepositChannel,
+    enabled: !!selectedDepositChannel && showManualDepositChannels,
   });
 
   // Legacy payment numbers (fallback if no channels configured)
   const { data: paymentNumbersRaw = [] } = useQuery<PaymentNumber[]>({
     queryKey: ["/api/payment-numbers"],
+    enabled: !!user && showManualDepositChannels,
   });
   const fallbackOperators = paymentNumbersRaw.filter(
     (n) =>
@@ -140,7 +154,7 @@ export default function DepositPage() {
   );
 
   // Are channels configured for this country?
-  const hasChannels = depositChannels.length > 0;
+  const hasChannels = showManualDepositChannels && depositChannels.length > 0;
 
   const minDeposit = parseInt(platformSettings?.minDeposit || "1000", 10);
   const presetAmounts = useMemo(
@@ -364,8 +378,31 @@ export default function DepositPage() {
               </div>
             </div>
 
+            {isAutomaticDeposit && (
+              <div
+                className="rounded-2xl p-4"
+                style={{
+                  background: "linear-gradient(135deg, rgba(232,25,44,0.18), rgba(0,0,0,0.45))",
+                  border: "1px solid rgba(232,25,44,0.55)",
+                }}
+              >
+                <p className="text-white font-bold text-[15px] mb-1">
+                  Paiement automatique
+                </p>
+                <p className="text-white/70 text-sm leading-relaxed">
+                  Le mode automatique est activé pour votre pays. Les canaux manuels sont masqués.
+                </p>
+                <div
+                  className="mt-3 rounded-xl px-3 py-2.5 text-sm font-semibold"
+                  style={{ background: "rgba(255,255,255,0.1)", color: "#ff9aa5" }}
+                >
+                  Westpay sera disponible ici après la connexion du service de paiement.
+                </div>
+              </div>
+            )}
+
             {/* Payment mode chips — channels if configured, otherwise operators */}
-            {(hasChannels ? depositChannels : fallbackOperators).length > 0 && (
+            {showManualDepositChannels && (hasChannels ? depositChannels : fallbackOperators).length > 0 && (
               <div>
                 <p className="text-white font-bold text-[15px] mb-2">
                   mode de paiement

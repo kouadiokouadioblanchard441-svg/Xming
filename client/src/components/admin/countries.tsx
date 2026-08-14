@@ -160,7 +160,9 @@ export default function AdminCountries() {
                       <span className="font-semibold text-base">{c.name}</span>
                       <Badge variant="outline" className="text-xs">{c.code}</Badge>
                       <Badge variant="secondary" className="text-xs">{c.currency}</Badge>
-                      <Badge variant="outline" className="text-xs">{t.adminManualPayment}</Badge>
+                       <Badge variant={c.autoPaymentEnabled ? "default" : "outline"} className="text-xs">
+                         {c.autoPaymentEnabled ? "Automatique" : t.adminManualPayment}
+                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mb-1">
                       {t.adminCountryPhoneDisplay}{c.phonePrefix}
@@ -266,6 +268,27 @@ export default function AdminCountries() {
                 id="country-active"
               />
               <Label htmlFor="country-active">{t.adminCountryActiveLabel}</Label>
+            </div>
+            <div className="rounded-lg border p-3 space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <Label htmlFor="country-auto-payment">Mode de dépôt</Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Automatique = paiement Westpay. Manuel = canaux de recharge configurés.
+                  </p>
+                </div>
+                <Switch
+                  checked={form.autoPaymentEnabled}
+                  onCheckedChange={v => setForm({ ...form, autoPaymentEnabled: v })}
+                  id="country-auto-payment"
+                  data-testid="switch-country-auto-payment"
+                />
+              </div>
+              <p className="text-xs font-medium" style={{ color: form.autoPaymentEnabled ? "#15803d" : "#6b7280" }}>
+                {form.autoPaymentEnabled
+                  ? "Dépôt automatique activé — les canaux manuels seront masqués."
+                  : "Dépôt manuel activé — les canaux de recharge seront affichés."}
+              </p>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => { setDialogOpen(false); setEditingId(null); setForm(emptyForm); }}>

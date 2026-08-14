@@ -37,6 +37,10 @@ async function run() {
         "is_active" boolean NOT NULL DEFAULT true
       )
     `);
+    await client.query(`
+      ALTER TABLE "countries"
+      ADD COLUMN IF NOT EXISTS "auto_payment_enabled" boolean NOT NULL DEFAULT false
+    `);
     console.log("✅ Table countries créée");
 
     // Users
