@@ -129,25 +129,6 @@ export default function MyProductsPage() {
             </p>
           </div>
 
-          {/* Bouton Expirés */}
-          <Link href="/expired-products">
-            <button
-              style={{
-                position: "absolute",
-                top: 12,
-                right: 12,
-                background: "rgba(0,0,0,0.5)",
-                color: "#fff",
-                border: "none",
-                borderRadius: 999,
-                fontSize: 11,
-                fontWeight: 700,
-                padding: "5px 12px",
-              }}
-            >
-              Expirés
-            </button>
-          </Link>
         </div>
 
         {/* ══ BARRE REVENU JOURNALIER ══ */}
