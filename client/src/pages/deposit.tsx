@@ -291,7 +291,7 @@ export default function DepositPage() {
           <div className="space-y-5">
             {/* Olive balance card */}
             <div
-              className="relative w-full max-w-[280px] mx-auto aspect-square overflow-hidden rounded-2xl p-5 flex flex-col"
+              className="relative w-full max-w-[220px] mx-auto aspect-square overflow-hidden rounded-2xl p-4 flex flex-col"
               style={{
                 background:
                   "linear-gradient(135deg, #333333 0%, #111111 55%, #000000 100%)",
