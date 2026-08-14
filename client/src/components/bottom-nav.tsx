@@ -1,4 +1,5 @@
 import { useLocation } from "wouter";
+import iconProduit from "@assets/nav-produits-new.png";
 
 /* ─── Icônes SVG sur mesure ─────────────────────────────── */
 function IconHome({ active }: { active: boolean }) {
@@ -12,14 +13,18 @@ function IconHome({ active }: { active: boolean }) {
 }
 
 function IconProduct({ active }: { active: boolean }) {
-  const c = active ? "#fff" : "rgba(255,255,255,0.55)";
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <rect x="3" y="3" width="8" height="8" rx="1.5" stroke={c} strokeWidth={active ? 2 : 1.6}/>
-      <rect x="13" y="3" width="8" height="8" rx="1.5" stroke={c} strokeWidth={active ? 2 : 1.6}/>
-      <rect x="3" y="13" width="8" height="8" rx="1.5" stroke={c} strokeWidth={active ? 2 : 1.6}/>
-      <rect x="13" y="13" width="8" height="8" rx="1.5" stroke={c} strokeWidth={active ? 2 : 1.6}/>
-    </svg>
+    <img
+      src={iconProduit}
+      alt="Product"
+      style={{
+        width: 32, height: 32,
+        objectFit: "contain",
+        opacity: active ? 1 : 0.55,
+        filter: "brightness(0) invert(1)",
+        transition: "opacity 0.15s",
+      }}
+    />
   );
 }
 
@@ -62,7 +67,7 @@ function IconFace({ active }: { active: boolean }) {
 const NAV_ITEMS = [
   { path: "/",         label: "Home",    testId: "home",     Icon: IconHome    },
   { path: "/invest",   label: "Product", testId: "products", Icon: IconProduct },
-  { path: "/tasks",    label: "Tasks",   testId: "tasks",    Icon: IconTasks   },
+  { path: "/my-products", label: "Tasks", testId: "tasks",    Icon: IconTasks   },
   { path: "/team",     label: "Team",    testId: "team",     Icon: IconTeam    },
   { path: "/account",  label: "Face",    testId: "me",       Icon: IconFace    },
 ];
