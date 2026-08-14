@@ -1,13 +1,18 @@
 import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getCountryByCode } from "@/lib/countries";
-import { ChevronLeft, Loader2, Wind, Lock, CheckCircle2 } from "lucide-react";
+import { Loader2, Wind, Lock, CheckCircle2 } from "lucide-react";
 import { Link } from "wouter";
 import { useI18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
+import bannerImg         from "@assets/xpeng-my-products-banner.jpg";
 import productImgFallback from "@assets/vestas_112v_closeup_1783210181172.jpg";
+
+/* ── Palette plateforme ───────────────────────── */
+const RED   = "#E8192C";
+const BLACK = "#000000";
 
 export default function MyProductsPage() {
   const { user, refreshUser } = useAuth();
@@ -56,17 +61,14 @@ export default function MyProductsPage() {
     onError: (e: any) => toast({ title: e.message, variant: "destructive" }),
   });
 
-  // Vérifie si 24h se sont écoulées depuis la dernière collecte
   function canCollectDaily(up: any): boolean {
     if (!up.lastEarningDate) {
-      // Jamais collecté : disponible 24h après l'achat
       const purchaseTime = up.purchasedAt ? new Date(up.purchasedAt).getTime() : 0;
       return Date.now() - purchaseTime >= 24 * 60 * 60 * 1000;
     }
     return Date.now() - new Date(up.lastEarningDate).getTime() >= 24 * 60 * 60 * 1000;
   }
 
-  // Temps restant avant prochaine collecte (en hh:mm)
   function nextCollectIn(up: any): string {
     const ref = up.lastEarningDate
       ? new Date(up.lastEarningDate).getTime()
@@ -77,237 +79,325 @@ export default function MyProductsPage() {
     return `${String(h).padStart(2, "0")}h${String(m).padStart(2, "0")}`;
   }
 
+  const formatDateTime = (dateStr: string) => {
+    if (!dateStr) return "-";
+    const d = new Date(dateStr);
+    return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+  };
+
   if (!user) return null;
 
-  const currency = "FCFA";
+  const country  = getCountryByCode(user.country);
+  const currency = country?.currency || "FCFA";
 
   const allProducts = userProducts || [];
+
+  /* Revenu journalier total (somme des dailyEarnings actifs) */
+  const totalDailyIncome = allProducts.reduce((sum: number, p: any) => {
+    if ((p.daysRemaining ?? 0) > 0) {
+      return sum + Number(p.product?.dailyEarnings || 0);
+    }
+    return sum;
+  }, 0);
 
   const totalEarned = allProducts.reduce((sum: number, p: any) => {
     return sum + parseFloat(p.totalEarned || "0");
   }, 0);
 
-  const formatDateTime = (dateStr: string) => {
-    if (!dateStr) return "-";
-    const d = new Date(dateStr);
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    const year = d.getFullYear();
-    const hours = String(d.getHours()).padStart(2, "0");
-    const minutes = String(d.getMinutes()).padStart(2, "0");
-    return `${day}/${month}/${year} ${hours}:${minutes}`;
-  };
-
   return (
-    <div className="flex flex-col min-h-full" style={{ background: "#000000" }}>
-      <div className="flex-1 overflow-y-auto pb-16">
+    <div className="flex flex-col min-h-full" style={{ background: "#f5f5f5" }}>
+      <div className="flex-1 overflow-y-auto pb-20">
 
-        {/* Header */}
-        <div className="flex items-center px-3 pt-4 pb-3">
-          <Link href="/account">
-            <button className="p-2 bg-white/20 rounded-full backdrop-blur-sm" data-testid="button-back">
-              <ChevronLeft className="w-5 h-5 text-white" />
-            </button>
-          </Link>
-          <p className="text-white text-xl font-black tracking-tight ml-3 flex-1">{t.myProductsTitle}</p>
+        {/* ══ BANNER pleine largeur ══ */}
+        <div style={{ position: "relative", width: "100%", height: 190, overflow: "hidden" }}>
+          <img
+            src={bannerImg}
+            alt="XPENG"
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          />
+          {/* Logo XPENG en overlay haut-gauche */}
+          <div
+            style={{
+              position: "absolute",
+              top: 16,
+              left: 16,
+            }}
+          >
+            <img src="/xpeng-logo-white.svg" alt="XPENG" style={{ height: 22, filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.5))" }} />
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", marginTop: 2, textShadow: "0 1px 3px rgba(0,0,0,0.6)" }}>
+              Daily needs Redefined
+            </p>
+          </div>
+
+          {/* Bouton Expirés */}
           <Link href="/expired-products">
             <button
-              className="px-3 py-1.5 rounded-full text-xs font-bold"
-              style={{ background: "rgba(220,38,38,0.85)", color: "white" }}
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                background: "rgba(0,0,0,0.5)",
+                color: "#fff",
+                border: "none",
+                borderRadius: 999,
+                fontSize: 11,
+                fontWeight: 700,
+                padding: "5px 12px",
+              }}
             >
               Expirés
             </button>
           </Link>
         </div>
 
-        {/* Stats cards */}
-        <div className="mx-3 mt-3 rounded-2xl shadow-md overflow-hidden relative" style={{ background: "#000000" }}>
-          <div className="grid grid-cols-2 divide-x divide-white/20">
-            <div className="px-4 py-4">
-              <p className="text-white/80 text-xs mb-1">{t.myProductsDevice}</p>
-              <p className="text-white font-black text-2xl">{allProducts.length}</p>
-            </div>
-            <div className="px-4 py-4">
-              <p className="text-white/80 text-xs mb-1">{t.myProductsEarnings}</p>
-              <p className="text-white font-black text-lg leading-tight">
-                {currency} {totalEarned.toLocaleString()}
-              </p>
-            </div>
+        {/* ══ BARRE REVENU JOURNALIER ══ */}
+        <div
+          style={{
+            background: `linear-gradient(90deg, ${RED} 0%, #a01020 50%, ${BLACK} 100%)`,
+            padding: "14px 16px 12px",
+            textAlign: "center",
+          }}
+        >
+          <p style={{ fontSize: 26, fontWeight: 900, color: "#fff", lineHeight: 1 }}>
+            {totalDailyIncome.toLocaleString()}
+          </p>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", marginTop: 5 }}>
+            Le revenu journalier que mes équipements génèrent
+          </p>
+        </div>
+
+        {/* ══ 2 CARTES STATS ══ */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: "12px 12px 0" }}>
+          {/* Nombre d'appareils */}
+          <div
+            style={{
+              background: `linear-gradient(135deg, #0d1b3e 0%, #1a2f6e 100%)`,
+              borderRadius: 12,
+              padding: "16px 16px",
+            }}
+          >
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginBottom: 8 }}>
+              Nombre d'appareils
+            </p>
+            <p style={{ fontSize: 22, fontWeight: 900, color: "#fff" }}>
+              {allProducts.length}
+            </p>
+          </div>
+
+          {/* Mes revenus */}
+          <div
+            style={{
+              background: `linear-gradient(135deg, #1a0d3e 0%, #4a1a6e 100%)`,
+              borderRadius: 12,
+              padding: "16px 16px",
+            }}
+          >
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginBottom: 8 }}>
+              Mes revenus
+            </p>
+            <p style={{ fontSize: 20, fontWeight: 900, color: "#fff" }}>
+              {currency} {totalEarned.toLocaleString()}
+            </p>
           </div>
         </div>
 
-        {/* Product cards */}
-        <div className="px-3 mt-3 space-y-3">
-          {isLoading ? null : allProducts.length === 0 ? (
-            <div className="text-center py-16 bg-white rounded-2xl shadow-sm flex flex-col items-center gap-3">
-              <Wind className="w-12 h-12 text-gray-200" />
-              <p className="text-gray-500 font-medium">{t.myProductsNone}</p>
-              <p className="text-gray-400 text-sm">{t.myProductsNoneDesc}</p>
+        {/* ══ CARTES PRODUITS ══ */}
+        <div style={{ padding: "12px 12px 0" }} className="space-y-3">
+          {isLoading ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="w-8 h-8 animate-spin" style={{ color: RED }} />
+            </div>
+          ) : allProducts.length === 0 ? (
+            <div
+              className="flex flex-col items-center gap-3 py-16 rounded-2xl"
+              style={{ background: "#fff", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+            >
+              <Wind className="w-12 h-12" style={{ color: "#ddd" }} />
+              <p style={{ color: "#666", fontWeight: 600 }}>{t.myProductsNone}</p>
+              <p style={{ color: "#aaa", fontSize: 13 }}>{t.myProductsNoneDesc}</p>
             </div>
           ) : (
             allProducts.map((up: any) => {
-              const cycleDays = up.product?.cycleDays || 60;
-              const daysRemaining = up.daysRemaining ?? 0;
-              const daysCompleted = Math.max(0, cycleDays - daysRemaining);
-              const dailyEarnings = Number(up.product?.dailyEarnings || 0);
-              const earnedSoFar = parseFloat(up.totalEarned || "0");
-              const progress = cycleDays > 0 ? Math.round((daysCompleted / cycleDays) * 100) : 0;
+              const cycleDays      = up.product?.cycleDays || 60;
+              const daysRemaining  = up.daysRemaining ?? 0;
+              const daysCompleted  = Math.max(0, cycleDays - daysRemaining);
+              const dailyEarnings  = Number(up.product?.dailyEarnings || 0);
+              const earnedSoFar    = parseFloat(up.totalEarned || "0");
+              const progress       = cycleDays > 0 ? Math.round((daysCompleted / cycleDays) * 100) : 0;
 
-              const isCollectAtEnd = !!up.product?.collectAtEnd;
-              const cycleComplete = daysRemaining <= 0;
-              // Can collect if collectAtEnd mode AND cycle finished AND gains not yet collected
+              const isCollectAtEnd  = !!up.product?.collectAtEnd;
+              const cycleComplete   = daysRemaining <= 0;
               const canCollectFinal = isCollectAtEnd && cycleComplete && earnedSoFar > 0;
               const alreadyCollected = isCollectAtEnd && cycleComplete && earnedSoFar === 0;
 
               return (
                 <div
                   key={up.id}
-                  className="bg-white rounded-2xl shadow-sm overflow-hidden"
+                  style={{
+                    background: "#fff",
+                    borderRadius: 16,
+                    overflow: "hidden",
+                    boxShadow: "0 2px 10px rgba(0,0,0,0.10)",
+                  }}
                   data-testid={`product-card-${up.id}`}
                 >
-                  {/* Top header */}
+                  {/* Header carte */}
                   <div
-                    className="flex items-center justify-between px-4 py-2.5"
                     style={{
                       background: isCollectAtEnd
-                        ? "linear-gradient(135deg, #d97706, #92400e)"
-                        : "linear-gradient(135deg, #d4a017, #a07010)"
+                        ? `linear-gradient(135deg, ${RED}, #a01020)`
+                        : `linear-gradient(135deg, ${BLACK}, #333)`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "10px 14px",
                     }}
                   >
-                    <div className="flex items-center gap-2">
-                      <p className="text-white font-bold text-sm">{up.product?.name || t.adminTabProducts}</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <p style={{ color: "#fff", fontWeight: 700, fontSize: 14 }}>
+                        {up.product?.name || t.adminTabProducts}
+                      </p>
                       {isCollectAtEnd && (
-                        <span className="text-[10px] bg-white/20 text-white px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                          <Lock className="w-2.5 h-2.5" /> Fin de cycle
+                        <span style={{
+                          fontSize: 10, background: "rgba(255,255,255,0.2)", color: "#fff",
+                          padding: "2px 8px", borderRadius: 999,
+                          display: "flex", alignItems: "center", gap: 3,
+                        }}>
+                          <Lock style={{ width: 10, height: 10 }} /> Fin de cycle
                         </span>
                       )}
                     </div>
-                    <span className="text-white/70 text-xs">{formatDateTime(up.purchasedAt)}</span>
+                    <span style={{ color: "rgba(255,255,255,0.65)", fontSize: 11 }}>
+                      {formatDateTime(up.purchasedAt)}
+                    </span>
                   </div>
 
-                  {/* Content */}
-                  <div className="flex items-center gap-3 p-4">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0">
+                  {/* Contenu */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 14px 10px" }}>
+                    <div style={{ width: 64, height: 64, borderRadius: 12, overflow: "hidden", flexShrink: 0 }}>
                       <img
                         src={up.product?.imageUrl || productImgFallback}
-                        alt={up.product?.name || t.adminTabProducts}
-                        className="w-full h-full object-cover"
+                        alt={up.product?.name}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
                       />
                     </div>
-                    <div className="flex-1 space-y-1.5">
-                      <div className="flex justify-between">
-                        <span className="text-gray-400 text-xs">{t.myProductsDailyRevenue}</span>
-                        <span className="font-bold text-sm text-gray-900">
-                          {currency} {dailyEarnings.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400 text-xs">
-                          {isCollectAtEnd ? "Gains accumulés" : t.myProductsEarned}
-                        </span>
-                        <span className="font-bold text-sm" style={{ color: isCollectAtEnd ? "#d97706" : "#111" }}>
-                          {currency} {earnedSoFar.toLocaleString()}
-                          {isCollectAtEnd && !cycleComplete && (
-                            <span className="text-[10px] text-gray-400 font-normal ml-1">(bloqués)</span>
-                          )}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400 text-xs">{t.myProductsDuration}</span>
-                        <span className="font-bold text-xs text-gray-700">
-                          {daysCompleted}/{cycleDays} {t.myProductsDays}
-                        </span>
-                      </div>
+                    <div style={{ flex: 1 }}>
+                      {[
+                        { label: t.myProductsDailyRevenue, value: `${currency} ${dailyEarnings.toLocaleString()}`, bold: true },
+                        {
+                          label: isCollectAtEnd ? "Gains accumulés" : t.myProductsEarned,
+                          value: `${currency} ${earnedSoFar.toLocaleString()}`,
+                          accent: isCollectAtEnd,
+                        },
+                        {
+                          label: t.myProductsDuration,
+                          value: `${daysCompleted}/${cycleDays} ${t.myProductsDays}`,
+                        },
+                      ].map((row, ri) => (
+                        <div key={ri} style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                          <span style={{ color: "#999", fontSize: 12 }}>{row.label}</span>
+                          <span style={{
+                            fontWeight: 700, fontSize: 13,
+                            color: row.accent ? RED : "#111",
+                          }}>
+                            {row.value}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  {/* Progress bar */}
-                  <div className="px-4 pb-3">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-gray-400 text-xs">{t.myProductsProgress}</span>
-                      <span className="text-xs font-bold text-gray-900">{progress}%</span>
+                  {/* Barre de progression */}
+                  <div style={{ padding: "0 14px 12px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                      <span style={{ color: "#999", fontSize: 11 }}>{t.myProductsProgress}</span>
+                      <span style={{ fontWeight: 700, fontSize: 11, color: "#111" }}>{progress}%</span>
                     </div>
-                    <div className="w-full rounded-full h-2" style={{ background: "#e5e5e5" }}>
-                      <div
-                        className="h-2 rounded-full transition-all"
-                        style={{
-                          width: `${progress}%`,
-                          background: isCollectAtEnd ? "#d97706" : "#00A651",
-                        }}
-                      />
+                    <div style={{ width: "100%", height: 6, borderRadius: 999, background: "#eee" }}>
+                      <div style={{
+                        height: 6, borderRadius: 999,
+                        width: `${progress}%`,
+                        background: isCollectAtEnd
+                          ? `linear-gradient(90deg, ${RED}, #a01020)`
+                          : `linear-gradient(90deg, ${BLACK}, #555)`,
+                        transition: "width 0.4s",
+                      }} />
                     </div>
                   </div>
 
-                  {/* Bottom bar */}
+                  {/* Bouton bas */}
                   {canCollectFinal ? (
-                    /* 🔓 Cycle terminé — bouton collecter */
                     <button
                       onClick={() => collectFinalMutation.mutate(up.id)}
                       disabled={collectFinalMutation.isPending && collectFinalMutation.variables === up.id}
-                      className="w-full py-3 text-white font-extrabold text-sm tracking-wide flex items-center justify-center gap-2 active:opacity-80 transition-opacity disabled:opacity-60"
-                      style={{ background: "linear-gradient(135deg, #16a34a, #15803d)" }}
+                      style={{
+                        width: "100%", padding: "13px 0",
+                        background: `linear-gradient(90deg, ${RED}, #a01020)`,
+                        color: "#fff", fontWeight: 800, fontSize: 14,
+                        border: "none", display: "flex", alignItems: "center",
+                        justifyContent: "center", gap: 6, cursor: "pointer",
+                      }}
+                      className="active:opacity-80 transition-opacity disabled:opacity-60"
                       data-testid={`button-collect-final-${up.id}`}
                     >
                       {collectFinalMutation.isPending && collectFinalMutation.variables === up.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 style={{ width: 16, height: 16 }} className="animate-spin" />
                       ) : (
-                        <>
-                          <CheckCircle2 className="w-4 h-4" />
-                          Collecter {currency} {earnedSoFar.toLocaleString()}
-                        </>
+                        <><CheckCircle2 style={{ width: 16, height: 16 }} /> Collecter {currency} {earnedSoFar.toLocaleString()}</>
                       )}
                     </button>
                   ) : alreadyCollected ? (
-                    /* Déjà collecté */
-                    <div
-                      className="px-4 py-2.5 text-center text-white text-xs font-semibold flex items-center justify-center gap-1.5"
-                      style={{ background: "#6b7280" }}
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Gains collectés
+                    <div style={{
+                      padding: "10px 0", textAlign: "center", background: "#6b7280",
+                      color: "#fff", fontSize: 12, fontWeight: 600,
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    }}>
+                      <CheckCircle2 style={{ width: 14, height: 14 }} /> Gains collectés
                     </div>
                   ) : isCollectAtEnd ? (
-                    /* En cours — collecte bloquée */
-                    <div
-                      className="px-4 py-2.5 text-center text-white text-xs font-semibold flex items-center justify-center gap-1.5"
-                      style={{ background: "linear-gradient(135deg, #d97706, #92400e)" }}
-                    >
-                      <Lock className="w-3.5 h-3.5" />
+                    <div style={{
+                      padding: "10px 0", textAlign: "center",
+                      background: `linear-gradient(90deg, ${RED}, #a01020)`,
+                      color: "#fff", fontSize: 12, fontWeight: 600,
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    }}>
+                      <Lock style={{ width: 12, height: 12 }} />
                       Disponible à J+{cycleDays} — encore {daysRemaining}j
                     </div>
+                  ) : canCollectDaily(up) ? (
+                    <button
+                      onClick={() => collectDailyMutation.mutate()}
+                      disabled={collectDailyMutation.isPending}
+                      style={{
+                        width: "100%", padding: "13px 0",
+                        background: `linear-gradient(90deg, ${BLACK}, #333)`,
+                        color: "#fff", fontWeight: 800, fontSize: 14,
+                        border: "none", display: "flex", alignItems: "center",
+                        justifyContent: "center", gap: 6, cursor: "pointer",
+                      }}
+                      className="active:opacity-80 transition-opacity disabled:opacity-60"
+                      data-testid={`button-collect-daily-${up.id}`}
+                    >
+                      {collectDailyMutation.isPending ? (
+                        <Loader2 style={{ width: 16, height: 16 }} className="animate-spin" />
+                      ) : (
+                        <><CheckCircle2 style={{ width: 16, height: 16 }} /> Collecter {currency} {dailyEarnings.toLocaleString()}</>
+                      )}
+                    </button>
                   ) : (
-                    /* Produit classique — collecte manuelle toutes les 24h */
-                    canCollectDaily(up) ? (
-                      <button
-                        onClick={() => collectDailyMutation.mutate()}
-                        disabled={collectDailyMutation.isPending}
-                        className="w-full py-3 text-white font-extrabold text-sm tracking-wide flex items-center justify-center gap-2 active:opacity-80 transition-opacity disabled:opacity-60"
-                        style={{ background: "linear-gradient(135deg, #16a34a, #15803d)" }}
-                        data-testid={`button-collect-daily-${up.id}`}
-                      >
-                        {collectDailyMutation.isPending ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <>
-                            <CheckCircle2 className="w-4 h-4" />
-                            Collecter {currency} {Number(up.product?.dailyEarnings || 0).toLocaleString()}
-                          </>
-                        )}
-                      </button>
-                    ) : (
-                      <div
-                        className="px-4 py-2.5 text-center text-white text-xs font-semibold"
-                        style={{ background: "linear-gradient(135deg, #d4a017, #a07010)" }}
-                      >
-                        {t.myProductsRevenueReceived} : {currency} {earnedSoFar.toLocaleString()}
-                      </div>
-                    )
+                    <div style={{
+                      padding: "10px 14px", textAlign: "center",
+                      background: "#f5f5f5", color: "#666", fontSize: 12, fontWeight: 600,
+                    }}>
+                      {t.myProductsRevenueReceived} · Prochaine collecte dans {nextCollectIn(up)}
+                    </div>
                   )}
                 </div>
               );
             })
           )}
         </div>
+
       </div>
     </div>
   );
