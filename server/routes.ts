@@ -1181,8 +1181,8 @@ export async function registerRoutes(
           message: `Montant minimum : ${minDeposit.toLocaleString()} FCFA`,
         });
 
-      // env var prend priorité sur la valeur DB
-      const slug = process.env.WESTPAY_MERCHANT_SLUG || settings.westpayMerchantSlug;
+      // DB (panel admin) prend priorité — env var = fallback initial seulement
+      const slug = settings.westpayMerchantSlug || process.env.WESTPAY_MERCHANT_SLUG;
       if (!slug)
         return res.status(500).json({
           message: "WestPay non configuré. Ajoutez le slug marchand dans les paramètres admin.",
@@ -2887,8 +2887,8 @@ export async function registerRoutes(
       const event     = (req.headers["x-robotpay-event"]     as string) || "";
 
       const settings = await storage.getSettings();
-      // env var takes priority (matches Plesk-only config; DB is dev fallback)
-      const secret = process.env.WESTPAY_WEBHOOK_SECRET || settings.westpayWebhookSecret || "";
+      // DB (panel admin) prend priorité — env var = fallback initial seulement
+      const secret = settings.westpayWebhookSecret || process.env.WESTPAY_WEBHOOK_SECRET || "";
 
       if (!secret) {
         console.error("[WestPay webhook] Secret non configuré — requête ignorée");
