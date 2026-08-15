@@ -128,10 +128,10 @@ export default function ProductsPage() {
                       style={{
                         fontSize: 42,
                         lineHeight: 1,
-                        color: "#ff6b00",
-                        WebkitTextStroke: "2px #8b3a00",
+                        color: "#ff0000",
+                        WebkitTextStroke: "2px #990000",
                         textShadow:
-                          "2px 2px 0 #c44d00, 4px 4px 0 #8b3a00, 6px 6px 12px rgba(0,0,0,0.45)",
+                          "2px 2px 0 #aa0000, 4px 4px 0 #990000, 6px 6px 12px rgba(0,0,0,0.45)",
                         opacity: 0.9,
                         letterSpacing: "-1px",
                       }}
