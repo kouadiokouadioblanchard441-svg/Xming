@@ -21,7 +21,7 @@ export default function AboutPage() {
 
   return (
     <div className="flex flex-col min-h-screen" style={{ background: "#000000" }}>
-      <header className="flex items-center px-4 py-3 border-b" style={{ background: "#1e2e0a" }}>
+      <header className="flex items-center px-4 py-3 border-b" style={{ background: "#000000" }}>
         <Link href="/account">
           <button className="p-1" data-testid="button-back">
             <ChevronLeft className="w-6 h-6 text-white" />
