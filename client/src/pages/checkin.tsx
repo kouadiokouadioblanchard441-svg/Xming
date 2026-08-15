@@ -8,7 +8,6 @@ import { useI18n } from "@/lib/i18n";
 import { ChevronLeft, Loader2, Gift } from "lucide-react";
 import { Link } from "wouter";
 import robotGift from "@assets/file_00000000168c7246a166e7a2da1eb7ba_1773319220043.png";
-import landscapeImg from "@assets/portable-charger-power-banks_480x480_d6b67d82-6118-4295-be02-e_1784966597898.jpg";
 
 interface BonusStatus {
   canClaim: boolean;
@@ -167,7 +166,10 @@ export default function CheckinPage() {
         </div>
 
       </div>
-      <img src={landscapeImg} alt="XPENG" className="w-full object-cover object-top" style={{ maxHeight: 220 }} />
+      {/* Logo XPENG */}
+      <div className="w-full flex items-center justify-center bg-white" style={{ minHeight: 160, padding: "32px 24px" }}>
+        <img src="/xpeng-logo-full.jpg" alt="XPENG" style={{ maxHeight: 120, maxWidth: "80%", objectFit: "contain" }} />
+      </div>
     </div>
   );
 }
