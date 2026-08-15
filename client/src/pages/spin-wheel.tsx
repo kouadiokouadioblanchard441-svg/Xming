@@ -436,7 +436,14 @@ export default function SpinWheelPage() {
       onSuccess: (result) => {
         const winIdx   = Math.max(0, segments.findIndex((s) => s.id === result.segmentId));
         const extra    = Math.PI * 2 * (6 + Math.random() * 4);
-        const targetRot = rotRef.current + extra + (Math.PI * 2 - winIdx * ARC);
+        // Align center of winIdx segment with the 12-o'clock pointer.
+        // Segment i's midpoint = rotation + (i+0.5)*ARC - π/2.
+        // For midpoint = -π/2 (top): rotation = -(i+0.5)*ARC  (mod 2π)
+        const base     = rotRef.current + extra;
+        const needed   = ((-(winIdx + 0.5) * ARC) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+        const current  = ((base % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+        const adj      = (needed - current + 2 * Math.PI) % (2 * Math.PI);
+        const targetRot = base + adj;
         const duration  = 3500;
         const startTime = performance.now();
         const startRot  = rotRef.current;
