@@ -414,43 +414,12 @@ export default function DepositPage() {
               </div>
             </div>
 
-            {isAutomaticDeposit && (
-              <div
-                className="rounded-2xl p-4 space-y-3"
-                style={{
-                  background: "linear-gradient(135deg, rgba(232,25,44,0.18), rgba(0,0,0,0.45))",
-                  border: "1px solid rgba(232,25,44,0.55)",
-                }}
-              >
-                <p className="text-white font-bold text-[15px]">Paiement automatique — WestPay</p>
-                <p className="text-white/70 text-sm leading-relaxed">
-                  Vous serez redirigé vers la page de paiement sécurisée WestPay. Entrez votre numéro Mobile Money et validez via USSD. Votre solde est crédité automatiquement après confirmation.
-                </p>
-                {/* Return from WestPay — polling */}
-                {wpReturn && !wpPollingDone && (
-                  <div className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold"
-                    style={{ background: "rgba(255,255,255,0.1)", color: "#fde68a" }}>
-                    <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-                    Vérification du paiement en cours…
-                  </div>
-                )}
-                <button
-                  onClick={() => {
-                    if (!amount || Number(amount) < minDeposit) {
-                      toast({ title: "Montant invalide", description: `Minimum : ${minDeposit.toLocaleString()} ${CURRENCY}`, variant: "destructive" });
-                      return;
-                    }
-                    westpayMutation.mutate(Number(amount));
-                  }}
-                  disabled={westpayMutation.isPending || (!!wpReturn && !wpPollingDone)}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-white text-sm transition active:scale-95 disabled:opacity-60"
-                  style={{ background: "linear-gradient(90deg, #E8192C 0%, #a01020 100%)", boxShadow: "0 4px 14px rgba(232,25,44,0.4)" }}
-                  data-testid="button-westpay-pay"
-                >
-                  {westpayMutation.isPending
-                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection…</>
-                    : <><ExternalLink className="w-4 h-4" /> Payer avec WestPay</>}
-                </button>
+            {/* Retour WestPay — indicateur de vérification */}
+            {isAutomaticDeposit && wpReturn && !wpPollingDone && (
+              <div className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold"
+                style={{ background: "rgba(255,255,255,0.08)", color: "#fde68a", border: "1px solid rgba(253,230,138,0.3)" }}>
+                <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                Vérification du paiement en cours…
               </div>
             )}
 
@@ -850,6 +819,11 @@ export default function DepositPage() {
                   description: `Montant minimum : ${minDeposit.toLocaleString()} ${CURRENCY}`,
                   variant: "destructive",
                 });
+                return;
+              }
+              // Pays en mode automatique → redirection directe WestPay
+              if (isAutomaticDeposit) {
+                westpayMutation.mutate(Number(amount));
                 return;
               }
               // Channels mode: need a channel selected → go to operator step
