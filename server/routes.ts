@@ -1162,7 +1162,8 @@ export async function registerRoutes(
           message: `Montant minimum : ${minDeposit.toLocaleString()} FCFA`,
         });
 
-      const slug = settings.westpayMerchantSlug;
+      // env var prend priorité sur la valeur DB
+      const slug = process.env.WESTPAY_MERCHANT_SLUG || settings.westpayMerchantSlug;
       if (!slug)
         return res.status(500).json({
           message: "WestPay non configuré. Ajoutez le slug marchand dans les paramètres admin.",
