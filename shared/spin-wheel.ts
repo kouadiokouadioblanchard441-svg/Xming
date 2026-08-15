@@ -10,14 +10,14 @@ export interface SpinWheelSegment {
 }
 
 export const DEFAULT_SPIN_WHEEL_SEGMENTS: SpinWheelSegment[] = [
-  { id: 1, label: "10 FCFA",    amount: 10,    color: "#F5C518", dark: "#5C3D00", canWin: true,  weight: 30 },
-  { id: 2, label: "200 FCFA",   amount: 200,   color: "#FFFDE7", dark: "#7C5200", canWin: true,  weight: 20 },
-  { id: 3, label: "500 FCFA",   amount: 500,   color: "#F5C518", dark: "#5C3D00", canWin: true,  weight: 15 },
-  { id: 4, label: "😊",         amount: 0,     color: "#FFFDE7", dark: "#7C5200", canWin: false, weight: 25 },
-  { id: 5, label: "5000 FCFA",  amount: 5000,  color: "#F5C518", dark: "#5C3D00", canWin: true,  weight: 10 },
-  { id: 6, label: "10000 FCFA", amount: 10000, color: "#FFFDE7", dark: "#7C5200", canWin: true,  weight: 3  },
-  { id: 7, label: "20000 FCFA", amount: 20000, color: "#F5C518", dark: "#5C3D00", canWin: true,  weight: 2  },
-  { id: 8, label: "50000 FCFA", amount: 50000, color: "#FFFDE7", dark: "#7C5200", canWin: true,  weight: 1  },
+  { id: 1, label: "10 FCFA",    amount: 10,    color: "#F5C518", dark: "#5C3D00", canWin: true,  weight: 40 },
+  { id: 2, label: "200 FCFA",   amount: 200,   color: "#FFFDE7", dark: "#7C5200", canWin: true,  weight: 35 },
+  { id: 3, label: "😊",         amount: 0,     color: "#F5C518", dark: "#5C3D00", canWin: false, weight: 1  },
+  { id: 4, label: "500 FCFA",   amount: 500,   color: "#FFFDE7", dark: "#7C5200", canWin: true,  weight: 3  },
+  { id: 5, label: "5000 FCFA",  amount: 5000,  color: "#F5C518", dark: "#5C3D00", canWin: false, weight: 1  },
+  { id: 6, label: "10000 FCFA", amount: 10000, color: "#FFFDE7", dark: "#7C5200", canWin: false, weight: 1  },
+  { id: 7, label: "20000 FCFA", amount: 20000, color: "#F5C518", dark: "#5C3D00", canWin: false, weight: 1  },
+  { id: 8, label: "50000 FCFA", amount: 50000, color: "#FFFDE7", dark: "#7C5200", canWin: false, weight: 1  },
 ];
 
 export const SPIN_WHEEL_SETTING_KEY = "spinWheelConfig";

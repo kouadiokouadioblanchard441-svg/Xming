@@ -234,9 +234,9 @@ function drawWheel(
     ctx.shadowColor  = "rgba(255,255,255,0.8)";
     ctx.shadowBlur   = 4;
 
-    // Format: "100f", "1 000f", "😊" for non-winnable
+    // Format: amount for all segments, emoji only for the dedicated losing slot
     let displayText: string;
-    if (!seg.canWin) {
+    if (seg.label === "😊" || (!seg.canWin && seg.amount === 0)) {
       displayText = "😊";
     } else if (seg.amount > 0) {
       displayText = seg.amount >= 1000
