@@ -408,8 +408,8 @@ export async function seed() {
     { key: "spinWheelInviteHighlight", value: "50" },
     { key: "spinWheelRulesText", value: "Achetez un produit pour obtenir des tours gratuits. Chaque tour vous donne une chance de remporter un gain en FCFA crédité directement sur votre solde." },
     { key: "spinWheelRulesHighlight", value: "" },
-    { key: "banner1Images", value: JSON.stringify(["/banner/banner1.jpg", "/banner/banner3.jpg", "/banner/banner5.jpg"]) },
-    { key: "banner2Images", value: JSON.stringify(["/banner/banner2.jpg", "/banner/banner4.jpg", "/banner/banner6.jpg"]) },
+    { key: "banner1Images", value: JSON.stringify(["/banner/meeting-1.jpg", "/banner/meeting-2.jpg", "/banner/meeting-3.jpg"]) },
+    { key: "banner2Images", value: JSON.stringify(["/banner/meeting-4.jpg", "/banner/meeting-5.jpg", "/banner/meeting-6.jpg"]) },
   ];
 
   // Aucune clé n'est écrasée au redémarrage : toute valeur déjà en base est conservée
