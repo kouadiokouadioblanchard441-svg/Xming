@@ -237,20 +237,6 @@ export default function HomePage() {
       {/* ══════ CORPS ══════ */}
       <div className="flex-1 flex flex-col pb-24" style={{ gap: 12, padding: "14px 12px 0" }}>
 
-        {/* ── Titre "Mon solde" ── */}
-        <p
-          style={{
-            textAlign: "center",
-            color: "#fff",
-            fontWeight: 600,
-            fontSize: 17,
-            letterSpacing: "0.01em",
-            marginBottom: 2,
-          }}
-        >
-          Mon solde
-        </p>
-
         {/* ── Deux cartes solde côte à côte ── */}
         <div style={{ display: "flex", gap: 10 }}>
           {/* Solde */}
