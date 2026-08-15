@@ -126,6 +126,21 @@ export function computeVipLevel(
   return productCount >= 1 ? 1 : 0;
 }
 
+/**
+ * Calcule le niveau VIP basé sur le produit acheté.
+ * VIP 0 = aucun produit actif.
+ * VIP N = sortOrder du produit actif le plus élevé (plafonné à 7).
+ */
+export function computeVipLevelFromProduct(userProducts: any[]): number {
+  if (!userProducts || userProducts.length === 0) return 0;
+  const active = userProducts.filter(
+    (p: any) => p.status === "active" || (p.daysRemaining && p.daysRemaining > 0),
+  );
+  if (active.length === 0) return 0;
+  const maxSort = Math.max(...active.map((p: any) => p.product?.sortOrder ?? 0));
+  return Math.min(maxSort, 7);
+}
+
 /** Couleur / style du badge selon le niveau */
 export const VIP_BADGE_STYLE: Record<number, { bg: string; text: string; border: string }> = {
   0: { bg: "rgba(255,255,255,0.15)", text: "#ffffff", border: "rgba(255,255,255,0.3)" },

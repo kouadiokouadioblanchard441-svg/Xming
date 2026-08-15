@@ -105,14 +105,14 @@ export default function AccountPage() {
   const currency      = country?.currency || "FCFA";
   const phonePrefix   = country?.phonePrefix ? `+${country.phonePrefix} ` : "";
 
-  /* VIP level : "Lv1" / "Lv2" … basé sur le produit actif le plus élevé */
+  /* VIP level : basé sur le sortOrder du produit actif le plus élevé */
   const vipLabel: string = (() => {
-    if (!products || products.length === 0) return "Lv1";
+    if (!products || products.length === 0) return "VIP 0";
     const active = products.filter((p: any) => p.status === "active" || p.daysRemaining > 0);
-    if (active.length === 0) return "Lv1";
+    if (active.length === 0) return "VIP 0";
     const top = [...active].sort((a: any, b: any) => (b.product?.sortOrder ?? 0) - (a.product?.sortOrder ?? 0))[0];
-    const name = top?.product?.name ?? "Lv1";
-    return name;
+    const sortOrder = top?.product?.sortOrder ?? 0;
+    return `VIP ${Math.min(sortOrder, 7)}`;
   })();
 
   /* 3 actions rapides en haut */

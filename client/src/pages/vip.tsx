@@ -1,73 +1,38 @@
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { ChevronLeft, Star, Users, TrendingUp, Gift } from "lucide-react";
+import { ChevronLeft, Star, ShoppingBag, Gift } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import {
-  computeVipLevel,
+  computeVipLevelFromProduct,
   DEFAULT_VIP_CONFIGS,
   VIP_BADGE_STYLE,
   mergeAdminVipConfig,
 } from "@/lib/vip";
-
-interface TeamStats {
-  level1Count: number;
-  level2Count: number;
-  level3Count: number;
-}
 
 export default function VipPage() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
 
   const { data: products = [] } = useQuery<any[]>({ queryKey: ["/api/user/products"] });
-  const { data: stats } = useQuery<TeamStats>({ queryKey: ["/api/team/stats"] });
   const { data: settings = {} } = useQuery<Record<string, string>>({ queryKey: ["/api/settings"] });
 
-  const productCount = products.length;
-  const teamStats = stats ?? { level1Count: 0, level2Count: 0, level3Count: 0 };
-  const totalTeam = teamStats.level1Count + teamStats.level2Count + teamStats.level3Count;
-
   const configs = mergeAdminVipConfig(DEFAULT_VIP_CONFIGS, settings);
-  const vipLevel = computeVipLevel(productCount, teamStats, configs);
+
+  // VIP level = sortOrder du produit actif le plus élevé acheté
+  const vipLevel = computeVipLevelFromProduct(products);
   const currentCfg = configs[vipLevel];
   const nextCfg = vipLevel < 7 ? configs[vipLevel + 1] : null;
   const badgeStyle = VIP_BADGE_STYLE[vipLevel];
 
-  // Progression vers le prochain niveau
-  function progressToNext(): { label: string; value: number; max: number; pct: number } | null {
-    if (!nextCfg) return null;
-    if (nextCfg.minTotalTeam !== null) {
-      const prev = currentCfg.minTotalTeam ?? 0;
-      return {
-        label: "Membres dans l'équipe",
-        value: totalTeam,
-        max: nextCfg.minTotalTeam,
-        pct: Math.min(100, Math.round((totalTeam / nextCfg.minTotalTeam) * 100)),
-      };
-    }
-    if (nextCfg.minLevelB !== null) {
-      return {
-        label: "Membres niveau B (filleuls de vos filleuls)",
-        value: teamStats.level2Count,
-        max: nextCfg.minLevelB,
-        pct: Math.min(100, Math.round((teamStats.level2Count / nextCfg.minLevelB) * 100)),
-      };
-    }
-    if (nextCfg.minDirectA !== null) {
-      return {
-        label: "Filleuls directs (niveau A)",
-        value: teamStats.level1Count,
-        max: nextCfg.minDirectA,
-        pct: Math.min(100, Math.round((teamStats.level1Count / nextCfg.minDirectA) * 100)),
-      };
-    }
-    if (nextCfg.requiresInvestment && productCount === 0) {
-      return { label: "Premier investissement requis", value: 0, max: 1, pct: 0 };
-    }
-    return null;
-  }
-
-  const progress = progressToNext();
+  // Progression : acheter le produit VIP suivant
+  const progress = nextCfg
+    ? {
+        label: `Achetez le produit ${nextCfg.label} pour atteindre ce niveau`,
+        value: vipLevel,
+        max: vipLevel + 1,
+        pct: 0,
+      }
+    : null;
 
   return (
     <div className="min-h-screen pb-20" style={{ background: "#000000" }}>
@@ -96,24 +61,12 @@ export default function VipPage() {
           </div>
           <p className="text-white/80 text-sm">{currentCfg.description}</p>
 
-          {/* Stats équipe rapides */}
-          <div className="flex gap-4 mt-4">
-            <div className="flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-white/60" />
-              <span className="text-white/60 text-xs">{teamStats.level1Count} A</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-white/60" />
-              <span className="text-white/60 text-xs">{teamStats.level2Count} B</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-white/60" />
-              <span className="text-white/60 text-xs">{teamStats.level3Count} C</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <TrendingUp className="w-3.5 h-3.5 text-white/60" />
-              <span className="text-white/60 text-xs">{totalTeam} total</span>
-            </div>
+          {/* Produit actif */}
+          <div className="flex items-center gap-1.5 mt-4">
+            <ShoppingBag className="w-3.5 h-3.5 text-white/60" />
+            <span className="text-white/60 text-xs">
+              {vipLevel === 0 ? "Aucun produit acheté" : `Produit ${currentCfg.label} actif`}
+            </span>
           </div>
         </div>
 
