@@ -348,7 +348,9 @@ export async function seed() {
     { key: "taskLevel2Commission", value: "2" },
     { key: "taskLevel3Commission", value: "1" },
     { key: "dailyBonusEnabled", value: "true" },
-    { key: "dailyBonusAmount", value: "50" },
+    { key: "dailyBonusAmount", value: "25" },
+    { key: "signupBonusEnabled", value: "true" },
+    { key: "signupBonusAmount", value: "500" },
     { key: "soleaspayEnabled", value: "false" },
     { key: "soleaspayCountries", value: "" },
     { key: "soleaspayChannelName", value: "Soleaspay" },
@@ -410,13 +412,9 @@ export async function seed() {
     { key: "banner2Images", value: JSON.stringify(["/banner/banner2.jpg", "/banner/banner4.jpg", "/banner/banner6.jpg"]) },
   ];
 
-  // Keys whose values must always be overwritten (e.g. Chinese → French migration)
-  const FORCE_UPDATE_KEYS = new Set([
-    "supportLabel", "support2Label", "channelLabel", "groupLabel", "popupButtonLabel",
-    "level1Commission", "level2Commission", "level3Commission",
-    "taskLevel1Commission", "taskLevel2Commission", "taskLevel3Commission",
-    "dailyBonusEnabled", "dailyBonusAmount",
-  ]);
+  // Aucune clé n'est écrasée au redémarrage : toute valeur déjà en base est conservée
+  // (les modifications admin persistent entre redémarrages)
+  const FORCE_UPDATE_KEYS = new Set<string>();
 
   for (const settingData of requiredSettings) {
     const existing = existingSettings.find(s => s.key === settingData.key);

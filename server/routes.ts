@@ -263,6 +263,25 @@ export async function registerRoutes(
         telegram: data.telegram || undefined,
       });
 
+      // Bonus d'inscription → crédité sur le solde de dépôt (balance), pas sur les gains
+      const settings = await storage.getSettings();
+      if (settings.signupBonusEnabled !== "false") {
+        const signupBonus = parseFloat(settings.signupBonusAmount || "500");
+        if (signupBonus > 0) {
+          const freshUser = await storage.getUser(user.id);
+          const currentBalance = parseFloat(freshUser?.balance || "0");
+          await storage.updateUser(user.id, {
+            balance: (currentBalance + signupBonus).toFixed(2),
+          });
+          await storage.createTransaction({
+            userId: user.id,
+            type: "deposit",
+            amount: signupBonus.toFixed(2),
+            description: "Bonus d'inscription",
+          });
+        }
+      }
+
       req.session.userId = user.id;
       res.json({ user: { ...user, password: undefined } });
     } catch (error: any) {
@@ -1659,7 +1678,7 @@ export async function registerRoutes(
       }
 
       // Montant configurable depuis l'admin
-      const bonusAmount = parseFloat(settings.dailyBonusAmount || "50");
+      const bonusAmount = parseFloat(settings.dailyBonusAmount || "25");
       const newTotalEarnings = parseFloat(user.totalEarnings || "0") + bonusAmount;
       await storage.updateUser(user.id, { 
         totalEarnings: newTotalEarnings.toFixed(2),

@@ -61,6 +61,8 @@ const settingsSchema = z.object({
   taskLevel3Commission: z.string().min(1, "Commission requise"),
   dailyBonusEnabled: z.boolean(),
   dailyBonusAmount: z.string().min(1, "Montant requis"),
+  signupBonusEnabled: z.boolean(),
+  signupBonusAmount: z.string().min(1, "Montant requis"),
   // WestPay
   westpayMerchantSlug: z.string().optional(),
   westpayWebhookSecret: z.string().optional(),
@@ -233,7 +235,9 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       taskLevel2Commission: "2",
       taskLevel3Commission: "1",
       dailyBonusEnabled: true,
-      dailyBonusAmount: "50",
+      dailyBonusAmount: "25",
+      signupBonusEnabled: true,
+      signupBonusAmount: "500",
       westpayMerchantSlug: "",
       westpayWebhookSecret: "",
       westpayApiKey_CI: "",
@@ -286,7 +290,9 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       taskLevel2Commission:   settings.taskLevel2Commission   ?? "2",
       taskLevel3Commission:   settings.taskLevel3Commission   ?? "1",
       dailyBonusEnabled:      settings.dailyBonusEnabled      !== "false",
-      dailyBonusAmount:       settings.dailyBonusAmount       ?? "50",
+      dailyBonusAmount:       settings.dailyBonusAmount       ?? "25",
+      signupBonusEnabled:     settings.signupBonusEnabled     !== "false",
+      signupBonusAmount:      settings.signupBonusAmount      ?? "500",
       popupTitle:             settings.popupTitle             ?? "",
       popupTelegramLabel:     settings.popupTelegramLabel     ?? "",
       popupConfirmLabel:      settings.popupConfirmLabel      ?? "",
@@ -321,6 +327,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
         groupEnabled: String(data.groupEnabled),
         withdrawalEnabled: String(data.withdrawalEnabled),
         dailyBonusEnabled: String(data.dailyBonusEnabled),
+        signupBonusEnabled: String(data.signupBonusEnabled),
       };
       const response = await apiRequest("POST", "/api/admin/settings", serialized);
       if (!response.ok) {
@@ -909,6 +916,35 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
             <FormField control={form.control} name="dailyBonusAmount" render={({ field }) => (
               <FormItem>
                 <FormLabel>Montant du bonus (FCFA)</FormLabel>
+                <FormControl><Input {...field} type="number" min="0" /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+          </CardContent>
+        </Card>
+
+        {/* ── Bonus d'inscription ── */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              🎉 Bonus d'inscription
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormField control={form.control} name="signupBonusEnabled" render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                <div>
+                  <FormLabel className="text-sm font-medium">Activer le bonus d'inscription</FormLabel>
+                  <FormDescription className="text-xs">Crédite automatiquement chaque nouveau compte à l'inscription</FormDescription>
+                </div>
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="signupBonusAmount" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Montant du bonus d'inscription (FCFA)</FormLabel>
                 <FormControl><Input {...field} type="number" min="0" /></FormControl>
                 <FormMessage />
               </FormItem>
