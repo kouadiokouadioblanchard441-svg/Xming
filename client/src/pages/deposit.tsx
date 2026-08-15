@@ -191,6 +191,7 @@ export default function DepositPage() {
     : user?.country === "CM" ? "237"
     : user?.country === "BF" ? "226"
     : user?.country === "BJ" ? "229"
+    : user?.country === "TG" ? "228"
     : user?.country === "ML" ? "223"
     : "225";
 

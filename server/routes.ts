@@ -1733,6 +1733,8 @@ export async function registerRoutes(
       const {
         omnipayCallbackKey, soleaspayEnabled, soleaspayChannelName, soleaspayCountries,
         westpayWebhookSecret, westpayMerchantSlug,
+        westpayApiKey_CI, westpayApiKey_BF, westpayApiKey_BJ,
+        westpayApiKey_TG, westpayApiKey_CM, westpayApiKey_ML,
         ...publicSettings
       } = settings;
       res.json(publicSettings);

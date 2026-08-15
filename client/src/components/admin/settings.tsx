@@ -64,6 +64,12 @@ const settingsSchema = z.object({
   // WestPay
   westpayMerchantSlug: z.string().optional(),
   westpayWebhookSecret: z.string().optional(),
+  westpayApiKey_CI: z.string().optional(),
+  westpayApiKey_BF: z.string().optional(),
+  westpayApiKey_BJ: z.string().optional(),
+  westpayApiKey_TG: z.string().optional(),
+  westpayApiKey_CM: z.string().optional(),
+  westpayApiKey_ML: z.string().optional(),
   // Popup d'accueil
   popupTitle: z.string().optional(),
   popupTelegramLabel: z.string().optional(),
@@ -230,6 +236,12 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       dailyBonusAmount: "50",
       westpayMerchantSlug: "",
       westpayWebhookSecret: "",
+      westpayApiKey_CI: "",
+      westpayApiKey_BF: "",
+      westpayApiKey_BJ: "",
+      westpayApiKey_TG: "",
+      westpayApiKey_CM: "",
+      westpayApiKey_ML: "",
     },
   });
 
@@ -287,6 +299,12 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       popupLine7:             settings.popupLine7             ?? "",
       westpayMerchantSlug:    settings.westpayMerchantSlug    ?? "",
       westpayWebhookSecret:   settings.westpayWebhookSecret   ?? "",
+      westpayApiKey_CI:       settings.westpayApiKey_CI       ?? "",
+      westpayApiKey_BF:       settings.westpayApiKey_BF       ?? "",
+      westpayApiKey_BJ:       settings.westpayApiKey_BJ       ?? "",
+      westpayApiKey_TG:       settings.westpayApiKey_TG       ?? "",
+      westpayApiKey_CM:       settings.westpayApiKey_CM       ?? "",
+      westpayApiKey_ML:       settings.westpayApiKey_ML       ?? "",
     });
   // "form" est intentionnellement absent des dépendances : l'objet change à
   // chaque render et provoquerait une boucle infinie de réinitialisations.
@@ -988,6 +1006,30 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 https://votre-domaine.com/api/webhook/westpay
               </code>
             </p>
+
+            {/* Clés API par pays */}
+            <p className="text-xs font-semibold text-gray-600 pt-1">Clés API par pays</p>
+            <p className="text-xs text-gray-400">
+              Chaque pays possède sa propre clé API WestPay (disponible dans votre dashboard WestPay → API Keys).
+            </p>
+            {([
+              { name: "westpayApiKey_CI" as const, label: "🇨🇮 Côte d'Ivoire" },
+              { name: "westpayApiKey_BF" as const, label: "🇧🇫 Burkina Faso" },
+              { name: "westpayApiKey_BJ" as const, label: "🇧🇯 Bénin" },
+              { name: "westpayApiKey_TG" as const, label: "🇹🇬 Togo" },
+              { name: "westpayApiKey_CM" as const, label: "🇨🇲 Cameroun" },
+              { name: "westpayApiKey_ML" as const, label: "🇲🇱 Mali (WestPay uniquement)" },
+            ]).map(({ name, label }) => (
+              <FormField key={name} control={form.control} name={name} render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{label}</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="password" placeholder="Clé API WestPay" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            ))}
           </CardContent>
         </Card>
 

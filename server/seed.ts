@@ -117,7 +117,7 @@ export async function seed() {
     console.log("Super admin updated");
   }
 
-  // Seed/update countries (CI, BF, ML, BJ only)
+  // Seed/update countries (CI, BF, BJ, TG, CM)
   const requiredCountries = [
     {
       code: "CI",
@@ -138,20 +138,29 @@ export async function seed() {
       autoPaymentEnabled: true,
     },
     {
-      code: "ML",
-      name: "Mali",
-      currency: "FCFA",
-      phonePrefix: "223",
-      operators: JSON.stringify(["Orange Money", "Moov Money", "Telecel Money"]),
-      isActive: true,
-      autoPaymentEnabled: true,
-    },
-    {
       code: "BJ",
       name: "Bénin",
       currency: "FCFA",
       phonePrefix: "229",
       operators: JSON.stringify(["MTN Money", "Moov Money"]),
+      isActive: true,
+      autoPaymentEnabled: true,
+    },
+    {
+      code: "TG",
+      name: "Togo",
+      currency: "FCFA",
+      phonePrefix: "228",
+      operators: JSON.stringify(["Flooz (Moov)", "T-Money (Togocel)"]),
+      isActive: true,
+      autoPaymentEnabled: true,
+    },
+    {
+      code: "CM",
+      name: "Cameroun",
+      currency: "FCFA",
+      phonePrefix: "237",
+      operators: JSON.stringify(["MTN Money CM", "Orange Money CM"]),
       isActive: true,
       autoPaymentEnabled: true,
     },
@@ -348,6 +357,13 @@ export async function seed() {
     { key: "omnipayCallbackKey", value: "" },
     { key: "westpayMerchantSlug", value: "" },
     { key: "westpayWebhookSecret", value: "" },
+    // Clés API WestPay par pays
+    { key: "westpayApiKey_CI", value: "" },
+    { key: "westpayApiKey_BF", value: "" },
+    { key: "westpayApiKey_BJ", value: "" },
+    { key: "westpayApiKey_TG", value: "" },
+    { key: "westpayApiKey_CM", value: "" },
+    { key: "westpayApiKey_ML", value: "" }, // gardé pour WestPay même si Mali retiré du login
     // VIP descriptions & advantages (insert only — never force-update)
     { key: "vip0Description", value: "Membre inscrit n'ayant pas encore investi." },
     { key: "vip0Advantages", value: "Accès à la plateforme. Possibilité de déposer et d'investir." },
