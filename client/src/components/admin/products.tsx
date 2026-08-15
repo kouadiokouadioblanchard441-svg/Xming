@@ -295,6 +295,19 @@ export default function AdminProducts() {
     onError: (e: any) => toast({ title: e.message || "Erreur", variant: "destructive" }),
   });
 
+  const toggleUnavailableMutation = useMutation({
+    mutationFn: async ({ id, isUnavailable }: { id: number; isUnavailable: boolean }) => {
+      const res = await apiRequest("PATCH", `/api/admin/products/${id}`, { isUnavailable });
+      if (!res.ok) { const r = await res.json(); throw new Error(r.message || "Erreur"); }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/products/all"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+    },
+    onError: (e: any) => toast({ title: e.message || "Erreur", variant: "destructive" }),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
       const res = await apiRequest("DELETE", `/api/admin/products/${id}`, {});
@@ -355,6 +368,9 @@ export default function AdminProducts() {
                       <Badge variant={product.isActive ? "default" : "outline"} className="text-xs">
                         {product.isActive ? "Actif" : "Inactif"}
                       </Badge>
+                      {product.isUnavailable && (
+                        <Badge className="text-xs bg-orange-500 text-white">Indisponible</Badge>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground">
                       {Number(product.price).toLocaleString()} — {Number(product.dailyEarnings).toLocaleString()}/jour
@@ -379,11 +395,26 @@ export default function AdminProducts() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <Switch
-                    checked={product.isActive}
-                    onCheckedChange={(checked) => toggleMutation.mutate({ id: product.id, isActive: checked })}
-                    data-testid={`switch-product-${product.id}`}
-                  />
+                  {/* Unavailable toggle */}
+                  <div className="flex flex-col items-center gap-0.5 mr-1">
+                    <span className="text-[9px] text-muted-foreground leading-none">Indispo</span>
+                    <Switch
+                      checked={!!product.isUnavailable}
+                      onCheckedChange={(checked) => toggleUnavailableMutation.mutate({ id: product.id, isUnavailable: checked })}
+                      className="data-[state=checked]:bg-orange-500 scale-75"
+                      data-testid={`switch-unavailable-${product.id}`}
+                    />
+                  </div>
+                  {/* Active toggle */}
+                  <div className="flex flex-col items-center gap-0.5 mr-1">
+                    <span className="text-[9px] text-muted-foreground leading-none">Actif</span>
+                    <Switch
+                      checked={product.isActive}
+                      onCheckedChange={(checked) => toggleMutation.mutate({ id: product.id, isActive: checked })}
+                      className="scale-75"
+                      data-testid={`switch-product-${product.id}`}
+                    />
+                  </div>
                   <Button size="icon" variant="ghost" onClick={() => openEdit(product)} data-testid={`button-edit-product-${product.id}`}>
                     <Edit className="w-4 h-4" />
                   </Button>

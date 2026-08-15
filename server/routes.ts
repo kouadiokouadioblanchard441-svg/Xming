@@ -502,6 +502,9 @@ export async function registerRoutes(
       if (product.isFree) {
         return res.status(400).json({ message: "Ce produit n'est pas disponible à l'achat" });
       }
+      if (product.isUnavailable) {
+        return res.status(400).json({ message: "Ce produit n'est pas encore disponible" });
+      }
       if ((product.stockPercentage ?? 0) >= 100) {
         return res.status(400).json({ message: "Ce produit est épuisé — stock complet" });
       }

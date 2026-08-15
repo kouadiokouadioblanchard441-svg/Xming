@@ -94,6 +94,8 @@ export const products = pgTable("products", {
   collectAtEnd: boolean("collect_at_end").notNull().default(false),
   // Stock saturation 0-100 (admin-controlled). At 100 → product is sold out / FAKE
   stockPercentage: integer("stock_percentage").notNull().default(0),
+  // Unavailable: product not yet open — purchase blocked, shows "Unavailable" badge
+  isUnavailable: boolean("is_unavailable").notNull().default(false),
 });
 
 // User products (investments)

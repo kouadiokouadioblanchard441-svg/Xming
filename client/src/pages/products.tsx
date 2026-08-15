@@ -102,6 +102,8 @@ export default function ProductsPage() {
             const isPending = purchaseMutation.isPending && purchaseMutation.variables === product.id;
             const stock = Math.min(100, Math.max(0, Number(product.stockPercentage) || 0));
             const isSoldOut = stock >= 100;
+            const isUnavailable = !!product.isUnavailable;
+            const isBlocked = isSoldOut || isUnavailable;
 
             return (
               <div
@@ -115,6 +117,30 @@ export default function ProductsPage() {
                 }}
                 data-testid={`product-card-${product.id}`}
               >
+                {/* UNAVAILABLE stamp */}
+                {isUnavailable && !isSoldOut && (
+                  <div
+                    className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
+                    style={{ transform: "rotate(-20deg)" }}
+                  >
+                    <span
+                      className="font-black select-none tracking-tight"
+                      style={{
+                        fontSize: 42,
+                        lineHeight: 1,
+                        color: "#ff6b00",
+                        WebkitTextStroke: "2px #8b3a00",
+                        textShadow:
+                          "2px 2px 0 #c44d00, 4px 4px 0 #8b3a00, 6px 6px 12px rgba(0,0,0,0.45)",
+                        opacity: 0.9,
+                        letterSpacing: "-1px",
+                      }}
+                    >
+                      UNAVAILABLE
+                    </span>
+                  </div>
+                )}
+
                 {/* SOLD OUT stamp */}
                 {isSoldOut && (
                   <div
@@ -198,27 +224,29 @@ export default function ProductsPage() {
                   {/* ── ACHETER button — compact, right-aligned ── */}
                   <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
                     <button
-                      onClick={() => !isSoldOut && handleBuy(product)}
-                      disabled={purchaseMutation.isPending || isSoldOut}
+                      onClick={() => !isBlocked && handleBuy(product)}
+                      disabled={purchaseMutation.isPending || isBlocked}
                       className="flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
                       style={{
                         height: 36,
                         paddingLeft: 28,
                         paddingRight: 28,
                         borderRadius: 6,
-                        background: isSoldOut ? "#aaa" : "#000",
+                        background: isUnavailable ? "#ff6b00" : isSoldOut ? "#aaa" : "#000",
                         color: "#fff",
                         fontWeight: 700,
                         fontSize: 13,
                         letterSpacing: 1.5,
-                        boxShadow: isSoldOut ? "none" : "0 2px 8px rgba(0,0,0,0.35)",
+                        boxShadow: isBlocked ? "none" : "0 2px 8px rgba(0,0,0,0.35)",
                         border: "none",
-                        cursor: isSoldOut ? "default" : "pointer",
+                        cursor: isBlocked ? "default" : "pointer",
                       }}
                       data-testid={`button-purchase-${product.id}`}
                     >
                       {isPending
                         ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : isUnavailable
+                        ? "UNAVAILABLE"
                         : isSoldOut
                         ? "ÉPUISÉ"
                         : "ACHETER"}
