@@ -13,6 +13,31 @@ import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 import { verifyWebhookSignature } from "@nowpaymentsio/nowpayments-sdk-nodejs";
+
+/**
+ * Résout tous les paramètres WestPay avec la règle :
+ *   valeur DB (panel admin) → valeur env var → chaîne vide
+ * Permet de configurer depuis le panel admin OU via variables d'environnement
+ * (utile pour Plesk / déploiements serveur sans accès au panel).
+ */
+function resolveWestpay(settings: Record<string, string>) {
+  const db_  = (key: string) => settings[key] || "";
+  const env_ = (key: string) => process.env[key] || "";
+  const pick = (dbKey: string, envKey: string) => db_(dbKey) || env_(envKey);
+
+  return {
+    slug:        pick("westpayMerchantSlug",  "WESTPAY_MERCHANT_SLUG"),
+    secret:      pick("westpayWebhookSecret", "WESTPAY_WEBHOOK_SECRET"),
+    apiKey: {
+      CI: pick("westpayApiKey_CI", "WESTPAY_API_KEY_CI"),
+      BF: pick("westpayApiKey_BF", "WESTPAY_API_KEY_BF"),
+      BJ: pick("westpayApiKey_BJ", "WESTPAY_API_KEY_BJ"),
+      TG: pick("westpayApiKey_TG", "WESTPAY_API_KEY_TG"),
+      CM: pick("westpayApiKey_CM", "WESTPAY_API_KEY_CM"),
+      ML: pick("westpayApiKey_ML", "WESTPAY_API_KEY_ML"),
+    } as Record<string, string>,
+  };
+}
 import { getSDK, getNowPaymentsCallbackUrl, createPayout, verifyPayout } from "./nowpayments";
 import {
   DEFAULT_SPIN_WHEEL_SEGMENTS,
@@ -1181,9 +1206,9 @@ export async function registerRoutes(
           message: `Montant minimum : ${minDeposit.toLocaleString()} FCFA`,
         });
 
-      // DB (panel admin) prend priorité — env var = fallback initial seulement
-      const slug = settings.westpayMerchantSlug || process.env.WESTPAY_MERCHANT_SLUG;
-      if (!slug)
+      // Résolution DB → env var pour tous les paramètres WestPay
+      const wp = resolveWestpay(settings);
+      if (!wp.slug)
         return res.status(500).json({
           message: "WestPay non configuré. Ajoutez le slug marchand dans les paramètres admin.",
         });
@@ -1229,10 +1254,13 @@ export async function registerRoutes(
       const redirectUrl = `${appBase}/deposit?wp_deposit=${deposit.id}&wp_return=1`;
 
       const payUrl = new URL("https://westpay.cfd/pay");
-      payUrl.searchParams.set("merchant", slug);
+      payUrl.searchParams.set("merchant", wp.slug);
       payUrl.searchParams.set("amount",   String(Math.round(Number(amount))));
       payUrl.searchParams.set("country",  wpCountry);
       payUrl.searchParams.set("redirect", redirectUrl);
+      // Clé API par pays (DB → env var) — ajoutée si disponible
+      const apiKey = wp.apiKey[user.country || "CI"];
+      if (apiKey) payUrl.searchParams.set("api_key", apiKey);
 
       res.json({ depositId: deposit.id, payUrl: payUrl.toString() });
     } catch (error: any) {
@@ -2887,8 +2915,8 @@ export async function registerRoutes(
       const event     = (req.headers["x-robotpay-event"]     as string) || "";
 
       const settings = await storage.getSettings();
-      // DB (panel admin) prend priorité — env var = fallback initial seulement
-      const secret = settings.westpayWebhookSecret || process.env.WESTPAY_WEBHOOK_SECRET || "";
+      const wp = resolveWestpay(settings);
+      const secret = wp.secret;
 
       if (!secret) {
         console.error("[WestPay webhook] Secret non configuré — requête ignorée");
