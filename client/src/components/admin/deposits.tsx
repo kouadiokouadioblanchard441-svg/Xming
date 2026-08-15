@@ -234,7 +234,7 @@ export default function AdminDeposits() {
                     <div className="flex gap-2">
                       <Button
                         size="sm"
-                        className="flex-1 bg-black hover:bg-gray-900 text-white"
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                         onClick={() => processMutation.mutate({ id: deposit.id, action: "approve" })}
                         disabled={processMutation.isPending}
                         data-testid={`button-approve-${deposit.id}`}
