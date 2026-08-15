@@ -141,8 +141,8 @@ export default function HomePage() {
   const quickActions = [
     { icon: <DollarSign size={22} color="#fff" strokeWidth={1.8} />, label: "Recharge",  href: "/deposit"   },
     { icon: <ArrowUp    size={22} color="#fff" strokeWidth={1.8} />, label: "Retrait",   href: "/withdrawal" },
+    { icon: <ClipboardList size={20} color="#fff" strokeWidth={1.8} />, label: "Tâches",   href: "/tasks"   },
     { icon: <CalendarCheck size={20} color="#fff" strokeWidth={1.8} />, label: "Pointage", href: "/checkin" },
-    { icon: <ClipboardList size={20} color="#fff" strokeWidth={1.8} />, label: "Missions", href: "/tasks"   },
   ];
 
   return (
