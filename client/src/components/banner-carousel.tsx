@@ -64,12 +64,19 @@ export default function BannerCarousel({
       onTouchEnd={onTouchEnd}
     >
       {/* Slides */}
-      <div
-        className="flex h-full transition-transform duration-500 ease-in-out"
-        style={{ transform: `translateX(-${current * 100}%)`, width: `${count * 100}%` }}
-      >
+      {/* Chaque slide fait 100% du conteneur — translateX en % du conteneur, pas du flex */}
+      <div className="flex h-full" style={{ width: "100%", position: "relative" }}>
         {images.map((src, i) => (
-          <div key={i} style={{ width: `${100 / count}%`, height: "100%", flexShrink: 0 }}>
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              inset: 0,
+              transition: "opacity 0.5s ease-in-out",
+              opacity: i === current ? 1 : 0,
+              zIndex: i === current ? 1 : 0,
+            }}
+          >
             <img
               src={src}
               alt={`banner-${i + 1}`}
