@@ -4,7 +4,6 @@ import { useI18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import WheelRulesModal from "@/components/wheel-rules-modal";
 import WheelInviteModal from "@/components/wheel-invite-modal";
-import WheelNoToursModal from "@/components/wheel-no-tours-modal";
 import WheelResultModal from "@/components/wheel-result-modal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -343,7 +342,6 @@ export default function SpinWheelPage() {
   const [spinTokens,  setSpinTokens] = useState(() => user?.spinTokens ?? 0);
   const [showRules,   setShowRules]  = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [showNoTours, setShowNoTours] = useState(false);
   const [spinResult,  setSpinResult]  = useState<{ won: boolean; amount: number; label: string } | null>(null);
 
   /* Platform settings — for popup texts */
@@ -423,9 +421,12 @@ export default function SpinWheelPage() {
   const handleSpin = useCallback(() => {
     if (spinning.current || spinMutation.isPending) return;
 
-    /* No tours available → white-card popup */
+    /* No tours available → toast only */
     if (spinTokens <= 0) {
-      setShowNoTours(true);
+      toast({
+        title: "Vous n'avez pas de tour disponible",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -627,11 +628,6 @@ export default function SpinWheelPage() {
         onClose={() => setShowHistory(false)}
         text={inviteText}
         highlight={inviteHighlight}
-      />
-      <WheelNoToursModal
-        open={showNoTours}
-        onClose={() => setShowNoTours(false)}
-        referralCode={user?.referralCode ?? ""}
       />
       <WheelResultModal
         open={spinResult !== null}
