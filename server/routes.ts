@@ -15,19 +15,20 @@ import crypto from "crypto";
 import { verifyWebhookSignature } from "@nowpaymentsio/nowpayments-sdk-nodejs";
 
 /**
- * Résout tous les paramètres WestPay avec la règle :
- *   valeur DB (panel admin) → valeur env var → chaîne vide
- * Permet de configurer depuis le panel admin OU via variables d'environnement
- * (utile pour Plesk / déploiements serveur sans accès au panel).
+ * Résout les paramètres WestPay.
+ * Le secret du webhook utilise TOUJOURS la variable d'environnement en priorité
+ * (Plesk), avec la valeur DB uniquement comme fallback de développement.
+ * Les autres paramètres restent configurables via le panel admin puis les env vars.
  */
 function resolveWestpay(settings: Record<string, string>) {
   const db_  = (key: string) => settings[key] || "";
   const env_ = (key: string) => process.env[key] || "";
   const pick = (dbKey: string, envKey: string) => db_(dbKey) || env_(envKey);
+  const pickSecret = (dbKey: string, envKey: string) => env_(envKey) || db_(dbKey);
 
   return {
     slug:        pick("westpayMerchantSlug",  "WESTPAY_MERCHANT_SLUG"),
-    secret:      pick("westpayWebhookSecret", "WESTPAY_WEBHOOK_SECRET"),
+    secret:      pickSecret("westpayWebhookSecret", "WESTPAY_WEBHOOK_SECRET"),
     apiKey: {
       CI: pick("westpayApiKey_CI", "WESTPAY_API_KEY_CI"),
       BF: pick("westpayApiKey_BF", "WESTPAY_API_KEY_BF"),
