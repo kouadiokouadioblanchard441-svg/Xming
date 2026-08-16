@@ -1240,7 +1240,7 @@ export async function registerRoutes(
       const deposit = await storage.createDeposit({
         userId: user.id,
         amount: Number(amount),
-        accountName: user.name || user.phone,
+        accountName: user.fullName || user.phone,
         accountNumber: user.phone,
         country: user.country || "CI",
         paymentMethod: "WestPay",

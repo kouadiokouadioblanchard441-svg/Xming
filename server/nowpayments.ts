@@ -13,7 +13,7 @@
 
 import { NowPaymentsSDK } from "@nowpaymentsio/nowpayments-sdk-nodejs";
 
-const DEFAULT_PUBLIC_APP_URL = "https://www.gampower.site";
+const DEFAULT_PUBLIC_APP_URL = "https://dmxping.online";
 
 // ---------------------------------------------------------------------------
 // Singleton SDK instance
