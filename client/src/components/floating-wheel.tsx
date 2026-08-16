@@ -8,13 +8,6 @@ interface FloatingWheelProps {
   bottomOffset?: number;
 }
 
-const SPIN_KEYFRAMES = `
-@keyframes floatWheelSpin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-`;
-
 function MiniWheel({ size = 64, segments }: { size?: number; segments: SpinWheelSegment[] }) {
   const cx = size / 2;
   const cy = size / 2;
@@ -149,7 +142,6 @@ export function FloatingWheel({ bottomOffset = 24 }: FloatingWheelProps) {
 
   return (
     <>
-      <style>{SPIN_KEYFRAMES}</style>
       <button
         ref={btnRef}
         aria-label={t.wheelTitle}
@@ -178,8 +170,6 @@ export function FloatingWheel({ bottomOffset = 24 }: FloatingWheelProps) {
         }}
       >
         <div style={{
-          animation:       "floatWheelSpin 4s linear infinite",
-          transformOrigin: "center",
           display:         "flex",
           alignItems:      "center",
           justifyContent:  "center",
