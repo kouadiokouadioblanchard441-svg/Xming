@@ -339,7 +339,7 @@ export default function DepositPage() {
       )}
 
       {/* ══ CONTENT ══ */}
-      <div className={`flex-1 px-4 ${isOlive ? "pb-44" : "pb-8"}`}>
+      <div className="flex-1 px-4 pb-8">
 
         {/* ─────────────────────────────────────────
             STEP 1 : Amount + mode de paiement (OLIVE)
@@ -810,11 +810,7 @@ export default function DepositPage() {
       {/* ══ FIXED BOTTOM – Step 1 only ══ */}
       {step === "amount" && (
         <div
-          className="fixed bottom-0 left-0 right-0 px-4 pb-8 pt-4"
-          style={{
-            background:
-              "linear-gradient(to top, #000000 70%, rgba(0,0,0,0))",
-          }}
+          className="mt-6 px-4 pb-8 pt-2"
         >
           <button
             onClick={() => {
