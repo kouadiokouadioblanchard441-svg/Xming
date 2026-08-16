@@ -1154,7 +1154,7 @@ export async function registerRoutes(
   app.post("/api/deposits", requireAuth, async (req, res) => {
     try {
       const { amount, accountName, accountNumber, paymentMethod, country, paymentChannelId,
-        paymentNumberId, channelName, screenshot, paymentMessage, reference } = req.body;
+        depositChannelId, paymentNumberId, channelName, screenshot, paymentMessage, reference } = req.body;
       const user = await storage.getUser(req.session.userId!);
       
       if (!user) {
@@ -1171,6 +1171,26 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Tous les champs sont requis" });
       }
 
+      let resolvedChannelName = channelName || null;
+      if (depositChannelId) {
+        const depositChannel = await storage.getDepositChannel(Number(depositChannelId));
+        if (!depositChannel || !depositChannel.isActive || depositChannel.country !== user.country) {
+          return res.status(400).json({ message: "Canal de dépôt invalide" });
+        }
+        resolvedChannelName = depositChannel.name;
+
+        if (user.country === "CI" && depositChannel.name === "Canal 1") {
+          return res.status(400).json({ message: "Le Canal 1 utilise WestPay. Veuillez choisir le Canal 2 pour un paiement manuel." });
+        }
+        if (
+          user.country === "CI" &&
+          depositChannel.name === "Canal 2" &&
+          String(paymentMethod).toLowerCase() !== "wave"
+        ) {
+          return res.status(400).json({ message: "Le Canal 2 accepte uniquement les paiements manuels Wave." });
+        }
+      }
+
       const deposit = await storage.createDeposit({
         userId: req.session.userId!,
         amount,
@@ -1180,7 +1200,7 @@ export async function registerRoutes(
         paymentMethod,
         paymentChannelId: paymentChannelId && paymentChannelId > 0 ? paymentChannelId : null,
         paymentNumberId: paymentNumberId || null,
-        channelName: channelName || null,
+        channelName: resolvedChannelName,
         screenshot: screenshot || null,
         paymentMessage: paymentMessage || null,
         reference: reference || null,
@@ -1196,12 +1216,23 @@ export async function registerRoutes(
   // ── WestPay : initiate hosted payment ──────────────────────────────────
   app.post("/api/deposits/westpay/initiate", requireAuth, async (req, res) => {
     try {
-      const { amount } = req.body;
+      const { amount, channelId } = req.body;
       if (!amount || Number(amount) <= 0)
         return res.status(400).json({ message: "Montant invalide" });
 
       const user = await storage.getUser(req.session.userId!);
       if (!user) return res.status(401).json({ message: "Non authentifié" });
+
+      let westpayChannelName: string | null = null;
+      if (user.country === "CI") {
+        const channel = channelId
+          ? await storage.getDepositChannel(Number(channelId))
+          : undefined;
+        if (!channel || !channel.isActive || channel.country !== user.country || channel.name !== "Canal 1") {
+          return res.status(400).json({ message: "En Côte d'Ivoire, WestPay est disponible via le Canal 1." });
+        }
+        westpayChannelName = channel.name;
+      }
 
       const settings = await storage.getSettings();
       const minDeposit = parseInt(settings.minDeposit || "3500");
@@ -1245,6 +1276,7 @@ export async function registerRoutes(
         accountNumber: user.phone,
         country: user.country || "CI",
         paymentMethod: "WestPay",
+        channelName: westpayChannelName,
         status: "processing",
         reference: null,
       });

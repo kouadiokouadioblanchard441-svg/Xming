@@ -125,7 +125,11 @@ export default function DepositPage() {
   });
   const currentCountry = countryConfigs.find(country => country.code === user?.country);
   const isAutomaticDeposit = currentCountry?.autoPaymentEnabled === true;
-  const showManualDepositChannels = !isCountriesLoading && !isAutomaticDeposit;
+  // Côte d'Ivoire uses two deposit channels: Canal 1 = WestPay,
+  // Canal 2 = manual Wave. The country-level automatic flag must not hide them.
+  const isIvoryCoast = user?.country === "CI";
+  const showManualDepositChannels =
+    !isCountriesLoading && (!isAutomaticDeposit || isIvoryCoast);
 
   // Deposit channels (Canal 1, Canal 2…) filtered by the user's country
   const { data: depositChannels = [] } = useQuery<DepositChannel[]>({
@@ -197,8 +201,8 @@ export default function DepositPage() {
 
   // ── WestPay: initiate & poll ──────────────────────────────────────
   const westpayMutation = useMutation({
-    mutationFn: async (amt: number) => {
-      const res = await apiRequest("POST", "/api/deposits/westpay/initiate", { amount: amt });
+    mutationFn: async (payload: { amount: number; channelId?: number }) => {
+      const res = await apiRequest("POST", "/api/deposits/westpay/initiate", payload);
       if (!res.ok) { const e = await res.json(); throw new Error(e.message || "Erreur"); }
       return res.json() as Promise<{ depositId: number; payUrl: string }>;
     },
@@ -241,8 +245,9 @@ export default function DepositPage() {
         accountNumber: senderPhone,
         paymentMethod: selectedChannel?.operatorName || "Mobile Money",
         country: user?.country || "CM",
+        depositChannelId: selectedDepositChannel?.id || null,
         paymentNumberId: selectedChannel?.id || null,
-        channelName: selectedChannel?.operatorName || "Mobile Money",
+        channelName: selectedDepositChannel?.name || "Mobile Money",
         reference: transactionId || senderPhone,
       });
       if (!res.ok) {
@@ -821,9 +826,25 @@ export default function DepositPage() {
                 });
                 return;
               }
-              // Pays en mode automatique → redirection directe WestPay
+              // Côte d'Ivoire : Canal 1 = WestPay, Canal 2 = manuel Wave.
+              if (isIvoryCoast) {
+                if (!selectedDepositChannel) {
+                  toast({ title: "Mode de paiement requis", description: "Veuillez sélectionner un canal", variant: "destructive" });
+                  return;
+                }
+                if (selectedDepositChannel.name === "Canal 1") {
+                  westpayMutation.mutate({
+                    amount: Number(amount),
+                    channelId: selectedDepositChannel.id,
+                  });
+                  return;
+                }
+                setStep("operator");
+                return;
+              }
+              // Autres pays en mode automatique → redirection directe WestPay.
               if (isAutomaticDeposit) {
-                westpayMutation.mutate(Number(amount));
+                westpayMutation.mutate({ amount: Number(amount) });
                 return;
               }
               // Channels mode: need a channel selected → go to operator step

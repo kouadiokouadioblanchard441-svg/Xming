@@ -1,7 +1,7 @@
 import { db } from "./db";
 import { users, products, tasks, paymentChannels, paymentNumbers, platformSettings, companyContent, countries, stakingProducts, depositChannels, productSeries } from "@shared/schema";
 import bcrypt from "bcryptjs";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 export async function seed() {
   console.log("Seeding database...");
@@ -249,56 +249,62 @@ export async function seed() {
 
   if (!hasCanal1) {
     const [c1] = await db.insert(depositChannels).values({
-      name: "Canal 1", description: "Wave & MTN Money", country: "CI",
+      name: "Canal 1", description: "Paiement automatique via WestPay", country: "CI",
       isActive: true, sortOrder: 1, createdBy: 1,
     }).returning();
     canal1Id = c1.id;
     console.log("Deposit channel seeded: Canal 1 (CI)");
   } else {
+    await db.update(depositChannels)
+      .set({ description: "Paiement automatique via WestPay", isActive: true, sortOrder: 1 })
+      .where(eq(depositChannels.id, canal1Id!));
     console.log("Deposit channel preserved: Canal 1 (CI)");
   }
   if (!hasCanal2) {
     const [c2] = await db.insert(depositChannels).values({
-      name: "Canal 2", description: "Moov & Orange Money", country: "CI",
+      name: "Canal 2", description: "Paiement manuel Wave", country: "CI",
       isActive: true, sortOrder: 2, createdBy: 1,
     }).returning();
     canal2Id = c2.id;
     console.log("Deposit channel seeded: Canal 2 (CI)");
   } else {
+    await db.update(depositChannels)
+      .set({ description: "Paiement manuel Wave", isActive: true, sortOrder: 2 })
+      .where(eq(depositChannels.id, canal2Id!));
     console.log("Deposit channel preserved: Canal 2 (CI)");
   }
 
-  // ── Seed payment numbers CI — linked to channels ────────────────────────
+  // ── Seed the manual Wave number for CI — linked to Canal 2 ──────────────
   const existingNums = await db.select().from(paymentNumbers);
   const ciByOperator = Object.fromEntries(
     existingNums.filter(n => n.country === "CI").map(n => [n.operatorName, n])
   );
 
-  const defaultCiNumbers = [
-    // Canal 1 — Wave + MTN
-    { ownerName: "Konan Yao", phone: "0701234567", operatorName: "Wave",       country: "CI", channelId: canal1Id, logoUrl: null, isActive: true, createdBy: 1 },
-    { ownerName: "Traoré Moussa", phone: "0507654321", operatorName: "MTN Money", country: "CI", channelId: canal1Id, logoUrl: null, isActive: true, createdBy: 1 },
-    // Canal 2 — Moov + Orange
-    { ownerName: "Coulibaly Fatou", phone: "0101122334", operatorName: "Moov Money",   country: "CI", channelId: canal2Id, logoUrl: null, isActive: true, createdBy: 1 },
-    { ownerName: "Diallo Aminata",  phone: "0708899001", operatorName: "Orange Money", country: "CI", channelId: canal2Id, logoUrl: null, isActive: true, createdBy: 1 },
-  ];
+  const waveNumber = ciByOperator["Wave"];
+  if (!waveNumber) {
+    await db.insert(paymentNumbers).values({
+      ownerName: "Konan Yao",
+      phone: "0701234567",
+      operatorName: "Wave",
+      country: "CI",
+      channelId: canal2Id,
+      logoUrl: null,
+      isActive: true,
+      createdBy: 1,
+    });
+    console.log("Payment number seeded: Wave (CI, Canal 2)");
+  } else {
+    await db.update(paymentNumbers)
+      .set({ channelId: canal2Id, isActive: true })
+      .where(eq(paymentNumbers.id, waveNumber.id));
+    console.log("Payment number linked to Canal 2: Wave (CI)");
+  }
 
-  for (const entry of defaultCiNumbers) {
-    if (!ciByOperator[entry.operatorName]) {
-      await db.insert(paymentNumbers).values(entry as any);
-      console.log(`Payment number seeded: ${entry.operatorName} (CI)`);
-    } else {
-      // Update channelId if missing (legacy row has no channelId)
-      const existing = ciByOperator[entry.operatorName];
-      if (!existing.channelId && entry.channelId) {
-        await db.update(paymentNumbers)
-          .set({ channelId: entry.channelId })
-          .where(eq(paymentNumbers.id, existing.id));
-        console.log(`Payment number linked to channel: ${entry.operatorName} (CI)`);
-      } else {
-        console.log(`Payment number skipped — ${entry.operatorName} (CI) already exists`);
-      }
-    }
+  // Disable the old CI manual destinations so Canal 2 only exposes Wave.
+  for (const legacyPhone of ["0507654321", "0101122334", "0708899001"]) {
+    await db.update(paymentNumbers)
+      .set({ isActive: false })
+      .where(and(eq(paymentNumbers.country, "CI"), eq(paymentNumbers.phone, legacyPhone)));
   }
 
   // Check if payment channels exist
