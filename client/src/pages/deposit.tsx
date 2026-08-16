@@ -108,7 +108,7 @@ export default function DepositPage() {
     wpDepositId ? Number(wpDepositId) : null,
   );
   const [wpPollingDone, setWpPollingDone] = useState(false);
-  // selectedDepositChannel = the Canal (Canal 1, Canal 2…) chosen in step 1
+  // selectedDepositChannel = the channel (Canal 1 or Wave) chosen in step 1
   const [selectedDepositChannel, setSelectedDepositChannel] = useState<DepositChannel | null>(null);
   // selectedChannel = the operator (MTN, Orange…) chosen in step 2
   const [selectedChannel, setSelectedChannel] = useState<PaymentNumber | null>(null);
@@ -126,12 +126,12 @@ export default function DepositPage() {
   const currentCountry = countryConfigs.find(country => country.code === user?.country);
   const isAutomaticDeposit = currentCountry?.autoPaymentEnabled === true;
   // Côte d'Ivoire uses two deposit channels: Canal 1 = WestPay,
-  // Canal 2 = manual Wave. The country-level automatic flag must not hide them.
+  // Wave = manual payment. The country-level automatic flag must not hide it.
   const isIvoryCoast = user?.country === "CI";
   const showManualDepositChannels =
     !isCountriesLoading && (!isAutomaticDeposit || isIvoryCoast);
 
-  // Deposit channels (Canal 1, Canal 2…) filtered by the user's country
+  // Deposit channels (Canal 1, Wave…) filtered by the user's country
   const { data: depositChannels = [] } = useQuery<DepositChannel[]>({
     queryKey: ["/api/deposit-channels", user?.country],
     queryFn: async () => {
@@ -822,7 +822,7 @@ export default function DepositPage() {
                 });
                 return;
               }
-              // Côte d'Ivoire : Canal 1 = WestPay, Canal 2 = manuel Wave.
+              // Côte d'Ivoire : Canal 1 = WestPay, Wave = paiement manuel.
               if (isIvoryCoast) {
                 if (!selectedDepositChannel) {
                   toast({ title: "Mode de paiement requis", description: "Veuillez sélectionner un canal", variant: "destructive" });

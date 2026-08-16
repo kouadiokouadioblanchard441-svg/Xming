@@ -1180,14 +1180,14 @@ export async function registerRoutes(
         resolvedChannelName = depositChannel.name;
 
         if (user.country === "CI" && depositChannel.name === "Canal 1") {
-          return res.status(400).json({ message: "Le Canal 1 utilise WestPay. Veuillez choisir le Canal 2 pour un paiement manuel." });
+          return res.status(400).json({ message: "Le Canal 1 utilise WestPay. Veuillez choisir le canal Wave pour un paiement manuel." });
         }
         if (
           user.country === "CI" &&
-          depositChannel.name === "Canal 2" &&
+          depositChannel.name === "Wave" &&
           String(paymentMethod).toLowerCase() !== "wave"
         ) {
-          return res.status(400).json({ message: "Le Canal 2 accepte uniquement les paiements manuels Wave." });
+          return res.status(400).json({ message: "Le canal Wave accepte uniquement les paiements manuels Wave." });
         }
       }
 

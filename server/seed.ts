@@ -238,14 +238,17 @@ export async function seed() {
     console.log(`Tasks skipped — ${existingTasks.length} existing tasks preserved`);
   }
 
-  // ── Seed deposit channels CI (Canal 1 & Canal 2) ──────────────────────────
+  // ── Seed deposit channels CI (Canal 1 & Wave) ─────────────────────────────
   const existingDepositChannels = await db.select().from(depositChannels)
     .then(rows => rows.filter(r => r.country === "CI"));
   const hasCanal1 = existingDepositChannels.some(r => r.name === "Canal 1");
-  const hasCanal2 = existingDepositChannels.some(r => r.name === "Canal 2");
+  const existingWaveChannel = existingDepositChannels.find(
+    r => r.name === "Wave" || r.name === "Canal 2",
+  );
+  const hasWaveChannel = !!existingWaveChannel;
 
   let canal1Id: number | null = existingDepositChannels.find(r => r.name === "Canal 1")?.id ?? null;
-  let canal2Id: number | null = existingDepositChannels.find(r => r.name === "Canal 2")?.id ?? null;
+  let canal2Id: number | null = existingWaveChannel?.id ?? null;
 
   if (!hasCanal1) {
     const [c1] = await db.insert(depositChannels).values({
@@ -260,21 +263,21 @@ export async function seed() {
       .where(eq(depositChannels.id, canal1Id!));
     console.log("Deposit channel preserved: Canal 1 (CI)");
   }
-  if (!hasCanal2) {
+  if (!hasWaveChannel) {
     const [c2] = await db.insert(depositChannels).values({
-      name: "Canal 2", description: "Paiement manuel Wave", country: "CI",
+      name: "Wave", description: "Paiement manuel Wave", country: "CI",
       isActive: true, sortOrder: 2, createdBy: 1,
     }).returning();
     canal2Id = c2.id;
-    console.log("Deposit channel seeded: Canal 2 (CI)");
+    console.log("Deposit channel seeded: Wave (CI)");
   } else {
     await db.update(depositChannels)
-      .set({ description: "Paiement manuel Wave", isActive: true, sortOrder: 2 })
+      .set({ name: "Wave", description: "Paiement manuel Wave", isActive: true, sortOrder: 2 })
       .where(eq(depositChannels.id, canal2Id!));
-    console.log("Deposit channel preserved: Canal 2 (CI)");
+    console.log("Deposit channel preserved: Wave (CI)");
   }
 
-  // ── Seed the manual Wave number for CI — linked to Canal 2 ──────────────
+  // ── Seed the manual Wave number for CI — linked to the Wave channel ─────
   const existingNums = await db.select().from(paymentNumbers);
   const ciByOperator = Object.fromEntries(
     existingNums.filter(n => n.country === "CI").map(n => [n.operatorName, n])
@@ -292,15 +295,15 @@ export async function seed() {
       isActive: true,
       createdBy: 1,
     });
-    console.log("Payment number seeded: Wave (CI, Canal 2)");
+    console.log("Payment number seeded: Wave (CI, Wave channel)");
   } else {
     await db.update(paymentNumbers)
       .set({ channelId: canal2Id, isActive: true })
       .where(eq(paymentNumbers.id, waveNumber.id));
-    console.log("Payment number linked to Canal 2: Wave (CI)");
+    console.log("Payment number linked to Wave channel: Wave (CI)");
   }
 
-  // Disable the old CI manual destinations so Canal 2 only exposes Wave.
+  // Disable the old CI manual destinations so the Wave channel only exposes Wave.
   for (const legacyPhone of ["0507654321", "0101122334", "0708899001"]) {
     await db.update(paymentNumbers)
       .set({ isActive: false })
