@@ -2913,10 +2913,23 @@ export async function registerRoutes(
   // ── WestPay webhook ────────────────────────────────────────────────────
   // Must be declared BEFORE the static-file catch-all.
   // WestPay sends: POST with X-RobotPay-Signature + X-RobotPay-Event headers.
+  // A GET/empty POST health check is safe because it never processes a payment.
+  app.get("/api/webhook/westpay", (_req, res) => {
+    res.status(200).json({ received: true, service: "westpay-webhook" });
+  });
+
   app.post("/api/webhook/westpay", async (req, res) => {
     try {
       const signature = (req.headers["x-robotpay-signature"] as string) || "";
       const event     = (req.headers["x-robotpay-event"]     as string) || "";
+      const hasBody = req.body && typeof req.body === "object" && Object.keys(req.body).length > 0;
+
+      // Some merchant dashboards only perform a connectivity ping. A ping
+      // cannot approve a deposit, so acknowledge it without bypassing HMAC
+      // verification for any non-empty payment event.
+      if (!signature && !event && !hasBody) {
+        return res.status(200).json({ received: true, service: "westpay-webhook" });
+      }
 
       const settings = await storage.getSettings();
       const wp = resolveWestpay(settings);
@@ -2929,7 +2942,7 @@ export async function registerRoutes(
 
       // Verify HMAC-SHA256 over the raw JSON body
       const rawBody: Buffer | undefined = (req as any).rawBody;
-      const bodyStr = rawBody ? rawBody.toString("utf8") : JSON.stringify(req.body);
+      const bodyStr = rawBody ? rawBody.toString("utf8") : JSON.stringify(req.body ?? {});
       const expected = crypto.createHmac("sha256", secret).update(bodyStr).digest("hex");
 
       let sigValid = false;
