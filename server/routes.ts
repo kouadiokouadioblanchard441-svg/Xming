@@ -1617,7 +1617,7 @@ export async function registerRoutes(
       }
 
       // Longueurs valides par pays
-      const PHONE_LENGTHS: Record<string, number> = { CI: 10, BF: 8, ML: 8, BJ: 9 };
+      const PHONE_LENGTHS: Record<string, number> = { CI: 10, BF: 8, ML: 8, BJ: 9, CM: 9, TG: 8 };
       const userCountry = country || req.body.country || "CI";
       const expectedLength = PHONE_LENGTHS[userCountry] ?? 8;
       if (digits.length !== expectedLength) {
