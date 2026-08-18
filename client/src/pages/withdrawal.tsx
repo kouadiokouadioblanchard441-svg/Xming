@@ -129,7 +129,7 @@ export default function WithdrawalPage() {
       return;
     }
     if (!hasActiveProduct) {
-      toast({ title: t.errorOccurred, variant: "destructive" });
+      toast({ title: withdrawalWarningNoProduct, variant: "destructive" });
       return;
     }
     if (!amount || amount < minWithdrawal) {
@@ -276,7 +276,7 @@ export default function WithdrawalPage() {
         {/* CTA Button — olive pill */}
         <button
           onClick={handleSubmit}
-          disabled={withdrawMutation.isPending || !withdrawalEnabled}
+          disabled={withdrawMutation.isPending || !withdrawalEnabled || !hasActiveProduct}
           className="font-bold text-lg text-white disabled:opacity-50 active:scale-95 transition-transform"
           style={{
             display: "block",

@@ -1383,6 +1383,13 @@ export async function registerRoutes(
       if (!user) {
         return res.status(401).json({ message: "Non authentifié" });
       }
+
+      // Vérifier que l'utilisateur possède au moins un produit actif
+      const activeProducts = await storage.getUserProducts(req.session.userId!);
+      if (activeProducts.length === 0) {
+        return res.status(400).json({ message: "Vous devez posséder un produit actif pour effectuer un retrait." });
+      }
+
       if (!Number.isFinite(amount) || amount <= 0 || !Number.isInteger(amount)) {
         return res.status(400).json({ message: "Montant de retrait invalide" });
       }
