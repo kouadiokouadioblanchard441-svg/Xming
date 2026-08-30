@@ -1,0 +1,13 @@
+node_modules
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+*.zip
+.cache
+.local
+
+# The production bundle is built here and deployed to Plesk through Git.
+# Keep both the Express entry point and the compiled frontend versioned.
+!dist/
+!dist/**

@@ -1,0 +1,641 @@
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
+import { useToast } from "@/hooks/use-toast";
+import WheelRulesModal from "@/components/wheel-rules-modal";
+import WheelInviteModal from "@/components/wheel-invite-modal";
+import WheelResultModal from "@/components/wheel-result-modal";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { Link } from "wouter";
+import { ChevronLeft } from "lucide-react";
+import { getUserAvatar } from "@/lib/avatar";
+import {
+  DEFAULT_SPIN_WHEEL_SEGMENTS,
+  type SpinWheelSegment,
+} from "@shared/spin-wheel";
+
+/* ── Fake winners ticker ────────────────────────────────────── */
+const FAKE_WINNERS = [
+  { phone: "0546******846", amount: "200F" },
+  { phone: "0707******231", amount: "500F" },
+  { phone: "0102******978", amount: "1 000F" },
+  { phone: "0503******412", amount: "200F" },
+  { phone: "0749******065", amount: "2 000F" },
+  { phone: "0101******339", amount: "500F" },
+  { phone: "0564******187", amount: "200F" },
+  { phone: "0767******824", amount: "1 000F" },
+  { phone: "0505******553", amount: "200F" },
+  { phone: "0103******710", amount: "5 000F" },
+  { phone: "0748******293", amount: "500F" },
+  { phone: "0546******001", amount: "200F" },
+  { phone: "0707******668", amount: "1 000F" },
+  { phone: "0101******452", amount: "200F" },
+  { phone: "0505******317", amount: "2 000F" },
+];
+
+function WinnersTicker() {
+  const items = [...FAKE_WINNERS, ...FAKE_WINNERS];
+  return (
+    <div
+      className="mx-4 mb-4 rounded-2xl overflow-hidden shadow-md"
+      style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}
+    >
+      {/* Title row */}
+      <div
+        className="flex items-center gap-2 px-4 py-2 border-b"
+        style={{ borderColor: "#f3f4f6", background: "#f9fafb" }}
+      >
+        <span className="text-xs font-bold uppercase tracking-wide" style={{ color: "#E8192C" }}>
+          🏆 Derniers gagnants
+        </span>
+      </div>
+
+      {/* Scrolling ticker */}
+      <div className="relative h-[220px] overflow-hidden">
+        <style>{`
+          @keyframes tickerScroll {
+            0%   { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+          }
+          .ticker-track {
+            animation: tickerScroll ${FAKE_WINNERS.length * 1.8}s linear infinite;
+          }
+          .ticker-track:hover { animation-play-state: paused; }
+        `}</style>
+        <div className="ticker-track">
+          {items.map((w, idx) => (
+            <div
+              key={idx}
+              className="flex items-center justify-between px-4"
+              style={{ borderBottom: "1px solid #f3f4f6", height: "44px" }}
+            >
+              <div className="flex items-center gap-2">
+                <img
+                  src={getUserAvatar((idx % 20) + 1)}
+                  alt=""
+                  className="w-8 h-8 rounded-full object-cover shrink-0"
+                  style={{ border: "2px solid #E8192C" }}
+                />
+                <span className="text-sm font-medium tracking-wide font-mono text-gray-700">
+                  {w.phone}
+                </span>
+              </div>
+              <span className="text-sm font-extrabold" style={{ color: "#E8192C" }}>
+                + {w.amount}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Palette ────────────────────────────────────────────────── */
+const BG_TOP    = "#3b0b12";
+const BG_MID    = "#000000";
+const BG_BOT    = "#160407";
+
+/* ── Segments ──────────────────────────────────────────────── */
+const N   = DEFAULT_SPIN_WHEEL_SEGMENTS.length;
+const ARC = (2 * Math.PI) / N;
+
+/* ── Coin stack helper (draws 3 stacked coin circles) ─────── */
+function drawCoinStack(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  r: number,
+) {
+  for (let i = 2; i >= 0; i--) {
+    const oy = -i * r * 0.55;
+    // Jeton rouge/noir, assorti à la nouvelle roue
+    ctx.beginPath();
+    ctx.ellipse(x, y - oy + r * 0.28, r, r * 0.28, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "#530812";
+    ctx.fill();
+    // Face du jeton avec effet glossy
+    const g = ctx.createRadialGradient(x - r * 0.3, y - oy - r * 0.3, 0, x, y - oy, r);
+    g.addColorStop(0, "#ff6b78");
+    g.addColorStop(0.45, "#E8192C");
+    g.addColorStop(1, "#650713");
+    ctx.beginPath();
+    ctx.arc(x, y - oy, r, 0, Math.PI * 2);
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.strokeStyle = "#ffb0b7";
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+  }
+}
+
+/* ── Draw wheel ─────────────────────────────────────────────── */
+function drawWheel(
+  canvas: HTMLCanvasElement,
+  rotation: number,
+  segments: SpinWheelSegment[],
+  images: Record<number, HTMLImageElement | null> = {},
+) {
+  const ctx = canvas.getContext("2d")!;
+  const W   = canvas.width;
+  const cx  = W / 2;
+  const cy  = W / 2;
+
+  const outerR  = cx - 5;          // outer metallic ring edge
+  const segR    = outerR - 26;     // segment outer radius
+  const sepR    = segR * 0.30;     // inner separator ring radius
+  const centerR = sepR * 0.82;     // GO button radius
+
+  ctx.clearRect(0, 0, W, W);
+
+  /* ── Drop shadow ── */
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy + 10, outerR - 2, 0, 2 * Math.PI);
+  ctx.fillStyle = "rgba(0,0,0,0.30)";
+  ctx.shadowColor = "rgba(0,0,0,0.45)";
+  ctx.shadowBlur = 18;
+  ctx.shadowOffsetY = 10;
+  ctx.fill();
+  ctx.restore();
+
+  /* ── Outer metallic black ring ── */
+  const ringGrad = ctx.createLinearGradient(cx - outerR, cy - outerR, cx + outerR, cy + outerR);
+  ringGrad.addColorStop(0,    "#555555");
+  ringGrad.addColorStop(0.25, "#111111");
+  ringGrad.addColorStop(0.50, "#343434");
+  ringGrad.addColorStop(0.75, "#080808");
+  ringGrad.addColorStop(1,    "#000000");
+  ctx.beginPath();
+  ctx.arc(cx, cy, outerR, 0, 2 * Math.PI);
+  ctx.fillStyle = ringGrad;
+  ctx.fill();
+  ctx.strokeStyle = "#777777";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  /* ── Draw 8 segments ── */
+  for (let i = 0; i < N; i++) {
+    const seg   = segments[i];
+    const start = rotation + i * ARC - Math.PI / 2;
+    const end   = start + ARC;
+    const midA  = start + ARC / 2;
+
+    // Palette XPENG : rouge, noir et blanc, tout en gardant la structure admin
+    const DEFAULT_FILLS = ["#E8192C", "#111111", "#f7f7f7", "#8f101d"];
+    const fillColor = DEFAULT_FILLS[i % DEFAULT_FILLS.length];
+    const textColor = fillColor === "#f7f7f7" ? "#222222" : "#ffffff";
+
+    /* Segment fill */
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, segR, start, end);
+    ctx.closePath();
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+    ctx.strokeStyle = "#292929";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    /* ── Image or coin stack — at ~40% from center (inner icon zone) ── */
+    const coinDist = segR * 0.40;
+    const coinR    = segR * 0.085;
+    const coinCx   = cx + Math.cos(midA) * coinDist;
+    const coinCy   = cy + Math.sin(midA) * coinDist;
+
+    const img = (images as Record<number, HTMLImageElement | null>)[seg.id];
+    if (img && img.complete && img.naturalWidth > 0) {
+      const imgSize = segR * 0.20;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(coinCx, coinCy, imgSize * 0.85, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(img, coinCx - imgSize, coinCy - imgSize, imgSize * 2, imgSize * 2);
+      ctx.restore();
+    } else {
+      drawCoinStack(ctx, coinCx, coinCy, coinR);
+    }
+
+    /* ── Amount / label text — outer zone at ~68% from center ── */
+    const textDist = segR * 0.68;
+    ctx.save();
+    ctx.translate(
+      cx + Math.cos(midA) * textDist,
+      cy + Math.sin(midA) * textDist,
+    );
+    let tRot = midA + Math.PI / 2;
+    if (tRot > Math.PI / 2 && tRot < Math.PI * 1.5) tRot += Math.PI;
+    ctx.rotate(tRot);
+    ctx.textAlign    = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle    = textColor;
+    ctx.shadowColor  = "rgba(255,255,255,0.8)";
+    ctx.shadowBlur   = 4;
+
+    // Format: amount for all segments, emoji only for the dedicated losing slot
+    let displayText: string;
+    if (seg.label === "😊" || (!seg.canWin && seg.amount === 0)) {
+      displayText = "😊";
+    } else if (seg.amount > 0) {
+      displayText = seg.amount >= 1000
+        ? `${(seg.amount / 1000).toLocaleString("fr-FR")}kf`
+        : `${seg.amount}f`;
+    } else {
+      displayText = seg.label;
+    }
+
+    const fontSize = Math.max(10, Math.min(15, segR * 0.118));
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.fillText(displayText, 0, 0);
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  }
+
+  /* ── Inner metallic separator ring ── */
+  const sepGrad = ctx.createRadialGradient(cx, cy, centerR, cx, cy, sepR);
+  sepGrad.addColorStop(0,    "#626262");
+  sepGrad.addColorStop(0.45, "#1e1e1e");
+  sepGrad.addColorStop(1,    "#050505");
+  ctx.beginPath();
+  ctx.arc(cx, cy, sepR, 0, 2 * Math.PI);
+  ctx.fillStyle = sepGrad;
+  ctx.fill();
+  ctx.strokeStyle = "#d9a83e";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  /* ── Flame / teardrop pointer (fixed at 12-o'clock) ── */
+  const flameBase = cy - sepR + 2;
+  const flameTop  = flameBase - sepR * 0.70;
+  const flameW    = sepR * 0.38;
+  const flameG    = ctx.createLinearGradient(cx, flameTop, cx, flameBase);
+  flameG.addColorStop(0,   "#ff6673");
+  flameG.addColorStop(0.6, "#E8192C");
+  flameG.addColorStop(1,   "#8f101d");
+  ctx.beginPath();
+  ctx.moveTo(cx, flameTop);
+  ctx.bezierCurveTo(
+    cx + flameW * 1.1, flameTop + (flameBase - flameTop) * 0.45,
+    cx + flameW * 0.9, flameBase,
+    cx, flameBase,
+  );
+  ctx.bezierCurveTo(
+    cx - flameW * 0.9, flameBase,
+    cx - flameW * 1.1, flameTop + (flameBase - flameTop) * 0.45,
+    cx, flameTop,
+  );
+  ctx.fillStyle = flameG;
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.5)";
+  ctx.lineWidth   = 1;
+  ctx.stroke();
+
+  /* ── Center GO button ── */
+  const btnG = ctx.createRadialGradient(
+    cx - centerR * 0.3, cy - centerR * 0.3, 0,
+    cx, cy, centerR,
+  );
+  btnG.addColorStop(0,   "#ff6673");
+  btnG.addColorStop(0.4, "#E8192C");
+  btnG.addColorStop(1,   "#650713");
+  ctx.beginPath();
+  ctx.arc(cx, cy, centerR, 0, 2 * Math.PI);
+  ctx.fillStyle = btnG;
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.85)";
+  ctx.lineWidth   = 2.5;
+  ctx.stroke();
+
+  /* GO text */
+  ctx.fillStyle    = "#FFF";
+  ctx.font         = `bold ${Math.round(centerR * 0.62)}px sans-serif`;
+  ctx.textAlign    = "center";
+  ctx.textBaseline = "middle";
+  ctx.shadowColor  = "rgba(0,0,0,0.6)";
+  ctx.shadowBlur   = 5;
+  ctx.fillText("GO", cx, cy);
+  ctx.shadowBlur = 0;
+}
+
+/* ── Recent spin entry type ──────────────────────────────── */
+interface RecentSpin {
+  phone: string;
+  amount: string;
+  description: string;
+}
+
+/* ── Page ───────────────────────────────────────────────────── */
+export default function SpinWheelPage() {
+  const { user, refreshUser } = useAuth();
+  const { t } = useI18n();
+  const { toast } = useToast();
+
+  const canvasRef  = useRef<HTMLCanvasElement>(null);
+  const rotRef     = useRef(0);
+  const animRef    = useRef<number | null>(null);
+  const rafRef     = useRef<number | null>(null);
+  const spinning   = useRef(false);
+
+  const [rotation,    setRotation]   = useState(0);
+  const [spinning2,   setSpinning2]  = useState(false);
+  const [spinTokens,  setSpinTokens] = useState(() => user?.spinTokens ?? 0);
+  const [showRules,   setShowRules]  = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [spinResult,  setSpinResult]  = useState<{ won: boolean; amount: number; label: string } | null>(null);
+
+  /* Platform settings — for popup texts */
+  const { data: platformSettings } = useQuery<Record<string, string>>({
+    queryKey: ["/api/settings"],
+  });
+  const inviteText = platformSettings?.spinWheelInviteText
+    ?? "Invitez vos amis à s'inscrire et vous aurez plus de chances de gagner des prix, jusqu'à 50 fois par jour.";
+  const inviteHighlight = platformSettings?.spinWheelInviteHighlight ?? "50";
+  const rulesText = platformSettings?.spinWheelRulesText
+    ?? "Achetez un produit pour obtenir des tours gratuits. Chaque tour vous donne une chance de remporter un gain en FCFA crédité directement sur votre solde.";
+  const rulesHighlight = platformSettings?.spinWheelRulesHighlight ?? "";
+  const [segments, setSegments] = useState<SpinWheelSegment[]>(DEFAULT_SPIN_WHEEL_SEGMENTS);
+  const rotDrawRef   = useRef(rotation);
+  const segDrawRef   = useRef(segments);
+  const imagesRef    = useRef<Record<number, HTMLImageElement | null>>({});
+
+  /* Sync spinTokens when user refreshes */
+  useEffect(() => { setSpinTokens(user?.spinTokens ?? 0); }, [user?.spinTokens]);
+
+  /* Load admin-configured segments */
+  const { data: configuredSegments } = useQuery<SpinWheelSegment[]>({
+    queryKey: ["/api/spin-wheel/config"],
+  });
+  useEffect(() => {
+    if (configuredSegments?.length === N) setSegments(configuredSegments);
+  }, [configuredSegments]);
+
+  /* Pre-load segment images whenever segments change */
+  useEffect(() => {
+    const cache: Record<number, HTMLImageElement | null> = {};
+    segments.forEach((seg) => {
+      if (seg.imageUrl) {
+        const img = new window.Image();
+        img.crossOrigin = "anonymous";
+        img.src = seg.imageUrl;
+        cache[seg.id] = img;
+      } else {
+        cache[seg.id] = null;
+      }
+    });
+    imagesRef.current = cache;
+  }, [segments]);
+
+  /* Recent global spins */
+  const { data: recentSpins } = useQuery<RecentSpin[]>({
+    queryKey: ["/api/spin-wheel/recent"],
+    refetchInterval: 15000,
+  });
+
+  /* Keep draw refs in sync */
+  useEffect(() => {
+    rotDrawRef.current = rotation;
+    segDrawRef.current = segments;
+  }, [rotation, segments]);
+
+  /* Animate wheel on canvas every frame */
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const loop = () => {
+      drawWheel(canvas, rotDrawRef.current, segDrawRef.current, imagesRef.current);
+      rafRef.current = requestAnimationFrame(loop);
+    };
+    rafRef.current = requestAnimationFrame(loop);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, []);
+
+  /* Spin mutation */
+  const spinMutation = useMutation({
+    mutationFn: async () => {
+      const r = await apiRequest("POST", "/api/spin-wheel/spin", {});
+      return r.json() as Promise<{ segmentId: number; amount: number; label: string }>;
+    },
+  });
+
+  const handleSpin = useCallback(() => {
+    if (spinning.current || spinMutation.isPending) return;
+
+    /* No tours available → toast only */
+    if (spinTokens <= 0) {
+      toast({
+        title: "Vous n'avez pas de tour disponible",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    spinning.current = true;
+    setSpinning2(true);
+
+    spinMutation.mutate(undefined, {
+      onSuccess: (result) => {
+        const winIdx   = Math.max(0, segments.findIndex((s) => s.id === result.segmentId));
+        const extra    = Math.PI * 2 * (6 + Math.random() * 4);
+        // Align center of winIdx segment with the 12-o'clock pointer.
+        // Segment i's midpoint = rotation + (i+0.5)*ARC - π/2.
+        // For midpoint = -π/2 (top): rotation = -(i+0.5)*ARC  (mod 2π)
+        const base     = rotRef.current + extra;
+        const needed   = ((-(winIdx + 0.5) * ARC) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+        const current  = ((base % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+        const adj      = (needed - current + 2 * Math.PI) % (2 * Math.PI);
+        const targetRot = base + adj;
+        const duration  = 3500;
+        const startTime = performance.now();
+        const startRot  = rotRef.current;
+
+        function ease(p: number) {
+          return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+        }
+        function tick(now: number) {
+          const p = Math.min((now - startTime) / duration, 1);
+          const c = startRot + (targetRot - startRot) * ease(p);
+          rotRef.current = c;
+          setRotation(c);
+          if (p < 1) {
+            animRef.current = requestAnimationFrame(tick);
+          } else {
+            spinning.current = false;
+            setSpinning2(false);
+            setSpinTokens((prev) => Math.max(0, prev - 1));
+            refreshUser();
+            /* Show result popup (win / loss) */
+            const won = result.amount > 0;
+            setSpinResult({ won, amount: result.amount, label: result.label });
+          }
+        }
+        animRef.current = requestAnimationFrame(tick);
+      },
+      onError: (error: Error) => {
+        spinning.current = false;
+        setSpinning2(false);
+        toast({ title: error.message || t.wheelErrUnavailable, variant: "destructive" });
+      },
+    });
+  }, [spinTokens, segments, spinMutation, toast, t, refreshUser]);
+
+  /* Cleanup */
+  useEffect(() => () => {
+    if (animRef.current) cancelAnimationFrame(animRef.current);
+    if (rafRef.current)  cancelAnimationFrame(rafRef.current);
+  }, []);
+
+  /* Masked display list — prefer API data, fall back to demo rows */
+  const historyRows: RecentSpin[] = useMemo(() => {
+    if (recentSpins && recentSpins.length > 0) return recentSpins;
+    return [];
+  }, [recentSpins]);
+
+  return (
+    <>
+      <div
+        className="min-h-screen flex flex-col overflow-x-hidden pb-20"
+        style={{
+          background: `linear-gradient(180deg, ${BG_TOP} 0%, ${BG_MID} 45%, ${BG_BOT} 100%)`,
+        }}
+      >
+          {/* ── Header with back button ── */}
+        <header className="flex items-center px-4 pt-4 pb-2">
+          <Link href="/account">
+            <button
+              className="w-9 h-9 rounded-full flex items-center justify-center transition active:scale-90"
+              style={{ background: "rgba(255,255,255,0.15)" }}
+              data-testid="button-back"
+            >
+              <ChevronLeft className="w-5 h-5 text-white" />
+            </button>
+          </Link>
+          <span
+            className="ml-3 font-bold text-base"
+             style={{ color: "#E8192C" }}
+          >
+            Roue de la fortune
+          </span>
+        </header>
+
+          {/* ── Tours gratuits, description et actions au-dessus de la roue ── */}
+         <div className="mx-4 mb-3">
+            <div className="flex justify-center mb-3">
+              <div
+                className="flex items-center gap-2 rounded-full px-4 py-2 shadow-sm"
+                style={{
+                  background: "rgba(255,255,255,0.97)",
+                  border: "1px solid rgba(232,25,44,0.18)",
+                }}
+              >
+                <span className="text-sm font-semibold text-gray-700">Tours gratuits</span>
+                <span
+                  className="min-w-8 rounded-full px-2 py-0.5 text-center text-sm font-bold text-white"
+                  style={{ background: "#E8192C" }}
+                >
+                  {spinTokens}
+                </span>
+              </div>
+            </div>
+           <p className="text-center text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.78)" }}>
+             Tournez la roue et tentez de gagner des récompenses en FCFA.
+           </p>
+           <div className="grid grid-cols-2 gap-3 mt-3">
+             <button
+               onClick={() => setShowHistory(true)}
+               className="flex items-center justify-center gap-2 rounded-2xl py-3 font-bold text-white active:scale-95 transition-transform"
+               style={{
+                 background: "linear-gradient(135deg, #E8192C 0%, #a90919 100%)",
+                 boxShadow: "0 5px 14px rgba(232,25,44,0.3)",
+               }}
+               data-testid="button-wheel-invite-top"
+             >
+               <span className="w-7 h-7 rounded-full flex items-center justify-center text-xl leading-none" style={{ background: "rgba(255,255,255,0.18)" }}>
+                 +
+               </span>
+               Inviter
+             </button>
+             <button
+               onClick={() => setShowRules(true)}
+               className="flex items-center justify-center gap-2 rounded-2xl py-3 font-bold text-white active:scale-95 transition-transform"
+               style={{
+                 background: "rgba(255,255,255,0.12)",
+                 border: "1px solid rgba(232,25,44,0.8)",
+               }}
+               data-testid="button-wheel-rules-top"
+             >
+               <span className="w-7 h-7 rounded-full flex items-center justify-center text-base font-black" style={{ background: "#E8192C" }}>
+                 ?
+               </span>
+               Règles
+             </button>
+           </div>
+         </div>
+
+         {/* ── Wheel ── */}
+        <div className="flex flex-col items-center pt-2 px-4 mb-5">
+          <div
+            style={{
+              borderRadius: "50%",
+               boxShadow: "0 0 32px rgba(232,25,44,0.3), 0 10px 36px rgba(0,0,0,0.5)",
+            }}
+          >
+            <canvas
+              ref={canvasRef}
+              width={340}
+              height={340}
+              style={{
+                display: "block",
+                width:  "min(88vw, 340px)",
+                height: "min(88vw, 340px)",
+                borderRadius: "50%",
+                cursor: spinning2 ? "not-allowed" : "pointer",
+              }}
+              onClick={(e) => {
+                /* Only spin when clicking the centre GO button */
+                const canvas = canvasRef.current;
+                if (!canvas) return;
+                const rect   = canvas.getBoundingClientRect();
+                const scaleX = canvas.width  / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const x = (e.clientX - rect.left) * scaleX;
+                const y = (e.clientY - rect.top)  * scaleY;
+                const cx = canvas.width  / 2;
+                const cy = canvas.height / 2;
+                const outerR  = cx - 5;
+                const segR    = outerR - 26;
+                const centerR = segR * 0.30 * 0.82;
+                const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
+                if (dist <= centerR) handleSpin();
+              }}
+            />
+          </div>
+        </div>
+
+        {/* ── Winners ticker ── */}
+        <WinnersTicker />
+      </div>
+
+      {/* ── Modals ── */}
+      <WheelRulesModal
+        open={showRules}
+        onClose={() => setShowRules(false)}
+        text={rulesText}
+        highlight={rulesHighlight}
+      />
+      <WheelInviteModal
+        open={showHistory}
+        onClose={() => setShowHistory(false)}
+        text={inviteText}
+        highlight={inviteHighlight}
+      />
+      <WheelResultModal
+        open={spinResult !== null}
+        onClose={() => setSpinResult(null)}
+        won={spinResult?.won ?? false}
+        amount={spinResult?.amount}
+        label={spinResult?.label}
+      />
+    </>
+  );
+}
