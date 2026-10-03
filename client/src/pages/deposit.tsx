@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { RDC_COUNTRY, SUPPORTED_COUNTRY_CODE } from "@shared/country-config";
+import type { Product } from "@shared/schema";
 
 const CURRENCY = RDC_COUNTRY.currency;
 
@@ -120,6 +121,15 @@ export default function DepositPage() {
     queryKey: ["/api/settings"],
   });
 
+  const {
+    data: products = [],
+    isLoading: areVipPricesLoading,
+    isError: vipPricesFailed,
+  } = useQuery<Product[]>({
+    queryKey: ["/api/products"],
+    enabled: !!user,
+  });
+
   const { data: countryConfigs = [], isLoading: isCountriesLoading } = useQuery<CountryConfig[]>({
     queryKey: ["/api/countries"],
     enabled: !!user,
@@ -169,16 +179,9 @@ export default function DepositPage() {
   const hasChannels = showManualDepositChannels && depositChannels.length > 0;
 
   const minDeposit = parseInt(platformSettings?.minDeposit || "20000", 10);
-  const presetAmounts = useMemo(
-    () =>
-      (
-        platformSettings?.depositPresetAmounts ||
-        "20000,45000,75000,100000,245000,500000,1000000"
-      )
-        .split(",")
-        .map((v) => parseInt(v.trim(), 10))
-        .filter((v) => Number.isFinite(v) && v > 0),
-    [platformSettings?.depositPresetAmounts]
+  const vipProducts = useMemo(
+    () => products.filter(product => !product.isFree && Number(product.price) > 0),
+    [products]
   );
 
   // Operators shown on step 2: channel-specific or global fallback
@@ -428,23 +431,43 @@ export default function DepositPage() {
                 data-testid="input-deposit-amount"
               />
 
-              {/* Preset grid – 3 columns */}
-              <div className="mt-3 grid grid-cols-3 gap-2">
-                {presetAmounts.map((preset) => (
-                  <button
-                    key={preset}
-                    onClick={() => setAmount(preset)}
-                    className="rounded-xl py-3.5 text-sm font-semibold text-white transition active:scale-95"
-                    style={{
-                      background:
-                        amount === preset ? "#1A56DB" : "rgba(255,255,255,0.10)",
-                    }}
-                    data-testid={`button-preset-amount-${preset}`}
-                  >
-                    {preset.toLocaleString("fr-FR")}
-                  </button>
-                ))}
-              </div>
+              {/* VIP product prices stay in sync with the active product catalog. */}
+              {areVipPricesLoading ? (
+                <div className="mt-4 flex items-center justify-center gap-2 py-5 text-sm text-white/75">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Chargement des prix VIP…
+                </div>
+              ) : vipPricesFailed ? (
+                <p className="mt-4 rounded-xl border border-white/20 bg-white/10 px-3 py-3 text-center text-sm text-white">
+                  Impossible de charger les prix VIP. Saisissez un montant manuellement.
+                </p>
+              ) : vipProducts.length === 0 ? (
+                <p className="mt-4 rounded-xl border border-white/20 bg-white/10 px-3 py-3 text-center text-sm text-white">
+                  Aucun prix VIP actif n&apos;est disponible.
+                </p>
+              ) : (
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  {vipProducts.map((product) => {
+                    const vipPrice = Number(product.price);
+                    return (
+                      <button
+                        key={product.id}
+                        onClick={() => setAmount(vipPrice)}
+                        aria-label={`Sélectionner ${product.name}, ${vipPrice.toLocaleString("fr-FR")} ${CURRENCY}`}
+                        className="rounded-xl py-2.5 text-sm font-semibold text-white transition active:scale-95"
+                        style={{
+                          background:
+                            amount === vipPrice ? "#1A56DB" : "rgba(255,255,255,0.10)",
+                        }}
+                        data-testid={`button-preset-amount-${vipPrice}`}
+                      >
+                        <span className="block text-[10px] font-medium opacity-75">{product.name}</span>
+                        <span className="block">{vipPrice.toLocaleString("fr-FR")}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Retour WestPay — indicateur de vérification */}
