@@ -24,7 +24,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const loginSchema = z.object({
-    phone: z.string().min(8, t.errInvalidPhone),
+    phone: z.string().regex(/^\d{9}$/, t.errInvalidPhone),
     country: z.string().min(2, t.selectCountry),
     password: z.string().min(1, t.errPasswordRequired),
   });
@@ -131,6 +131,8 @@ export default function LoginPage() {
             <input
               {...form.register("phone")}
               type="tel"
+              inputMode="numeric"
+              maxLength={9}
               placeholder={t.phonePlaceholder}
               className="flex-1 h-full bg-transparent text-gray-700 placeholder:text-gray-400 text-sm outline-none px-3"
               data-testid="input-phone"

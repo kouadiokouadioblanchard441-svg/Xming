@@ -13,6 +13,10 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+function toStoredPhone(phone: string, country: string): string {
+  return country === "CD" && /^\d{9}$/.test(phone) ? `0${phone}` : phone;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,7 +42,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshUser]);
 
   const login = async (phone: string, country: string, password: string) => {
-    const response = await apiRequest("POST", "/api/auth/login", { phone, country, password });
+    const response = await apiRequest("POST", "/api/auth/login", {
+      phone: toStoredPhone(phone, country),
+      country,
+      password,
+    });
     const data = await response.json();
     if (!response.ok) {
       throw new Error(data.message || "Erreur de connexion");
@@ -47,7 +55,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const register = async (data: { fullName: string; phone: string; country: string; password: string; invitationCode?: string }) => {
-    const response = await apiRequest("POST", "/api/auth/register", data);
+    const response = await apiRequest("POST", "/api/auth/register", {
+      ...data,
+      phone: toStoredPhone(data.phone, data.country),
+    });
     const result = await response.json();
     if (!response.ok) {
       throw new Error(result.message || "Erreur d'inscription");

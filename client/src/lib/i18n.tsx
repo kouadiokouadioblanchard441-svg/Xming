@@ -691,7 +691,7 @@ const T: Record<Lang, Translations> = {
     welcomeMsg:         "Bienvenue sur XPENG !",
     languageLabel:      "Langue",
     selectCountry:      "Sélectionnez un pays",
-    phonePlaceholder:   "Veuillez saisir votre numéro de téléphone",
+    phonePlaceholder:   "9 chiffres sans le 0 initial",
     passwordPlaceholder:"Veuillez saisir votre mot de passe",
     confirmPasswordPlaceholder: "Veuillez confirmer votre mot de passe",
     transactionPasswordPlaceholder: "Veuillez saisir votre mot de passe de transaction",
