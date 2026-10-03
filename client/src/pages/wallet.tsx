@@ -54,13 +54,11 @@ export default function WalletPage() {
 
   // XPENG is currently available only in the RDC.
   const userCountryCode = "CD";
-  const { data: countryOperators = [] } = useQuery<string[]>({
+  const { data: countryOperators = [], isLoading: isOperatorsLoading } = useQuery<string[]>({
     queryKey: [`/api/countries/${userCountryCode}/operators`],
     enabled: !!user,
   });
-  const supportedOperators = countryOperators.length > 0
-    ? countryOperators
-    : FALLBACK_COUNTRIES[0].operators;
+  const supportedOperators = countryOperators;
 
   const addMutation = useMutation({
     mutationFn: async () => {
@@ -278,9 +276,13 @@ export default function WalletPage() {
             >
               <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mt-3 mb-2" />
               <div className="overflow-y-auto" style={{ maxHeight: "calc(60vh - 32px)" }}>
-                {supportedOperators.length === 0 ? (
+                {isOperatorsLoading ? (
                   <div className="text-center py-12">
-                    <p className="text-gray-400 text-sm">Aucun opérateur disponible</p>
+                    <p className="text-gray-400 text-sm">Chargement des opérateurs…</p>
+                  </div>
+                ) : supportedOperators.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-gray-400 text-sm">Aucun opérateur configuré. Contactez le support.</p>
                   </div>
                 ) : (
                   supportedOperators.map((op, idx) => (

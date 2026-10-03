@@ -50,9 +50,9 @@ export default function AdminPage() {
               <TabsTrigger value="products" data-testid="tab-products">{t.adminTabProducts}</TabsTrigger>
 
               <TabsTrigger value="spin-wheel" data-testid="tab-spin-wheel">🎡 Roue</TabsTrigger>
-              <TabsTrigger value="deposit-channels" data-testid="tab-deposit-channels">Canaux dépôt</TabsTrigger>
-              <TabsTrigger value="payment-numbers" data-testid="tab-payment-numbers">{t.adminTabNumbers}</TabsTrigger>
-              <TabsTrigger value="countries" data-testid="tab-countries">{t.adminTabCountries}</TabsTrigger>
+              <TabsTrigger value="deposit-channels" data-testid="tab-deposit-channels">Dépôts manuels</TabsTrigger>
+              <TabsTrigger value="payment-numbers" data-testid="tab-payment-numbers">Comptes de réception</TabsTrigger>
+              <TabsTrigger value="countries" data-testid="tab-countries">Réseaux de retrait</TabsTrigger>
               <TabsTrigger value="giftcodes" data-testid="tab-giftcodes">{t.adminTabGiftCodes}</TabsTrigger>
               <TabsTrigger value="settings" data-testid="tab-settings">{t.adminTabSettings}</TabsTrigger>
               <TabsTrigger value="wheel" data-testid="tab-wheel">{t.adminTabWheel}</TabsTrigger>

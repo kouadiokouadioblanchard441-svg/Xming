@@ -1685,11 +1685,27 @@ export async function registerRoutes(
         });
       }
 
+      const countryConfig = (await storage.getActiveCountries()).find(c => c.code === userCountry);
+      let configuredOperators: string[] = [];
+      try {
+        const parsedOperators = JSON.parse(countryConfig?.operators || "[]");
+        if (Array.isArray(parsedOperators)) {
+          configuredOperators = parsedOperators.filter((operator): operator is string => typeof operator === "string");
+        }
+      } catch {
+        configuredOperators = [];
+      }
+      if (typeof paymentMethod !== "string" || !configuredOperators.includes(paymentMethod)) {
+        return res.status(400).json({
+          message: "Choisissez un opérateur de retrait configuré par l’administration.",
+        });
+      }
+
       const wallet = await storage.createWallet({
         userId: req.session.userId!,
         accountName: accountName.trim(),
         accountNumber: digits,
-        paymentMethod: paymentMethod || "Mobile Money",
+        paymentMethod,
         country: userCountry,
       });
       res.json(wallet);
@@ -2824,7 +2840,7 @@ export async function registerRoutes(
       if (code !== SUPPORTED_COUNTRY_CODE) return res.json([]);
       const allCountries = await storage.getActiveCountries();
       const country = allCountries.find((c: any) => c.code === code);
-      if (!country) return res.json([...RDC_COUNTRY.operators]);
+      if (!country) return res.json([]);
       let ops: string[] = [];
       try { ops = JSON.parse(country.operators || "[]"); } catch {}
       res.json(ops);
@@ -2854,7 +2870,7 @@ export async function registerRoutes(
         name: RDC_COUNTRY.name,
         currency: RDC_COUNTRY.currency,
         phonePrefix: RDC_COUNTRY.phonePrefix,
-        operators: operators || JSON.stringify([...RDC_COUNTRY.operators]),
+        operators: operators || "[]",
         isActive: true,
         autoPaymentEnabled: autoPaymentEnabled !== undefined ? autoPaymentEnabled : false,
       });

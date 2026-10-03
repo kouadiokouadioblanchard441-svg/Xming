@@ -151,11 +151,8 @@ export async function seed() {
         name: countryData.name,
         currency: countryData.currency,
         phonePrefix: countryData.phonePrefix,
-        operators: countryData.operators,
-        isActive: countryData.isActive,
-        autoPaymentEnabled: countryData.autoPaymentEnabled,
       }).where(eq(countries.code, countryData.code));
-      console.log(`Country updated: ${countryData.name}`);
+      console.log(`Country identity checked; admin-managed settings preserved: ${countryData.name}`);
     }
   }
 

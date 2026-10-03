@@ -8,7 +8,8 @@ export const RDC_COUNTRY = {
   currency: "CDF",
   phonePrefix: "243",
   phoneLength: 9,
-  operators: ["Airtel Money", "M-Pesa", "Orange Money", "Afrimoney"],
+  // Operator methods are configured in the admin country panel and stored in the database.
+  operators: [],
   isActive: true,
   autoPaymentEnabled: false,
 } as const;

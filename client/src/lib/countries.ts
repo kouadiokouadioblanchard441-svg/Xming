@@ -7,7 +7,7 @@ export const COUNTRIES = [
     name: RDC_COUNTRY.shortName,
     flag: RDC_COUNTRY.flag,
     currency: RDC_COUNTRY.currency,
-    paymentMethods: [...RDC_COUNTRY.operators],
+    paymentMethods: [],
   },
 ];
 
@@ -75,7 +75,7 @@ export function getCountryByCode(code: string, apiCountries?: ApiCountry[]) {
     name: fallback.name,
     currency: normalizeCurrency(fallback.currency),
     phonePrefix: fallback.phonePrefix,
-    paymentMethods: fallback.operators,
+      paymentMethods: [],
   };
 }
 

@@ -148,7 +148,7 @@ function ChannelOperators({ channel }: { channel: DepositChannel }) {
           <div className="space-y-3 mt-2">
             <div>
               <label className="text-xs font-medium text-muted-foreground">Nom de l'opérateur *</label>
-              <Input placeholder="MTN, Orange, Wave…" value={form.operatorName}
+              <Input placeholder="Nom du réseau" value={form.operatorName}
                 onChange={e => setForm(f => ({ ...f, operatorName: e.target.value }))} />
             </div>
             <div>
@@ -260,9 +260,9 @@ export default function AdminDepositChannels() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold">Canaux de dépôt</h2>
+          <h2 className="text-lg font-bold">Dépôts manuels</h2>
           <p className="text-sm text-muted-foreground">
-            Chaque canal regroupe les opérateurs (MTN, Orange, Wave…) par pays.
+            Chaque canal regroupe les comptes de réception et les réseaux utilisés. Les informations sont stockées en base et modifiables ici.
           </p>
         </div>
         <Button onClick={() => { setEditTarget(null); setForm(emptyCh); setShowForm(true); }} className="gap-1">

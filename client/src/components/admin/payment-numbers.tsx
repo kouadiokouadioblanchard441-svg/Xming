@@ -125,6 +125,9 @@ export default function AdminPaymentNumbers() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-muted-foreground">{numbers.length} numéro(s) configuré(s)</p>
+          <p className="mt-1 max-w-xl text-xs text-muted-foreground">
+            Ces comptes de réception servent aux dépôts manuels. Les opérateurs, numéros, titulaires et leur visibilité sont enregistrés en base et modifiables ici.
+          </p>
         </div>
         <Button onClick={openAdd} data-testid="button-add-payment-number">
           <Plus className="w-4 h-4 mr-2" />
@@ -211,7 +214,7 @@ export default function AdminPaymentNumbers() {
             <div>
               <label className="text-sm font-medium">Opérateur</label>
               <Input value={form.operatorName} onChange={(e) => setForm(f => ({ ...f, operatorName: e.target.value }))}
-                placeholder="Ex: Airtel Money, M-Pesa, Orange Money" className="mt-1" data-testid="input-operator-name" />
+                placeholder="Nom du réseau Mobile Money" className="mt-1" data-testid="input-operator-name" />
             </div>
             <div>
               <label className="text-sm font-medium">Numéro de téléphone</label>

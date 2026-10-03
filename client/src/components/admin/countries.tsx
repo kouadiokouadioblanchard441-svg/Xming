@@ -29,7 +29,7 @@ const emptyForm: CountryForm = {
   name: RDC_COUNTRY.name,
   currency: RDC_COUNTRY.currency,
   phonePrefix: RDC_COUNTRY.phonePrefix,
-  operators: RDC_COUNTRY.operators.join(", "),
+  operators: "",
   isActive: true,
   autoPaymentEnabled: false,
 };
@@ -266,10 +266,13 @@ export default function AdminCountries() {
               <Input
                 value={form.operators}
                 onChange={e => setForm({ ...form, operators: e.target.value })}
-                placeholder="Airtel Money, Moov Money"
+                placeholder="Réseau 1, Réseau 2"
                 data-testid="input-country-operators"
               />
               <p className="text-xs text-muted-foreground mt-1">{t.adminCountryOperatorsHint}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Cette liste alimente les choix de moyens de retrait et se modifie ici, sans changement de code.
+              </p>
             </div>
             <div className="flex items-center gap-2">
               <Switch
