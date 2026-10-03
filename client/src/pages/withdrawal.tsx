@@ -57,7 +57,7 @@ export default function WithdrawalPage() {
   const minWithdrawal = withdrawalSettings?.minWithdrawal ?? 5000;
   const maxWithdrawal = parseInt(allSettings?.maxWithdrawal || "1000000");
   const withdrawalEnabled = withdrawalSettings?.withdrawalEnabled ?? true;
-  const withdrawalFee = withdrawalSettings?.withdrawalFees ?? 10;
+  const withdrawalFee = withdrawalSettings?.withdrawalFees ?? 15;
   const withdrawalStartHour = withdrawalSettings?.withdrawalStartHour ?? 8;
   const withdrawalEndHour = withdrawalSettings?.withdrawalEndHour ?? 18;
   const withdrawalDaysRaw = withdrawalSettings?.withdrawalDays ?? "0,1,2,3,4,5,6";
@@ -175,7 +175,7 @@ export default function WithdrawalPage() {
         `2. Le montant maximum de retrait est de ${maxWithdrawal.toLocaleString()} ${currency}`,
         `3. Les deux derniers chiffres du montant du retrait doivent être 0 (exemple : 1000 ${currency}, 9900 ${currency}, 99900 ${currency})`,
         `4. Des frais bancaires de ${withdrawalFee}% seront facturés pour chaque retrait. (Par exemple, retrait 1000 ${currency} — montant réel reçu : ${Math.floor(1000 * (1 - withdrawalFee / 100))} ${currency})`,
-        `5. Les retraits sont disponibles ${daysLabel}, de ${withdrawalStartHour}h à ${withdrawalEndHour}h`,
+        `5. Les retraits sont disponibles ${daysLabel}, de ${withdrawalStartHour}h à ${withdrawalEndHour}h (heure locale de Kinshasa)`,
         `6. Vous pouvez effectuer au maximum ${maxPerDay} retrait${maxPerDay > 1 ? "s" : ""} par jour`,
       ];
 

@@ -156,10 +156,6 @@ export async function seed() {
     }
   }
 
-  // Remove free products and obsolete settings from DB if any still exist (migration)
-  await db.delete(products).where(eq(products.isFree, true));
-  await db.delete(platformSettings).where(eq(platformSettings.key, "signupBonus"));
-
   // Seed products only if table is empty (first install only — never overwrite admin changes)
   const existingProducts = await db.select().from(products);
   if (existingProducts.filter(p => !p.isFree).length === 0) {

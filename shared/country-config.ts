@@ -6,6 +6,7 @@ export const RDC_COUNTRY = {
   shortName: "RDC",
   flag: "CD",
   currency: "CDF",
+  timeZone: "Africa/Kinshasa",
   phonePrefix: "243",
   phoneLength: 9,
   // Operator methods are configured in the admin country panel and stored in the database.

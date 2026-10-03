@@ -7,6 +7,7 @@ import {
   type GiftCode, type GiftCodeClaim, type Country
 } from "@shared/schema";
 import { db } from "./db";
+import { getKinshasaStartOfDay } from "./rdc-time";
 import { eq, and, asc, desc, sql, gte, lte, or, inArray } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
@@ -399,7 +400,7 @@ export class DatabaseStorage implements IStorage {
     if (!user || !user.referredBy) return;
 
     const settings = await this.getSettings();
-    const level1Rate = parseFloat(settings.level1Commission || "25") / 100;
+    const level1Rate = parseFloat(settings.level1Commission || "10") / 100;
     const level2Rate = parseFloat(settings.level2Commission || "1") / 100;
     const level3Rate = parseFloat(settings.level3Commission || "1") / 100;
 
@@ -834,8 +835,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserWithdrawalCountToday(userId: number): Promise<number> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = getKinshasaStartOfDay();
     
     const result = await db.select({ count: sql<number>`count(*)` })
       .from(withdrawals)
@@ -1299,8 +1299,7 @@ export class DatabaseStorage implements IStorage {
 
   // Admin
   async getStats(startDate?: Date, endDate?: Date): Promise<any> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = getKinshasaStartOfDay();
     
     // Récupérer la date de réinitialisation des stats
     const statsResetDateStr = await this.getSetting("statsResetDate");

@@ -55,7 +55,7 @@ export default function TeamPage() {
   const referralCode = user.referralCode || "";
   const referralLink = `${window.location.origin}/#/register?invite_code=${referralCode}`;
 
-  const lv1Rate = settings?.level1Commission || "30";
+  const lv1Rate = settings?.level1Commission || "10";
   const lv2Rate = settings?.level2Commission || "2";
   const lv3Rate = settings?.level3Commission || "1";
 

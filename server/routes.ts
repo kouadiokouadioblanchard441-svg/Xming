@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import bcrypt from "bcryptjs";
 import { registerSchema, loginSchema } from "@shared/schema";
 import { RDC_COUNTRY, SUPPORTED_COUNTRY_CODE } from "@shared/country-config";
+import { getKinshasaLocalDayAndHour } from "./rdc-time";
 import { z } from "zod";
 import ConnectPgSimple from "connect-pg-simple";
 import { db, pool } from "./db";
@@ -1456,9 +1457,7 @@ export async function registerRoutes(
 
       // ── Vérification jour + heure (heure locale de Kinshasa, RDC) ──
       {
-        const nowKinshasa = new Date(new Date().toLocaleString("en-US", { timeZone: "Africa/Kinshasa" }));
-        const currentDay = nowKinshasa.getDay();   // 0=Dim, 1=Lun … 6=Sam
-        const currentHour = nowKinshasa.getHours();
+        const { dayIndex: currentDay, hour: currentHour } = getKinshasaLocalDayAndHour();
         const allowedDays = (settingsForWithdrawal.withdrawalDays || "0,1,2,3,4,5,6")
           .split(",").map((d: string) => parseInt(d.trim())).filter((n: number) => !isNaN(n));
         const startHour = parseInt(settingsForWithdrawal.withdrawalStartHour || "8");
@@ -1522,7 +1521,7 @@ export async function registerRoutes(
       }
 
       const settings = await storage.getSettings();
-      const fees = parseFloat(settings.withdrawalFees || "10");
+      const fees = parseFloat(settings.withdrawalFees || "15");
       const feeAmount = Math.round(amount * fees / 100);
       const netAmount = amount - feeAmount;
 
@@ -1945,7 +1944,7 @@ export async function registerRoutes(
       const settings = await storage.getSettings();
       res.json({
         withdrawalEnabled: settings.withdrawalEnabled !== "false",
-        withdrawalFees: parseFloat(settings.withdrawalFees || "10"),
+        withdrawalFees: parseFloat(settings.withdrawalFees || "15"),
         withdrawalStartHour: parseInt(settings.withdrawalStartHour || "8"),
         withdrawalEndHour: parseInt(settings.withdrawalEndHour || "18"),
         withdrawalDays: settings.withdrawalDays || "0,1,2,3,4,5,6",

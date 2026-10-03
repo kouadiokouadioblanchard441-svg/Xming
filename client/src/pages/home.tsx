@@ -111,9 +111,9 @@ export default function HomePage() {
   const telegramGroupLink = settings?.groupLink || "https://t.me/vestasgroup";
   const minDeposit    = settings?.minDeposit    || "20000";
   const minWithdrawal = settings?.minWithdrawal || "5000";
-  const fees          = settings?.withdrawalFees || "10";
-  const lvl1          = settings?.level1Commission || "25";
-  const lvl2          = settings?.level2Commission || "1";
+  const fees          = settings?.withdrawalFees || "15";
+  const lvl1          = settings?.level1Commission || "10";
+  const lvl2          = settings?.level2Commission || "2";
   const lvl3          = settings?.level3Commission || "1";
 
   const banner1Images: string[] = (() => {

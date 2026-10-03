@@ -11,7 +11,7 @@ export default function RulesPage() {
   const signupBonus = settings?.signupBonusAmount || "1000";
   const minDeposit = settings?.minDeposit || "20000";
   const minWithdrawal = settings?.minWithdrawal || "5000";
-  const withdrawalFees = settings?.withdrawalFees || "18";
+  const withdrawalFees = settings?.withdrawalFees || "15";
   const withdrawalStartHour = settings?.withdrawalStartHour || "8";
   const withdrawalEndHour = settings?.withdrawalEndHour || "18";
   const maxWithdrawalsPerDay = settings?.maxWithdrawalsPerDay || "1";
@@ -27,8 +27,8 @@ export default function RulesPage() {
     : withdrawalDays.map((day) => dayLabels[day]).join(", ");
   const withdrawalMinDelayMinutes = settings?.withdrawalMinDelayMinutes || "30";
   const withdrawalMaxDelayHours = settings?.withdrawalMaxDelayHours || "6";
-  const lv1 = settings?.level1Commission || "25";
-  const lv2 = settings?.level2Commission || "3";
+  const lv1 = settings?.level1Commission || "10";
+  const lv2 = settings?.level2Commission || "2";
   const lv3 = settings?.level3Commission || "1";
 
   const rPageTitle = getContent(settings, "content_rulespage_pageTitle", "Règles de la plateforme");
@@ -72,7 +72,7 @@ export default function RulesPage() {
             <li>Montant minimum de recharge : {parseInt(minDeposit).toLocaleString()} CDF.</li>
             <li>Montant minimum de retrait : {parseInt(minWithdrawal).toLocaleString()} CDF.</li>
             <li>Frais de retrait : {withdrawalFees}%, couvrant les frais de traitement et de maintenance.</li>
-            <li>Horaires de retrait : {withdrawalDaysLabel}, de {withdrawalStartHour}h00 à {withdrawalEndHour}h00.</li>
+            <li>Horaires de retrait : {withdrawalDaysLabel}, de {withdrawalStartHour}h00 à {withdrawalEndHour}h00 (heure locale de Kinshasa).</li>
             <li>Délai prévu de traitement du retrait : de {withdrawalMinDelayMinutes} minutes à {withdrawalMaxDelayHours} heures.</li>
             <li>Maximum {maxWithdrawalsPerDay} retrait(s) par jour et par utilisateur.</li>
           </ul>

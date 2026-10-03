@@ -161,7 +161,7 @@ export default function ServicePage() {
             {hoursDisplay}
           </p>
           <p style={{ fontSize: 14, color: "rgba(255,255,255,0.85)", marginTop: 6 }}>
-            Horaires en ligne
+            Horaires de retrait — heure locale de Kinshasa
           </p>
         </div>
       </div>
