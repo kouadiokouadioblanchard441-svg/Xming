@@ -16,3 +16,9 @@ Replit's GitHub App connector for Agent API calls, the Git Providers authorizati
 **Why:** A successful pane/account reconnection does not prove that command-line Git has a usable credential; shell transport can still reject its token or have no helper.
 
 **How to apply:** Test the pane and shell transport separately. For shell Git, use a secure credential flow and a dry-run; never display or copy credential values. Verify the live default branch and ancestry before any push. If the remote tip is not an ancestor of local, stop without pushing or rewriting history.
+
+When local and GitHub histories have no common ancestor but their root trees are identical, create a new commit based on the live remote tip rather than force-pushing. Apply the intended local tree difference while excluding user uploads and sensitive artifacts, and keep the original local history reachable from a backup branch.
+
+**Why:** A workspace import or shallow local root can have different commit identity from GitHub despite containing the same project snapshot; that does not require replacing the remote history.
+
+**How to apply:** Compare root tree contents, prepare the change on an isolated branch rooted at the current remote main, verify excluded files and ancestry, dry-run, push normally, then align the workspace branch to the published tip.
