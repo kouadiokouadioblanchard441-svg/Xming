@@ -192,6 +192,47 @@ export async function registerRoutes(
   // Trust proxy for production HTTPS (Replit deployment)
   app.set("trust proxy", 1);
 
+  const getWithdrawalOperatorNames = async (): Promise<string[]> => {
+    const countryConfig = (await storage.getActiveCountries()).find(
+      country => country.code === SUPPORTED_COUNTRY_CODE,
+    );
+    if (!countryConfig) return [];
+
+    let configuredOperators: string[] = [];
+    try {
+      const parsed = JSON.parse(countryConfig.operators || "[]");
+      if (Array.isArray(parsed)) {
+        configuredOperators = parsed.filter(
+          (operator): operator is string => typeof operator === "string",
+        );
+      }
+    } catch {
+      configuredOperators = [];
+    }
+
+    const activeChannels = await storage.getDepositChannelsByCountry(SUPPORTED_COUNTRY_CODE);
+    const activeDepositNumbers = activeChannels.length > 0
+      ? (await Promise.all(
+          activeChannels.map(channel => storage.getPaymentNumbersByChannel(channel.id)),
+        )).flat()
+      : await storage.getPaymentNumbersByCountry(SUPPORTED_COUNTRY_CODE);
+
+    const seenOperatorNames = new Set<string>();
+    const uniqueOperators: string[] = [];
+    for (const rawName of [
+      ...configuredOperators,
+      ...activeDepositNumbers.map(number => number.operatorName),
+    ]) {
+      const name = rawName.trim();
+      const key = name.toLowerCase();
+      if (name && !seenOperatorNames.has(key)) {
+        seenOperatorNames.add(key);
+        uniqueOperators.push(name);
+      }
+    }
+    return uniqueOperators;
+  };
+
   // Convert legacy stored currency labels on responses without changing amounts or stored data.
   app.use((_req, res, next) => {
     const originalJson = res.json.bind(res);
@@ -1684,19 +1725,13 @@ export async function registerRoutes(
         });
       }
 
-      const countryConfig = (await storage.getActiveCountries()).find(c => c.code === userCountry);
-      let configuredOperators: string[] = [];
-      try {
-        const parsedOperators = JSON.parse(countryConfig?.operators || "[]");
-        if (Array.isArray(parsedOperators)) {
-          configuredOperators = parsedOperators.filter((operator): operator is string => typeof operator === "string");
-        }
-      } catch {
-        configuredOperators = [];
-      }
-      if (typeof paymentMethod !== "string" || !configuredOperators.includes(paymentMethod)) {
+      const configuredOperators = await getWithdrawalOperatorNames();
+      const requestedMethod = typeof paymentMethod === "string" ? paymentMethod.trim() : "";
+      if (!requestedMethod || !configuredOperators.some(
+        operator => operator.toLowerCase() === requestedMethod.toLowerCase(),
+      )) {
         return res.status(400).json({
-          message: "Choisissez un opérateur de retrait configuré par l’administration.",
+          message: "Choisissez un opérateur de retrait ou de dépôt actif.",
         });
       }
 
@@ -2837,12 +2872,7 @@ export async function registerRoutes(
       const codeParam = req.params.code;
       const code = (Array.isArray(codeParam) ? codeParam[0] : codeParam).toUpperCase();
       if (code !== SUPPORTED_COUNTRY_CODE) return res.json([]);
-      const allCountries = await storage.getActiveCountries();
-      const country = allCountries.find((c: any) => c.code === code);
-      if (!country) return res.json([]);
-      let ops: string[] = [];
-      try { ops = JSON.parse(country.operators || "[]"); } catch {}
-      res.json(ops);
+      res.json(await getWithdrawalOperatorNames());
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

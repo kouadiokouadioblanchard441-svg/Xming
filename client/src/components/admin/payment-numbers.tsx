@@ -59,6 +59,7 @@ export default function AdminPaymentNumbers() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/payment-numbers"] });
       queryClient.invalidateQueries({ queryKey: ["/api/payment-numbers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/countries/CD/operators"] });
       toast({ title: editTarget ? "Numéro mis à jour" : "Numéro ajouté" });
       closeForm();
     },
@@ -73,6 +74,7 @@ export default function AdminPaymentNumbers() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/payment-numbers"] });
       queryClient.invalidateQueries({ queryKey: ["/api/payment-numbers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/countries/CD/operators"] });
       toast({ title: "Numéro supprimé" });
     },
     onError: (e: any) => toast({ title: e.message || "Une erreur est survenue", variant: "destructive" }),
@@ -87,6 +89,7 @@ export default function AdminPaymentNumbers() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/payment-numbers"] });
       queryClient.invalidateQueries({ queryKey: ["/api/payment-numbers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/countries/CD/operators"] });
     },
     onError: (e: any) => toast({ title: e.message || "Une erreur est survenue", variant: "destructive" }),
   });

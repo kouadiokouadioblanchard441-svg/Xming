@@ -135,7 +135,7 @@ export default function WalletPage() {
 
   const handleConfirm = () => {
     if (!selectedOperator) {
-      toast({ title: "Sélectionnez une banque", variant: "destructive" }); return;
+      toast({ title: "Sélectionnez un opérateur de retrait", variant: "destructive" }); return;
     }
     if (!holderName.trim()) {
       toast({ title: "Saisissez le nom du titulaire", variant: "destructive" }); return;
@@ -155,7 +155,7 @@ export default function WalletPage() {
   const backLink = selectMode ? "/withdrawal" : "/account";
 
   /* ══════════════════════════════════════════
-     ADD FORM VIEW — "Lier un compte bancaire"
+     ADD FORM VIEW — ajouter une carte de retrait
   ══════════════════════════════════════════ */
   if (showForm) {
     return (
@@ -174,21 +174,21 @@ export default function WalletPage() {
             <ChevronLeft className="w-6 h-6 text-white" strokeWidth={2.5} />
           </button>
           <h1 className="flex-1 text-center text-white font-bold text-base pr-8">
-            Lier un compte bancaire
+            Ajouter une carte de retrait
           </h1>
         </header>
 
         {/* Form rows */}
         <div className="bg-white">
 
-          {/* Row 1 — Sélectionner une banque */}
+          {/* Row 1 — Sélectionner un opérateur */}
           <button
             onClick={() => setShowBankSheet(true)}
             className="w-full flex flex-col px-4 pt-5 pb-4 border-b border-gray-200 active:bg-gray-50 text-left"
             data-testid="button-select-bank"
           >
             <p className="text-sm font-bold text-gray-900 mb-1">
-              <span className="text-red-500 mr-1">*</span>Sélectionner une banque
+              <span className="text-red-500 mr-1">*</span>Sélectionner un opérateur de retrait
             </p>
             <div className="flex items-center justify-between w-full">
               <span className={`text-sm ${selectedOperator ? "text-gray-900 font-semibold" : "text-gray-400"}`}>

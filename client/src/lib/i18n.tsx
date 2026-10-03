@@ -1170,7 +1170,7 @@ const T: Record<Lang, Translations> = {
     adminCountryNameLabel: "Nom du pays",
     adminCountryPhoneLabel: "Indicatif téléphonique (sans +)",
     adminCountryOperatorsLabel: "Réseaux Mobile Money (séparés par virgule)",
-    adminCountryOperatorsHint: "Ces réseaux alimentent la liste des moyens de retrait.",
+    adminCountryOperatorsHint: "Ces réseaux et les opérateurs actifs des dépôts sont proposés pour les retraits.",
     adminCountryPhoneDisplay: "Indicatif: +",
     adminCountryUpdated: "Pays mis à jour !",
     adminCountryAdded: "Pays ajouté !",

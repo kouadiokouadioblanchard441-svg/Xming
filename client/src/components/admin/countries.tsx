@@ -67,6 +67,7 @@ export default function AdminCountries() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/countries"] });
       queryClient.invalidateQueries({ queryKey: ["/api/countries"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/countries/CD/operators"] });
       toast({ title: editingId ? t.adminCountryUpdated : t.adminCountryAdded });
       setDialogOpen(false);
       setForm(emptyForm);
@@ -86,6 +87,7 @@ export default function AdminCountries() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/countries"] });
       queryClient.invalidateQueries({ queryKey: ["/api/countries"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/countries/CD/operators"] });
       toast({ title: t.adminCountryDeleted });
       setDeleteId(null);
     },
@@ -103,6 +105,7 @@ export default function AdminCountries() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/countries"] });
       queryClient.invalidateQueries({ queryKey: ["/api/countries"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/countries/CD/operators"] });
     },
   });
 
@@ -270,9 +273,6 @@ export default function AdminCountries() {
                 data-testid="input-country-operators"
               />
               <p className="text-xs text-muted-foreground mt-1">{t.adminCountryOperatorsHint}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Cette liste alimente les choix de moyens de retrait et se modifie ici, sans changement de code.
-              </p>
             </div>
             <div className="flex items-center gap-2">
               <Switch

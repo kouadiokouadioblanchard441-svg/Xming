@@ -58,6 +58,7 @@ function ChannelOperators({ channel }: { channel: DepositChannel }) {
       queryClient.invalidateQueries({ queryKey: [`/api/deposit-channels/${channel.id}/operators`] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/payment-numbers"] });
       queryClient.invalidateQueries({ queryKey: ["/api/payment-numbers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/countries/CD/operators"] });
       setShowAdd(false);
       setEditOp(null);
       setForm(emptyOp);
@@ -72,6 +73,7 @@ function ChannelOperators({ channel }: { channel: DepositChannel }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/deposit-channels/${channel.id}/operators`] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/payment-numbers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/countries/CD/operators"] });
     },
   });
 
@@ -80,6 +82,7 @@ function ChannelOperators({ channel }: { channel: DepositChannel }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/deposit-channels/${channel.id}/operators`] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/payment-numbers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/countries/CD/operators"] });
       toast({ title: "Opérateur supprimé" });
     },
     onError: (e: Error) => toast({ title: "Erreur", description: e.message, variant: "destructive" }),
@@ -212,6 +215,7 @@ export default function AdminDepositChannels() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/deposit-channels"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/countries/CD/operators"] });
       setShowForm(false);
       setEditTarget(null);
       setForm(emptyCh);
@@ -223,13 +227,17 @@ export default function AdminDepositChannels() {
   const toggleActiveMutation = useMutation({
     mutationFn: async (ch: DepositChannel) =>
       apiRequest("PUT", `/api/admin/deposit-channels/${ch.id}`, { isActive: !ch.isActive }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/admin/deposit-channels"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/deposit-channels"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/countries/CD/operators"] });
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => apiRequest("DELETE", `/api/admin/deposit-channels/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/deposit-channels"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/countries/CD/operators"] });
       toast({ title: "Canal supprimé" });
     },
     onError: (e: Error) => toast({ title: "Erreur", description: e.message, variant: "destructive" }),
