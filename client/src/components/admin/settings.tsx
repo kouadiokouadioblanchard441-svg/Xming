@@ -13,6 +13,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Loader2, Save, Link, Clock, Users, PowerOff, Power, HandCoins, Zap } from "lucide-react";
+import {
+  DEFAULT_REFERRAL_COMMISSION_RATES,
+  DEFAULT_TASK_REFERRAL_COMMISSION_RATES,
+} from "@shared/referral-settings";
+
+const commissionPercentage = z.string()
+  .trim()
+  .min(1, "Commission requise")
+  .refine((value) => {
+    const rate = Number(value);
+    return Number.isFinite(rate) && rate >= 0 && rate <= 100;
+  }, "Saisissez un pourcentage entre 0 et 100.");
 
 const NETWORKS = [
   { value: "telegram", label: "Telegram" },
@@ -55,12 +67,12 @@ const settingsSchema = z.object({
   withdrawalEndHour: z.string().min(1, "Heure requise"),
   withdrawalMinDelayMinutes: z.string().min(1, "Délai requis"),
   withdrawalMaxDelayHours: z.string().min(1, "Délai requis"),
-  level1Commission: z.string().min(1, "Commission requise"),
-  level2Commission: z.string().min(1, "Commission requise"),
-  level3Commission: z.string().min(1, "Commission requise"),
-  taskLevel1Commission: z.string().min(1, "Commission requise"),
-  taskLevel2Commission: z.string().min(1, "Commission requise"),
-  taskLevel3Commission: z.string().min(1, "Commission requise"),
+  level1Commission: commissionPercentage,
+  level2Commission: commissionPercentage,
+  level3Commission: commissionPercentage,
+  taskLevel1Commission: commissionPercentage,
+  taskLevel2Commission: commissionPercentage,
+  taskLevel3Commission: commissionPercentage,
   dailyBonusEnabled: z.boolean(),
   dailyBonusAmount: z.string().min(1, "Montant requis"),
   signupBonusEnabled: z.boolean(),
@@ -227,12 +239,12 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       withdrawalEndHour: "18",
       withdrawalMinDelayMinutes: "30",
       withdrawalMaxDelayHours: "6",
-      level1Commission: "10",
-      level2Commission: "2",
-      level3Commission: "1",
-      taskLevel1Commission: "3",
-      taskLevel2Commission: "2",
-      taskLevel3Commission: "1",
+      level1Commission: DEFAULT_REFERRAL_COMMISSION_RATES.level1,
+      level2Commission: DEFAULT_REFERRAL_COMMISSION_RATES.level2,
+      level3Commission: DEFAULT_REFERRAL_COMMISSION_RATES.level3,
+      taskLevel1Commission: DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level1,
+      taskLevel2Commission: DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level2,
+      taskLevel3Commission: DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level3,
       dailyBonusEnabled: true,
       dailyBonusAmount: "25",
       signupBonusEnabled: true,
@@ -279,12 +291,12 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       withdrawalEndHour:      settings.withdrawalEndHour      ?? "18",
       withdrawalMinDelayMinutes: settings.withdrawalMinDelayMinutes ?? "30",
       withdrawalMaxDelayHours: settings.withdrawalMaxDelayHours ?? "6",
-      level1Commission:       settings.level1Commission       ?? "10",
-      level2Commission:       settings.level2Commission       ?? "2",
-      level3Commission:       settings.level3Commission       ?? "1",
-      taskLevel1Commission:   settings.taskLevel1Commission   ?? "3",
-      taskLevel2Commission:   settings.taskLevel2Commission   ?? "2",
-      taskLevel3Commission:   settings.taskLevel3Commission   ?? "1",
+      level1Commission:       settings.level1Commission       || DEFAULT_REFERRAL_COMMISSION_RATES.level1,
+      level2Commission:       settings.level2Commission       || DEFAULT_REFERRAL_COMMISSION_RATES.level2,
+      level3Commission:       settings.level3Commission       || DEFAULT_REFERRAL_COMMISSION_RATES.level3,
+      taskLevel1Commission:   settings.taskLevel1Commission   || DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level1,
+      taskLevel2Commission:   settings.taskLevel2Commission   || DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level2,
+      taskLevel3Commission:   settings.taskLevel3Commission   || DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level3,
       dailyBonusEnabled:      settings.dailyBonusEnabled      !== "false",
       dailyBonusAmount:       settings.dailyBonusAmount       ?? "25",
       signupBonusEnabled:     settings.signupBonusEnabled     !== "false",
@@ -844,21 +856,21 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               <FormField control={form.control} name="level1Commission" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Niveau 1 (%)</FormLabel>
-                  <FormControl><Input {...field} type="number" min="0" /></FormControl>
+                  <FormControl><Input {...field} type="number" min="0" max="100" step="0.01" /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={form.control} name="level2Commission" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Niveau 2 (%)</FormLabel>
-                  <FormControl><Input {...field} type="number" min="0" /></FormControl>
+                  <FormControl><Input {...field} type="number" min="0" max="100" step="0.01" /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={form.control} name="level3Commission" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Niveau 3 (%)</FormLabel>
-                  <FormControl><Input {...field} type="number" min="0" /></FormControl>
+                  <FormControl><Input {...field} type="number" min="0" max="100" step="0.01" /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -880,21 +892,21 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               <FormField control={form.control} name="taskLevel1Commission" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Niveau 1 (%)</FormLabel>
-                  <FormControl><Input {...field} type="number" min="0" /></FormControl>
+                  <FormControl><Input {...field} type="number" min="0" max="100" step="0.01" /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={form.control} name="taskLevel2Commission" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Niveau 2 (%)</FormLabel>
-                  <FormControl><Input {...field} type="number" min="0" /></FormControl>
+                  <FormControl><Input {...field} type="number" min="0" max="100" step="0.01" /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={form.control} name="taskLevel3Commission" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Niveau 3 (%)</FormLabel>
-                  <FormControl><Input {...field} type="number" min="0" /></FormControl>
+                  <FormControl><Input {...field} type="number" min="0" max="100" step="0.01" /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />

@@ -10,6 +10,10 @@ import { db } from "./db";
 import { getKinshasaStartOfDay } from "./rdc-time";
 import { eq, and, asc, desc, sql, gte, lte, or, inArray } from "drizzle-orm";
 import bcrypt from "bcryptjs";
+import {
+  DEFAULT_REFERRAL_COMMISSION_RATES,
+  DEFAULT_TASK_REFERRAL_COMMISSION_RATES,
+} from "@shared/referral-settings";
 
 // Compares phone numbers regardless of local vs international MSISDN format
 // (e.g. "0150839909" vs "+22990150839909") by matching on the last 8 digits.
@@ -400,9 +404,9 @@ export class DatabaseStorage implements IStorage {
     if (!user || !user.referredBy) return;
 
     const settings = await this.getSettings();
-    const level1Rate = parseFloat(settings.level1Commission || "10") / 100;
-    const level2Rate = parseFloat(settings.level2Commission || "1") / 100;
-    const level3Rate = parseFloat(settings.level3Commission || "1") / 100;
+    const level1Rate = parseFloat(settings.level1Commission || DEFAULT_REFERRAL_COMMISSION_RATES.level1) / 100;
+    const level2Rate = parseFloat(settings.level2Commission || DEFAULT_REFERRAL_COMMISSION_RATES.level2) / 100;
+    const level3Rate = parseFloat(settings.level3Commission || DEFAULT_REFERRAL_COMMISSION_RATES.level3) / 100;
 
     // Level 1
     const level1User = await this.getUserByReferralCode(user.referredBy);
@@ -480,9 +484,9 @@ export class DatabaseStorage implements IStorage {
     if (!user || !user.referredBy) return;
 
     const settings = await this.getSettings();
-    const level1Rate = parseFloat(settings.taskLevel1Commission || "3") / 100;
-    const level2Rate = parseFloat(settings.taskLevel2Commission || "2") / 100;
-    const level3Rate = parseFloat(settings.taskLevel3Commission || "1") / 100;
+    const level1Rate = parseFloat(settings.taskLevel1Commission || DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level1) / 100;
+    const level2Rate = parseFloat(settings.taskLevel2Commission || DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level2) / 100;
+    const level3Rate = parseFloat(settings.taskLevel3Commission || DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level3) / 100;
 
     // Niveau 1 — parrain direct
     const level1User = await this.getUserByReferralCode(user.referredBy);

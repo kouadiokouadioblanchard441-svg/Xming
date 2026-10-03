@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery } from "@tanstack/react-query";
 import { getContent } from "@/lib/content";
+import { DEFAULT_REFERRAL_COMMISSION_RATES } from "@shared/referral-settings";
 
 interface RulesModalProps {
   open: boolean;
@@ -21,9 +22,9 @@ export default function RulesModal({ open, onClose }: RulesModalProps) {
   const withdrawalMinDelayMinutes = settings?.withdrawalMinDelayMinutes || "30";
   const withdrawalMaxDelayHours = settings?.withdrawalMaxDelayHours || "6";
   const maxWithdrawalsPerDay = settings?.maxWithdrawalsPerDay || "1";
-  const lv1 = settings?.level1Commission || "10";
-  const lv2 = settings?.level2Commission || "2";
-  const lv3 = settings?.level3Commission || "1";
+  const lv1 = settings?.level1Commission || DEFAULT_REFERRAL_COMMISSION_RATES.level1;
+  const lv2 = settings?.level2Commission || DEFAULT_REFERRAL_COMMISSION_RATES.level2;
+  const lv3 = settings?.level3Commission || DEFAULT_REFERRAL_COMMISSION_RATES.level3;
 
   const title = getContent(settings, "content_rules_title", "Règles de la plateforme");
   const s1Title = getContent(settings, "content_rules_section1Title", "1. Dépôts");

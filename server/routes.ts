@@ -2645,7 +2645,27 @@ export async function registerRoutes(
 
   app.post("/api/admin/settings", requireAdmin, async (req, res) => {
     try {
-      const entries = Object.entries(req.body);
+      const entries = Object.entries(req.body ?? {});
+      const referralRateKeys = new Set([
+        "level1Commission",
+        "level2Commission",
+        "level3Commission",
+        "taskLevel1Commission",
+        "taskLevel2Commission",
+        "taskLevel3Commission",
+      ]);
+
+      for (const [key, value] of entries) {
+        if (!referralRateKeys.has(key)) continue;
+        if ((typeof value !== "string" && typeof value !== "number") || String(value).trim() === "") {
+          return res.status(400).json({ message: `Le taux ${key} doit être un nombre entre 0 et 100.` });
+        }
+        const rate = Number(value);
+        if (!Number.isFinite(rate) || rate < 0 || rate > 100) {
+          return res.status(400).json({ message: `Le taux ${key} doit être compris entre 0 et 100 %.` });
+        }
+      }
+
       for (const [key, value] of entries) {
         await storage.setSetting(key, value as string, req.session.userId);
       }

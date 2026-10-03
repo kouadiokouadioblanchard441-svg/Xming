@@ -2,6 +2,7 @@ import { ChevronLeft } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { getContent } from "@/lib/content";
+import { DEFAULT_REFERRAL_COMMISSION_RATES } from "@shared/referral-settings";
 
 export default function RulesPage() {
   const { data: settings } = useQuery<Record<string, string>>({
@@ -27,9 +28,9 @@ export default function RulesPage() {
     : withdrawalDays.map((day) => dayLabels[day]).join(", ");
   const withdrawalMinDelayMinutes = settings?.withdrawalMinDelayMinutes || "30";
   const withdrawalMaxDelayHours = settings?.withdrawalMaxDelayHours || "6";
-  const lv1 = settings?.level1Commission || "10";
-  const lv2 = settings?.level2Commission || "2";
-  const lv3 = settings?.level3Commission || "1";
+  const lv1 = settings?.level1Commission || DEFAULT_REFERRAL_COMMISSION_RATES.level1;
+  const lv2 = settings?.level2Commission || DEFAULT_REFERRAL_COMMISSION_RATES.level2;
+  const lv3 = settings?.level3Commission || DEFAULT_REFERRAL_COMMISSION_RATES.level3;
 
   const rPageTitle = getContent(settings, "content_rulespage_pageTitle", "Règles de la plateforme");
   const rS1Title = getContent(settings, "content_rulespage_s1Title", "1. Investissement");

@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getContent } from "@/lib/content";
+import { DEFAULT_REFERRAL_COMMISSION_RATES } from "@shared/referral-settings";
 import { Bell, DollarSign, ArrowUp, CalendarCheck, ClipboardList, ChevronRight, Loader2, AlertTriangle } from "lucide-react";
 import { FloatingSupport } from "@/components/floating-support";
 import { FloatingWheel } from "@/components/floating-wheel";
@@ -112,9 +113,9 @@ export default function HomePage() {
   const minDeposit    = settings?.minDeposit    || "20000";
   const minWithdrawal = settings?.minWithdrawal || "5000";
   const fees          = settings?.withdrawalFees || "15";
-  const lvl1          = settings?.level1Commission || "10";
-  const lvl2          = settings?.level2Commission || "2";
-  const lvl3          = settings?.level3Commission || "1";
+  const lvl1          = settings?.level1Commission || DEFAULT_REFERRAL_COMMISSION_RATES.level1;
+  const lvl2          = settings?.level2Commission || DEFAULT_REFERRAL_COMMISSION_RATES.level2;
+  const lvl3          = settings?.level3Commission || DEFAULT_REFERRAL_COMMISSION_RATES.level3;
 
   const banner1Images: string[] = (() => {
     try { const p = JSON.parse(settings?.banner1Images || "[]"); return Array.isArray(p) && p.length ? p : ["/banner/banner1.jpg"]; }

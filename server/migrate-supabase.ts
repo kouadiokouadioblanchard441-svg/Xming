@@ -1,5 +1,6 @@
 import pg from "pg";
 import bcrypt from "bcryptjs";
+import { DEFAULT_REFERRAL_COMMISSION_RATES } from "@shared/referral-settings";
 
 const { Pool } = pg;
 
@@ -343,7 +344,9 @@ async function run() {
     const settings = [
       ["minDeposit", "4000"], ["minWithdrawal", "1500"], ["withdrawalFees", "18"],
       ["withdrawalStartHour", "9"], ["withdrawalEndHour", "17"], ["maxWithdrawalsPerDay", "1"],
-      ["level1Commission", "15"], ["level2Commission", "2"], ["level3Commission", "1"],
+      ["level1Commission", DEFAULT_REFERRAL_COMMISSION_RATES.level1],
+      ["level2Commission", DEFAULT_REFERRAL_COMMISSION_RATES.level2],
+      ["level3Commission", DEFAULT_REFERRAL_COMMISSION_RATES.level3],
       ["signupBonus", "200"], ["soleaspayEnabled", "false"], ["soleaspayCountries", ""],
       ["soleaspayChannelName", "Soleaspay"], ["omnipayEnabled", "false"],
       ["omnipayChannelName", "OmniPay"], ["omnipayCallbackKey", ""],

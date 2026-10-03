@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getCountryByCode } from "@/lib/countries";
 import { useLocation } from "wouter";
 import { useI18n } from "@/lib/i18n";
+import { DEFAULT_REFERRAL_COMMISSION_RATES } from "@shared/referral-settings";
 
 import xpengInvite   from "@assets/xpeng-team-invite.png";
 import xpengProgress from "@assets/xpeng-team-progress.png";
@@ -55,9 +56,9 @@ export default function TeamPage() {
   const referralCode = user.referralCode || "";
   const referralLink = `${window.location.origin}/#/register?invite_code=${referralCode}`;
 
-  const lv1Rate = settings?.level1Commission || "10";
-  const lv2Rate = settings?.level2Commission || "2";
-  const lv3Rate = settings?.level3Commission || "1";
+  const lv1Rate = settings?.level1Commission || DEFAULT_REFERRAL_COMMISSION_RATES.level1;
+  const lv2Rate = settings?.level2Commission || DEFAULT_REFERRAL_COMMISSION_RATES.level2;
+  const lv3Rate = settings?.level3Commission || DEFAULT_REFERRAL_COMMISSION_RATES.level3;
 
   const totalUsers      = (stats?.level1Count || 0) + (stats?.level2Count || 0) + (stats?.level3Count || 0);
   const totalCommission = stats?.totalCommission || 0;

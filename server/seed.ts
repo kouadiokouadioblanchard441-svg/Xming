@@ -1,6 +1,10 @@
 import { db } from "./db";
 import { users, products, tasks, paymentChannels, platformSettings, companyContent, countries, stakingProducts, productSeries } from "@shared/schema";
 import { RDC_COUNTRY, SUPPORTED_COUNTRY_CODE } from "@shared/country-config";
+import {
+  DEFAULT_REFERRAL_COMMISSION_RATES,
+  DEFAULT_TASK_REFERRAL_COMMISSION_RATES,
+} from "@shared/referral-settings";
 import bcrypt from "bcryptjs";
 import { eq, sql } from "drizzle-orm";
 
@@ -237,12 +241,12 @@ export async function seed() {
     { key: "withdrawalMinDelayMinutes", value: "30" },
     { key: "withdrawalMaxDelayHours", value: "6" },
     { key: "maxWithdrawalsPerDay", value: "1" },
-    { key: "level1Commission", value: "10" },
-    { key: "level2Commission", value: "2" },
-    { key: "level3Commission", value: "1" },
-    { key: "taskLevel1Commission", value: "3" },
-    { key: "taskLevel2Commission", value: "2" },
-    { key: "taskLevel3Commission", value: "1" },
+    { key: "level1Commission", value: DEFAULT_REFERRAL_COMMISSION_RATES.level1 },
+    { key: "level2Commission", value: DEFAULT_REFERRAL_COMMISSION_RATES.level2 },
+    { key: "level3Commission", value: DEFAULT_REFERRAL_COMMISSION_RATES.level3 },
+    { key: "taskLevel1Commission", value: DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level1 },
+    { key: "taskLevel2Commission", value: DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level2 },
+    { key: "taskLevel3Commission", value: DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level3 },
     { key: "dailyBonusEnabled", value: "true" },
     { key: "dailyBonusAmount", value: "25" },
     { key: "signupBonusEnabled", value: "true" },
