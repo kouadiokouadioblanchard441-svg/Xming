@@ -10,22 +10,21 @@ import {
 import { Link, useLocation, useSearch } from "wouter";
 import type { WithdrawalWallet } from "@shared/schema";
 import { useI18n } from "@/lib/i18n";
+import { SUPPORTED_COUNTRY_CODE } from "@shared/country-config";
 
 
 
 // Thème de carte selon l'opérateur
 function cardTheme(paymentMethod: string): { bg: string; shine: string; logo: string } {
   const m = (paymentMethod || "").toLowerCase();
-  if (m.includes("wave"))
-    return { bg: "linear-gradient(135deg, #0061a8 0%, #003f7a 100%)", shine: "rgba(255,255,255,0.18)", logo: "🌊" };
-  if (m.includes("mtn"))
-    return { bg: "linear-gradient(135deg, #f5a800 0%, #c97f00 100%)", shine: "rgba(255,255,255,0.22)", logo: "🟡" };
+  if (m.includes("airtel"))
+    return { bg: "linear-gradient(135deg, #e31e2f 0%, #a90b1b 100%)", shine: "rgba(255,255,255,0.18)", logo: "📱" };
+  if (m.includes("m-pesa") || m.includes("mpesa"))
+    return { bg: "linear-gradient(135deg, #43a047 0%, #1b5e20 100%)", shine: "rgba(255,255,255,0.18)", logo: "🟢" };
   if (m.includes("orange"))
     return { bg: "linear-gradient(135deg, #f55a00 0%, #b03d00 100%)", shine: "rgba(255,255,255,0.18)", logo: "🟠" };
-  if (m.includes("moov"))
-    return { bg: "linear-gradient(135deg, #0099cc 0%, #006699 100%)", shine: "rgba(255,255,255,0.18)", logo: "🔵" };
-  if (m.includes("telecel"))
-    return { bg: "linear-gradient(135deg, #8b2fc9 0%, #5b1a8a 100%)", shine: "rgba(255,255,255,0.16)", logo: "🟣" };
+  if (m.includes("afrimoney"))
+    return { bg: "linear-gradient(135deg, #168bd2 0%, #07528a 100%)", shine: "rgba(255,255,255,0.18)", logo: "🔵" };
   // défaut olive
   return { bg: "linear-gradient(135deg, #1a1a1a 0%, #000000 100%)", shine: "rgba(255,255,255,0.12)", logo: "💳" };
 }
@@ -53,7 +52,7 @@ export default function WalletPage() {
   });
 
   // XPENG is currently available only in the RDC.
-  const userCountryCode = "CD";
+  const userCountryCode = SUPPORTED_COUNTRY_CODE;
   const { data: countryOperators = [], isLoading: isOperatorsLoading } = useQuery<string[]>({
     queryKey: [`/api/countries/${userCountryCode}/operators`],
     enabled: !!user,

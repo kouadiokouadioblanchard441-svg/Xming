@@ -5,8 +5,9 @@ import { Link, useSearch } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { RDC_COUNTRY, SUPPORTED_COUNTRY_CODE } from "@shared/country-config";
 
-const CURRENCY = "CDF";
+const CURRENCY = RDC_COUNTRY.currency;
 
 // amount → operator → combined payer/transaction details → pending confirmation
 type Step = "amount" | "operator" | "phone" | "done";
@@ -108,9 +109,9 @@ export default function DepositPage() {
     wpDepositId ? Number(wpDepositId) : null,
   );
   const [wpPollingDone, setWpPollingDone] = useState(false);
-  // selectedDepositChannel = the channel (Canal 1 or Wave) chosen in step 1
+  // selectedDepositChannel = the RDC deposit channel chosen in step 1
   const [selectedDepositChannel, setSelectedDepositChannel] = useState<DepositChannel | null>(null);
-  // selectedChannel = the operator (MTN, Orange…) chosen in step 2
+  // selectedChannel = the supported RDC Mobile Money operator chosen in step 2
   const [selectedChannel, setSelectedChannel] = useState<PaymentNumber | null>(null);
   const [senderPhone, setSenderPhone] = useState("");
   const [transactionId, setTransactionId] = useState("");
@@ -123,18 +124,20 @@ export default function DepositPage() {
     queryKey: ["/api/countries"],
     enabled: !!user,
   });
-  const currentCountry = countryConfigs.find(country => country.code === user?.country);
+  const currentCountry = countryConfigs.find(
+    country => country.code === SUPPORTED_COUNTRY_CODE
+  );
   const isAutomaticDeposit = currentCountry?.autoPaymentEnabled === true;
   const showManualDepositChannels = !isCountriesLoading && !isAutomaticDeposit;
 
-  // Deposit channels (Canal 1, Wave…) filtered by the user's country
+  // Deposit channels are served only for the supported RDC country.
   const { data: depositChannels = [] } = useQuery<DepositChannel[]>({
-    queryKey: ["/api/deposit-channels", user?.country],
+    queryKey: ["/api/deposit-channels", SUPPORTED_COUNTRY_CODE],
     queryFn: async () => {
-      const url = user?.country
-        ? `/api/deposit-channels?country=${user.country}`
-        : `/api/deposit-channels`;
-      const res = await fetch(url, { credentials: "include" });
+      const res = await fetch(
+        `/api/deposit-channels?country=${SUPPORTED_COUNTRY_CODE}`,
+        { credentials: "include" }
+      );
       return res.json();
     },
     enabled: !!user && showManualDepositChannels,
@@ -159,11 +162,7 @@ export default function DepositPage() {
     enabled: !!user && showManualDepositChannels,
   });
   const fallbackOperators = paymentNumbersRaw.filter(
-    (n) =>
-      n.isActive &&
-      (!user?.country ||
-        n.country === user.country ||
-        paymentNumbersRaw.filter((x) => x.country === user?.country).length === 0)
+    (n) => n.isActive && n.country === SUPPORTED_COUNTRY_CODE
   );
 
   // Are channels configured for this country?
@@ -186,7 +185,7 @@ export default function DepositPage() {
   const operators = hasChannels ? channelOperators : fallbackOperators;
 
   // Country phone prefix
-  const countryPrefix = "243";
+  const countryPrefix = RDC_COUNTRY.phonePrefix;
 
   // ── WestPay: initiate & poll ──────────────────────────────────────
   const westpayMutation = useMutation({
@@ -233,7 +232,7 @@ export default function DepositPage() {
         accountName: senderPhone,
         accountNumber: senderPhone,
         paymentMethod: selectedChannel?.operatorName || "Mobile Money",
-        country: user?.country || "CM",
+        country: SUPPORTED_COUNTRY_CODE,
         depositChannelId: selectedDepositChannel?.id || null,
         paymentNumberId: selectedChannel?.id || null,
         channelName: selectedDepositChannel?.name || "Mobile Money",

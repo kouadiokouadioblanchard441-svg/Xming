@@ -29,7 +29,7 @@ const emptyForm: CountryForm = {
   name: RDC_COUNTRY.name,
   currency: RDC_COUNTRY.currency,
   phonePrefix: RDC_COUNTRY.phonePrefix,
-  operators: "",
+  operators: RDC_COUNTRY.operators.join(", "),
   isActive: true,
   autoPaymentEnabled: false,
 };
@@ -110,14 +110,12 @@ export default function AdminCountries() {
   });
 
   const openEdit = (c: Country) => {
-    let operatorsStr = "";
-    try { operatorsStr = JSON.parse(c.operators).join(", "); } catch {}
     setForm({
       code: c.code,
       name: c.name,
       currency: c.currency === "FCFA" ? "CDF" : c.currency,
       phonePrefix: c.phonePrefix,
-      operators: operatorsStr,
+      operators: RDC_COUNTRY.operators.join(", "),
       isActive: c.isActive,
       autoPaymentEnabled: c.autoPaymentEnabled ?? false,
     });
@@ -222,7 +220,7 @@ export default function AdminCountries() {
                 <Input
                   value={form.code}
                   onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
-                  placeholder="CM"
+                  placeholder="CD"
                   maxLength={3}
                   disabled
                   required
@@ -268,8 +266,7 @@ export default function AdminCountries() {
               <Label>{t.adminCountryOperatorsLabel}</Label>
               <Input
                 value={form.operators}
-                onChange={e => setForm({ ...form, operators: e.target.value })}
-                placeholder="Réseau 1, Réseau 2"
+                  disabled
                 data-testid="input-country-operators"
               />
               <p className="text-xs text-muted-foreground mt-1">{t.adminCountryOperatorsHint}</p>

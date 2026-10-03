@@ -1,8 +1,8 @@
 import { db } from "./db";
-import { users, products, tasks, paymentChannels, paymentNumbers, platformSettings, companyContent, countries, stakingProducts, depositChannels, productSeries } from "@shared/schema";
+import { users, products, tasks, paymentChannels, platformSettings, companyContent, countries, stakingProducts, productSeries } from "@shared/schema";
 import { RDC_COUNTRY, SUPPORTED_COUNTRY_CODE } from "@shared/country-config";
 import bcrypt from "bcryptjs";
-import { and, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export async function seed() {
   console.log("Seeding database...");
@@ -166,7 +166,6 @@ export async function seed() {
       { name: "VIP 4", price: "100000",  dailyEarnings: "18000",  cycleDays: 30, totalReturn: "540000",   imageUrl: "/xpeng-product-5.jpg", sortOrder: 4 },
       { name: "VIP 5", price: "245000",  dailyEarnings: "45000",  cycleDays: 30, totalReturn: "1350000",  imageUrl: "/xpeng-product-6.jpg", sortOrder: 5 },
       { name: "VIP 6", price: "500000",  dailyEarnings: "93000",  cycleDays: 30, totalReturn: "2790000",  imageUrl: "/xpeng-product-7.jpg", sortOrder: 6 },
-      { name: "VIP 7", price: "1000000", dailyEarnings: "123000", cycleDays: 30, totalReturn: "3690000",  imageUrl: "/xpeng-product-8.jpg", sortOrder: 7 },
     ];
     await db.insert(products).values(defaultProducts);
     console.log("Products seeded (first install)");
@@ -193,81 +192,6 @@ export async function seed() {
     console.log("Reward tasks seeded (new 4-reward structure)");
   } else {
     console.log(`Tasks skipped — ${existingTasks.length} existing tasks preserved`);
-  }
-
-  if (!rdcOnlyMode && process.env.SEED_LEGACY_CI_PAYMENTS === "true") {
-  // ── Seed deposit channels CI (Canal 1 & Wave) ─────────────────────────────
-  const existingDepositChannels = await db.select().from(depositChannels)
-    .then(rows => rows.filter(r => r.country === "CI"));
-  const hasCanal1 = existingDepositChannels.some(r => r.name === "Canal 1");
-  const existingWaveChannel = existingDepositChannels.find(
-    r => r.name === "Wave" || r.name === "Canal 2",
-  );
-  const hasWaveChannel = !!existingWaveChannel;
-
-  let canal1Id: number | null = existingDepositChannels.find(r => r.name === "Canal 1")?.id ?? null;
-  let canal2Id: number | null = existingWaveChannel?.id ?? null;
-
-  if (!hasCanal1) {
-    const [c1] = await db.insert(depositChannels).values({
-      name: "Canal 1", description: "Paiement automatique via WestPay", country: "CI",
-      isActive: true, sortOrder: 1, createdBy: 1,
-    }).returning();
-    canal1Id = c1.id;
-    console.log("Deposit channel seeded: Canal 1 (CI)");
-  } else {
-    await db.update(depositChannels)
-      .set({ description: "Paiement automatique via WestPay", isActive: true, sortOrder: 1 })
-      .where(eq(depositChannels.id, canal1Id!));
-    console.log("Deposit channel preserved: Canal 1 (CI)");
-  }
-  if (!hasWaveChannel) {
-    const [c2] = await db.insert(depositChannels).values({
-      name: "Wave", description: "Paiement manuel Wave", country: "CI",
-      isActive: true, sortOrder: 2, createdBy: 1,
-    }).returning();
-    canal2Id = c2.id;
-    console.log("Deposit channel seeded: Wave (CI)");
-  } else {
-    await db.update(depositChannels)
-      .set({ name: "Wave", description: "Paiement manuel Wave", isActive: true, sortOrder: 2 })
-      .where(eq(depositChannels.id, canal2Id!));
-    console.log("Deposit channel preserved: Wave (CI)");
-  }
-
-  // ── Seed the manual Wave number for CI — linked to the Wave channel ─────
-  const existingNums = await db.select().from(paymentNumbers);
-  const ciByOperator = Object.fromEntries(
-    existingNums.filter(n => n.country === "CI").map(n => [n.operatorName, n])
-  );
-
-  const waveNumber = ciByOperator["Wave"];
-  if (!waveNumber) {
-    await db.insert(paymentNumbers).values({
-      ownerName: "Konan Yao",
-      phone: "0701234567",
-      operatorName: "Wave",
-      country: "CI",
-      channelId: canal2Id,
-      logoUrl: null,
-      isActive: true,
-      createdBy: 1,
-    });
-    console.log("Payment number seeded: Wave (CI, Wave channel)");
-  } else {
-    await db.update(paymentNumbers)
-      .set({ channelId: canal2Id, isActive: true })
-      .where(eq(paymentNumbers.id, waveNumber.id));
-    console.log("Payment number linked to Wave channel: Wave (CI)");
-  }
-
-  // Disable the old CI manual destinations so the Wave channel only exposes Wave.
-  for (const legacyPhone of ["0507654321", "0101122334", "0708899001"]) {
-    await db.update(paymentNumbers)
-      .set({ isActive: false })
-      .where(and(eq(paymentNumbers.country, "CI"), eq(paymentNumbers.phone, legacyPhone)));
-  }
-
   }
 
   // Check if payment channels exist

@@ -9,8 +9,8 @@ export const RDC_COUNTRY = {
   timeZone: "Africa/Kinshasa",
   phonePrefix: "243",
   phoneLength: 9,
-  // Operator methods are configured in the admin country panel and stored in the database.
-  operators: [],
+  // Only the Mobile Money operators supported in the RDC.
+  operators: ["Airtel Money", "M-Pesa", "Orange Money", "Afrimoney"],
   isActive: true,
   autoPaymentEnabled: false,
 } as const;

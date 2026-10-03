@@ -192,46 +192,16 @@ export async function registerRoutes(
   // Trust proxy for production HTTPS (Replit deployment)
   app.set("trust proxy", 1);
 
-  const getWithdrawalOperatorNames = async (): Promise<string[]> => {
-    const countryConfig = (await storage.getActiveCountries()).find(
-      country => country.code === SUPPORTED_COUNTRY_CODE,
-    );
-    if (!countryConfig) return [];
-
-    let configuredOperators: string[] = [];
-    try {
-      const parsed = JSON.parse(countryConfig.operators || "[]");
-      if (Array.isArray(parsed)) {
-        configuredOperators = parsed.filter(
-          (operator): operator is string => typeof operator === "string",
-        );
-      }
-    } catch {
-      configuredOperators = [];
-    }
-
-    const activeChannels = await storage.getDepositChannelsByCountry(SUPPORTED_COUNTRY_CODE);
-    const activeDepositNumbers = activeChannels.length > 0
-      ? (await Promise.all(
-          activeChannels.map(channel => storage.getPaymentNumbersByChannel(channel.id)),
-        )).flat()
-      : await storage.getPaymentNumbersByCountry(SUPPORTED_COUNTRY_CODE);
-
-    const seenOperatorNames = new Set<string>();
-    const uniqueOperators: string[] = [];
-    for (const rawName of [
-      ...configuredOperators,
-      ...activeDepositNumbers.map(number => number.operatorName),
-    ]) {
-      const name = rawName.trim();
-      const key = name.toLowerCase();
-      if (name && !seenOperatorNames.has(key)) {
-        seenOperatorNames.add(key);
-        uniqueOperators.push(name);
-      }
-    }
-    return uniqueOperators;
+  const canonicalRdcOperatorName = (value: unknown): string | null => {
+    if (typeof value !== "string") return null;
+    const normalized = value.trim().toLowerCase();
+    return RDC_COUNTRY.operators.find(
+      operator => operator.toLowerCase() === normalized,
+    ) ?? null;
   };
+
+  const getWithdrawalOperatorNames = async (): Promise<string[]> =>
+    [...RDC_COUNTRY.operators];
 
   // Convert legacy stored currency labels on responses without changing amounts or stored data.
   app.use((_req, res, next) => {
@@ -877,7 +847,11 @@ export async function registerRoutes(
       const channel = await storage.getDepositChannel(id);
       if (!channel || channel.country !== SUPPORTED_COUNTRY_CODE) return res.json([]);
       const operators = await storage.getPaymentNumbersByChannel(id);
-      res.json(operators);
+      res.json(operators.filter(operator =>
+        operator.isActive &&
+        operator.country === SUPPORTED_COUNTRY_CODE &&
+        canonicalRdcOperatorName(operator.operatorName) !== null
+      ));
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -951,7 +925,11 @@ export async function registerRoutes(
       const country = req.query.country as string;
       if (country && country !== SUPPORTED_COUNTRY_CODE) return res.json([]);
       const nums = await storage.getPaymentNumbers();
-      res.json(nums.filter(n => n.isActive && n.country === SUPPORTED_COUNTRY_CODE));
+      res.json(nums.filter(n =>
+        n.isActive &&
+        n.country === SUPPORTED_COUNTRY_CODE &&
+        canonicalRdcOperatorName(n.operatorName) !== null
+      ));
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -961,7 +939,10 @@ export async function registerRoutes(
   app.get("/api/admin/payment-numbers", requireAdmin, async (req, res) => {
     try {
       const nums = await storage.getPaymentNumbers();
-      res.json(nums.filter(number => number.country === SUPPORTED_COUNTRY_CODE));
+      res.json(nums.filter(number =>
+        number.country === SUPPORTED_COUNTRY_CODE &&
+        canonicalRdcOperatorName(number.operatorName) !== null
+      ));
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -970,11 +951,12 @@ export async function registerRoutes(
   app.post("/api/admin/payment-numbers", requireAdmin, async (req, res) => {
     try {
       const { ownerName, phone, operatorName, country, channelId, logoUrl, isActive } = req.body;
-      if (!ownerName || !phone || !operatorName || country !== SUPPORTED_COUNTRY_CODE) {
-        return res.status(400).json({ message: "Les informations de paiement doivent être configurées pour la RDC." });
+      const supportedOperatorName = canonicalRdcOperatorName(operatorName);
+      if (!ownerName || !phone || !supportedOperatorName || country !== SUPPORTED_COUNTRY_CODE) {
+        return res.status(400).json({ message: "Choisissez un opérateur Mobile Money pris en charge en RDC." });
       }
       const num = await storage.createPaymentNumber({
-        ownerName, phone, operatorName, country: SUPPORTED_COUNTRY_CODE,
+        ownerName, phone, operatorName: supportedOperatorName, country: SUPPORTED_COUNTRY_CODE,
         channelId: channelId ? parseInt(channelId) : null,
         logoUrl: logoUrl || null,
         isActive: isActive !== false,
@@ -997,8 +979,14 @@ export async function registerRoutes(
       if (country !== undefined && country !== SUPPORTED_COUNTRY_CODE) {
         return res.status(400).json({ message: "Seuls les numéros de paiement de la RDC sont autorisés." });
       }
+      const supportedOperatorName = canonicalRdcOperatorName(
+        operatorName === undefined ? existing.operatorName : operatorName,
+      );
+      if (!supportedOperatorName) {
+        return res.status(400).json({ message: "Choisissez un opérateur Mobile Money pris en charge en RDC." });
+      }
       const num = await storage.updatePaymentNumber(id, {
-        ownerName, phone, operatorName, country: SUPPORTED_COUNTRY_CODE,
+        ownerName, phone, operatorName: supportedOperatorName, country: SUPPORTED_COUNTRY_CODE,
         channelId: channelId ? parseInt(channelId) : null,
         logoUrl, isActive,
       });
@@ -2851,7 +2839,7 @@ export async function registerRoutes(
     try {
       const activeCountries = await storage.getActiveCountries();
       const rdc = activeCountries.find(country => country.code === SUPPORTED_COUNTRY_CODE);
-      res.json([rdc ?? {
+      const country = rdc ?? {
         id: 0,
         code: RDC_COUNTRY.code,
         name: RDC_COUNTRY.name,
@@ -2860,6 +2848,10 @@ export async function registerRoutes(
         operators: JSON.stringify([...RDC_COUNTRY.operators]),
         isActive: true,
         autoPaymentEnabled: RDC_COUNTRY.autoPaymentEnabled,
+      };
+      res.json([{
+        ...country,
+        operators: JSON.stringify([...RDC_COUNTRY.operators]),
       }]);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -2882,7 +2874,12 @@ export async function registerRoutes(
   app.get("/api/admin/countries", requireAdmin, async (req, res) => {
     try {
       const allCountries = await storage.getCountries();
-      res.json(allCountries.filter(country => country.code === SUPPORTED_COUNTRY_CODE));
+      res.json(allCountries
+        .filter(country => country.code === SUPPORTED_COUNTRY_CODE)
+        .map(country => ({
+          ...country,
+          operators: JSON.stringify([...RDC_COUNTRY.operators]),
+        })));
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -2890,7 +2887,7 @@ export async function registerRoutes(
 
   app.post("/api/admin/countries", requireAdmin, async (req, res) => {
     try {
-      const { code, operators, autoPaymentEnabled } = req.body;
+      const { code, autoPaymentEnabled } = req.body;
       if (String(code).toUpperCase() !== SUPPORTED_COUNTRY_CODE) {
         return res.status(400).json({ message: "Seule la RDC peut être configurée." });
       }
@@ -2899,7 +2896,7 @@ export async function registerRoutes(
         name: RDC_COUNTRY.name,
         currency: RDC_COUNTRY.currency,
         phonePrefix: RDC_COUNTRY.phonePrefix,
-        operators: operators || "[]",
+        operators: JSON.stringify([...RDC_COUNTRY.operators]),
         isActive: true,
         autoPaymentEnabled: autoPaymentEnabled !== undefined ? autoPaymentEnabled : false,
       });
@@ -2912,7 +2909,7 @@ export async function registerRoutes(
   app.put("/api/admin/countries/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id as string);
-      const { operators, autoPaymentEnabled } = req.body;
+      const { autoPaymentEnabled } = req.body;
       const existing = await storage.getCountry(id);
       if (!existing || existing.code !== SUPPORTED_COUNTRY_CODE) {
         return res.status(404).json({ message: "Configuration de la RDC introuvable." });
@@ -2921,9 +2918,9 @@ export async function registerRoutes(
         name: RDC_COUNTRY.name,
         currency: RDC_COUNTRY.currency,
         phonePrefix: RDC_COUNTRY.phonePrefix,
+        operators: JSON.stringify([...RDC_COUNTRY.operators]),
         isActive: true,
       };
-      if (operators !== undefined) updateData.operators = operators;
       if (autoPaymentEnabled !== undefined) updateData.autoPaymentEnabled = autoPaymentEnabled;
       const country = await storage.updateCountry(id, updateData);
       res.json(country);
