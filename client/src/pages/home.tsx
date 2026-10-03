@@ -12,7 +12,7 @@ import { useI18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCurrency } from "@/lib/countries";
-import productImgFallback from "@assets/vestas_112v_closeup_1783210181172.jpg";
+import { getProductImageUrl } from "@/lib/product-image";
 import type { Product } from "@shared/schema";
 
 /* ─── Palette ─────────────────────────────────────────── */
@@ -365,7 +365,7 @@ export default function HomePage() {
           {/* Grille 2 colonnes — même style exact que la page Produits */}
           <div className="grid grid-cols-2 gap-2">
             {specialProducts.map((product) => {
-              const img = product.imageUrl || productImgFallback;
+              const img = getProductImageUrl(product.imageUrl, product.sortOrder || product.id);
               return (
                 <div
                   key={product.id}
@@ -449,7 +449,7 @@ export default function HomePage() {
             {/* Image produit */}
             <div className="flex items-center justify-center" style={{ background: "#f8f8f8", height: 200 }}>
               <img
-                src={confirmProduct.imageUrl || productImgFallback}
+                src={getProductImageUrl(confirmProduct.imageUrl, confirmProduct.sortOrder || confirmProduct.id)}
                 alt={confirmProduct.name}
                 style={{ height: 180, maxWidth: "90%", objectFit: "contain" }}
               />

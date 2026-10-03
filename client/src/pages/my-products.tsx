@@ -6,9 +6,9 @@ import { Link } from "wouter";
 import { useI18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getProductImageUrl } from "@/lib/product-image";
 
 import bannerImg          from "@assets/xpeng-my-products-banner.jpg";
-import productImgFallback from "@assets/vestas_112v_closeup_1783210181172.jpg";
 
 const RED   = "#E8192C";
 const BLACK = "#000000";
@@ -107,7 +107,7 @@ export default function MyProductsPage() {
             <div className="grid grid-cols-2 gap-2">
               {allProducts.map((up: any) => {
                 const product       = up.product || {};
-                const img           = product.imageUrl || productImgFallback;
+                const img           = getProductImageUrl(product.imageUrl, product.sortOrder || product.id || 1);
                 const cycleDays     = product.cycleDays || 60;
                 const daysRemaining = up.daysRemaining ?? 0;
                 const daysCompleted = Math.max(0, cycleDays - daysRemaining);

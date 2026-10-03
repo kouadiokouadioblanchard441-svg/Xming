@@ -11,13 +11,13 @@ async function main() {
 
   // Update all existing products: 360 days + unique images
   const updates: { sortOrder: number; cycleDays: number; totalReturn: number; imageUrl: string }[] = [
-    { sortOrder: 1, cycleDays: 360, totalReturn: 108000,   imageUrl: '/powerbank-1.jpg' },
-    { sortOrder: 2, cycleDays: 360, totalReturn: 288000,   imageUrl: '/powerbank-2.jpg' },
-    { sortOrder: 3, cycleDays: 360, totalReturn: 540000,   imageUrl: '/powerbank-3.jpg' },
-    { sortOrder: 4, cycleDays: 360, totalReturn: 720000,   imageUrl: '/powerbank-4.jpg' },
-    { sortOrder: 5, cycleDays: 360, totalReturn: 1260000,  imageUrl: '/powerbank-5.jpg' },
-    { sortOrder: 6, cycleDays: 360, totalReturn: 3600000,  imageUrl: '/powerbank-6.jpg' },
-    { sortOrder: 7, cycleDays: 360, totalReturn: 10800000, imageUrl: '/powerbank-7.jpg' },
+    { sortOrder: 1, cycleDays: 360, totalReturn: 108000,   imageUrl: '/xpeng-product-1.jpg' },
+    { sortOrder: 2, cycleDays: 360, totalReturn: 288000,   imageUrl: '/xpeng-product-2.jpg' },
+    { sortOrder: 3, cycleDays: 360, totalReturn: 540000,   imageUrl: '/xpeng-product-4.jpg' },
+    { sortOrder: 4, cycleDays: 360, totalReturn: 720000,   imageUrl: '/xpeng-product-5.jpg' },
+    { sortOrder: 5, cycleDays: 360, totalReturn: 1260000,  imageUrl: '/xpeng-product-6.jpg' },
+    { sortOrder: 6, cycleDays: 360, totalReturn: 3600000,  imageUrl: '/xpeng-product-7.jpg' },
+    { sortOrder: 7, cycleDays: 360, totalReturn: 10800000, imageUrl: '/xpeng-product-8.jpg' },
   ];
 
   const all = await db
@@ -42,7 +42,7 @@ async function main() {
   if (!names.includes("VIP 8")) {
     await db.insert(products).values({
       name: "VIP 8", price: 600, dailyEarnings: 60, cycleDays: 360,
-      totalReturn: 21600, imageUrl: '/powerbank-8.jpg', sortOrder: 8, isFree: false,
+      totalReturn: 21600, imageUrl: '/xpeng-product-12.jpg', sortOrder: 8, isFree: false,
     });
     console.log("VIP 8 ajouté → 600, 60/jour, 360 jours");
   } else {
@@ -52,7 +52,7 @@ async function main() {
   if (!names.includes("VIP 9")) {
     await db.insert(products).values({
       name: "VIP 9", price: 1000, dailyEarnings: 120, cycleDays: 360,
-      totalReturn: 43200, imageUrl: '/powerbank-9.jpg', sortOrder: 9, isFree: false,
+      totalReturn: 43200, imageUrl: '/xpeng-product-9.jpg', sortOrder: 9, isFree: false,
     });
     console.log("VIP 9 ajouté → 1000, 120/jour, 360 jours");
   } else {

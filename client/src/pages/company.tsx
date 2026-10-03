@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { getContent } from "@/lib/content";
 import { useI18n } from "@/lib/i18n";
+import { getProductImageUrl } from "@/lib/product-image";
 import type { CompanyContent } from "@shared/schema";
 
 export default function CompanyPage() {
@@ -51,7 +52,7 @@ export default function CompanyPage() {
         {isLoading ? (
           <div className="rounded-2xl bg-white/70 h-32 animate-pulse" />
         ) : blocks && blocks.length > 0 ? (
-            blocks.map((block) => {
+            blocks.map((block, index) => {
               const translated = legacyBlocks[block.title];
               const title = translated?.title || block.title || "Information";
               const body = translated?.body || block.body || "Plus d'informations bientôt disponibles.";
@@ -59,8 +60,8 @@ export default function CompanyPage() {
             <article key={block.id} className="overflow-hidden rounded-2xl bg-white shadow-sm">
               {block.imageUrl && (
                 <img
-                  src={block.imageUrl}
-                   alt={title}
+                  src={getProductImageUrl(block.imageUrl, index + 1)}
+                  alt={title}
                   className="w-full max-h-64 object-cover"
                 />
               )}

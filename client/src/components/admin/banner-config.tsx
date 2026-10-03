@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getProductImageUrl } from "@/lib/product-image";
 import { Loader2, Save, Trash2, Image as ImageIcon, Star, CheckCircle2 } from "lucide-react";
 import ImageUploader from "@/components/admin/image-uploader";
 import type { Product } from "@shared/schema";
@@ -238,7 +239,7 @@ function SpecialProductsConfig() {
                   }}
                 >
                   {p.imageUrl ? (
-                    <img src={p.imageUrl} alt={p.name} className="w-12 h-12 rounded-lg object-cover shrink-0 border" />
+                    <img src={getProductImageUrl(p.imageUrl, p.sortOrder || p.id)} alt={p.name} className="w-12 h-12 rounded-lg object-cover shrink-0 border" />
                   ) : (
                     <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center shrink-0">
                       <ImageIcon className="w-5 h-5 text-muted-foreground" />

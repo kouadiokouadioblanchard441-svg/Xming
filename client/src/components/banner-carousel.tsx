@@ -3,6 +3,7 @@
  * Utilisé sur la page d'accueil pour la bannière du haut et celle du milieu.
  */
 import { useEffect, useRef, useState } from "react";
+import { getProductImageUrl } from "@/lib/product-image";
 
 interface BannerCarouselProps {
   images: string[];
@@ -78,7 +79,7 @@ export default function BannerCarousel({
             }}
           >
             <img
-              src={src}
+              src={getProductImageUrl(src, i + 1)}
               alt={`banner-${i + 1}`}
               className="w-full h-full object-cover"
               draggable={false}

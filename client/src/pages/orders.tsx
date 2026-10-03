@@ -1,17 +1,10 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
-import landscapeImg from "@assets/portable-charger-power-banks_480x480_d6b67d82-6118-4295-be02-e_1784966597898.jpg";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getContent } from "@/lib/content";
 import { useI18n } from "@/lib/i18n";
-
-import elfExpert1 from "@/assets/images/elf-expert-1.jpeg";
-import elfExpert2 from "@/assets/images/elf-expert-2.webp";
-import elfStation1 from "@/assets/images/elf-station-1.jpg";
-import elfStation2 from "@/assets/images/elf-station-2.jpeg";
-
-const productImages = [elfExpert1, elfExpert2, elfStation1, elfStation2];
+import { getProductImageUrl } from "@/lib/product-image";
 
 export default function OrdersPage() {
   const { user } = useAuth();
@@ -31,10 +24,6 @@ export default function OrdersPage() {
   const headerTitle = getContent(settings, "content_orders_headerTitle", t.myProductsTitle);
   const infoLine1 = getContent(settings, "content_orders_infoLine1", t.myProductsSettledEvery24h);
   const infoLine2 = getContent(settings, "content_orders_infoLine2", t.purchaseSuccessDescription);
-
-  const getProductImage = (index: number) => {
-    return productImages[index % productImages.length];
-  };
 
   const filteredProducts = userProducts?.filter((up: any) =>
     activeTab === "active" ? up.status === "active" : up.status !== "active"
@@ -103,7 +92,10 @@ export default function OrdersPage() {
                   <div className="flex items-start gap-2">
                     <div className="w-24 h-24 flex-shrink-0">
                       <img
-                        src={getProductImage(up.productId ? up.productId % productImages.length : index)}
+                        src={getProductImageUrl(
+                          up.product?.imageUrl,
+                          up.product?.sortOrder ?? up.productId ?? index + 1,
+                        )}
                         alt={up.product?.name || t.noProducts}
                         className="w-full h-full object-cover rounded-lg"
                       />
@@ -165,7 +157,7 @@ export default function OrdersPage() {
           </div>
         )}
       </div>
-      <img src={landscapeImg} alt="XPENG" className="w-full object-cover object-top" style={{ maxHeight: 220 }} />
+      <img src="/xpeng-product-12.jpg" alt="XPENG" className="w-full object-cover object-top" style={{ maxHeight: 220 }} />
     </div>
   );
 }

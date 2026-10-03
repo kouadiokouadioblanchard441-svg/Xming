@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getProductImageUrl } from "@/lib/product-image";
 import { Edit, ImagePlus, Loader2, Plus, Save, Trash2, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import type { CompanyContent } from "@shared/schema";
@@ -184,7 +185,7 @@ export default function AdminCompanyContent() {
               <Label>{t.adminCompanyBlockImage} <span className="font-normal text-muted-foreground">{t.adminCompanyBlockImageOptional}</span></Label>
               {form.imageUrl && (
                 <div className="relative h-32 rounded-xl border overflow-hidden bg-secondary/30">
-                  <img src={form.imageUrl} alt={t.adminCompanyBlockPreview} className="w-full h-full object-contain" />
+                  <img src={getProductImageUrl(form.imageUrl)} alt={t.adminCompanyBlockPreview} className="w-full h-full object-contain" />
                   <button
                     type="button"
                     onClick={() => updateForm("imageUrl", "")}

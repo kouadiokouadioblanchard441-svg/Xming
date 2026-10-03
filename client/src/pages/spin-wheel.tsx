@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useAuth } from "@/lib/auth";
+import { getProductImageUrl } from "@/lib/product-image";
 import { useI18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import WheelRulesModal from "@/components/wheel-rules-modal";
@@ -377,7 +378,7 @@ export default function SpinWheelPage() {
       if (seg.imageUrl) {
         const img = new window.Image();
         img.crossOrigin = "anonymous";
-        img.src = seg.imageUrl;
+        img.src = getProductImageUrl(seg.imageUrl, seg.id);
         cache[seg.id] = img;
       } else {
         cache[seg.id] = null;

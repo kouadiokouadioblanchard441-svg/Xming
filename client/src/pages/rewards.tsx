@@ -7,9 +7,6 @@ import { ArrowLeft, HelpCircle, Users } from "lucide-react";
 import { getCountryByCode } from "@/lib/countries";
 import { useI18n } from "@/lib/i18n";
 
-import globeImg from "@/assets/images/elf-station-2.jpeg";
-import landscapeImg from "@assets/portable-charger-power-banks_480x480_d6b67d82-6118-4295-be02-e_1784966597898.jpg";
-
 export default function RewardsPage() {
   const { user } = useAuth();
   const { t } = useI18n();
@@ -66,7 +63,7 @@ export default function RewardsPage() {
           <h1 className="text-xl font-bold text-gray-900 mb-4">{t.rewardsTitle}</h1>
 
           <div className="relative rounded-2xl overflow-hidden" style={{ backgroundColor: "#1a1a1a" }}>
-            <img src={globeImg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
+            <img src="/xpeng-product-8.jpg" alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
             <div className="relative z-10 flex items-center justify-between px-5 py-5">
               <div>
                 <p className="text-white/80 text-sm">{currency}</p>
@@ -136,7 +133,7 @@ export default function RewardsPage() {
         </div>
 
       </div>
-      <img src={landscapeImg} alt="XPENG" className="w-full object-cover object-top" style={{ maxHeight: 220 }} />
+      <img src="/xpeng-product-12.jpg" alt="XPENG" className="w-full object-cover object-top" style={{ maxHeight: 220 }} />
     </div>
   );
 }

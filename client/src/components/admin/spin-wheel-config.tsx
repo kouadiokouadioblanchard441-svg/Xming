@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Loader2, Save, RotateCcw, Image as ImageIcon, Trophy, AlertCircle, MessageSquare } from "lucide-react";
 import { DEFAULT_SPIN_WHEEL_SEGMENTS, type SpinWheelSegment } from "@shared/spin-wheel";
+import { getProductImageUrl } from "@/lib/product-image";
 
 const SEGMENT_NAMES = ["Case 1", "Case 2", "Case 3", "Case 4", "Case 5", "Case 6", "Case 7", "Case 8"];
 
@@ -143,7 +144,7 @@ function SegmentCard({
               />
               {seg.imageUrl && (
                 <img
-                  src={seg.imageUrl}
+                  src={getProductImageUrl(seg.imageUrl, index + 1)}
                   alt=""
                   className="w-9 h-9 rounded-lg object-contain border border-input bg-white shrink-0"
                   onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}

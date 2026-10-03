@@ -6,9 +6,8 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/countries";
+import { getProductImageUrl } from "@/lib/product-image";
 import type { Product } from "@shared/schema";
-
-import productImgFallback from "@assets/vestas_112v_closeup_1783210181172.jpg";
 
 const RED = "#E8192C";
 
@@ -98,7 +97,7 @@ export default function ProductsPage() {
           </div>
         ) : (
           filtered.map(product => {
-            const img = product.imageUrl || productImgFallback;
+            const img = getProductImageUrl(product.imageUrl, product.sortOrder || product.id);
             const isPending = purchaseMutation.isPending && purchaseMutation.variables === product.id;
             const stock = Math.min(100, Math.max(0, Number(product.stockPercentage) || 0));
             const isSoldOut = stock >= 100;
@@ -273,7 +272,7 @@ export default function ProductsPage() {
             {/* Image produit */}
             <div className="flex items-center justify-center" style={{ background: "#f8f8f8", height: 200 }}>
               <img
-                src={confirmProduct.imageUrl || productImgFallback}
+                src={getProductImageUrl(confirmProduct.imageUrl, confirmProduct.sortOrder || confirmProduct.id)}
                 alt={confirmProduct.name}
                 style={{ height: 180, maxWidth: "90%", objectFit: "contain" }}
               />

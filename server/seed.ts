@@ -160,13 +160,13 @@ export async function seed() {
   const existingProducts = await db.select().from(products);
   if (existingProducts.filter(p => !p.isFree).length === 0) {
     const defaultProducts = [
-      { name: "VIP 1", price: "20000",   dailyEarnings: "3600",   cycleDays: 30, totalReturn: "108000",   imageUrl: "/powerbank-1.jpg", sortOrder: 1 },
-      { name: "VIP 2", price: "45000",   dailyEarnings: "8100",   cycleDays: 30, totalReturn: "243000",   imageUrl: "/powerbank-2.jpg", sortOrder: 2 },
-      { name: "VIP 3", price: "75000",   dailyEarnings: "13500",  cycleDays: 30, totalReturn: "405000",   imageUrl: "/powerbank-3.jpg", sortOrder: 3 },
-      { name: "VIP 4", price: "100000",  dailyEarnings: "18000",  cycleDays: 30, totalReturn: "540000",   imageUrl: "/powerbank-4.jpg", sortOrder: 4 },
-      { name: "VIP 5", price: "245000",  dailyEarnings: "45000",  cycleDays: 30, totalReturn: "1350000",  imageUrl: "/powerbank-5.jpg", sortOrder: 5 },
-      { name: "VIP 6", price: "500000",  dailyEarnings: "93000",  cycleDays: 30, totalReturn: "2790000",  imageUrl: "/powerbank-6.jpg", sortOrder: 6 },
-      { name: "VIP 7", price: "1000000", dailyEarnings: "123000", cycleDays: 30, totalReturn: "3690000",  imageUrl: "/powerbank-7.jpg", sortOrder: 7 },
+      { name: "VIP 1", price: "20000",   dailyEarnings: "3600",   cycleDays: 30, totalReturn: "108000",   imageUrl: "/xpeng-product-1.jpg", sortOrder: 1 },
+      { name: "VIP 2", price: "45000",   dailyEarnings: "8100",   cycleDays: 30, totalReturn: "243000",   imageUrl: "/xpeng-product-2.jpg", sortOrder: 2 },
+      { name: "VIP 3", price: "75000",   dailyEarnings: "13500",  cycleDays: 30, totalReturn: "405000",   imageUrl: "/xpeng-product-4.jpg", sortOrder: 3 },
+      { name: "VIP 4", price: "100000",  dailyEarnings: "18000",  cycleDays: 30, totalReturn: "540000",   imageUrl: "/xpeng-product-5.jpg", sortOrder: 4 },
+      { name: "VIP 5", price: "245000",  dailyEarnings: "45000",  cycleDays: 30, totalReturn: "1350000",  imageUrl: "/xpeng-product-6.jpg", sortOrder: 5 },
+      { name: "VIP 6", price: "500000",  dailyEarnings: "93000",  cycleDays: 30, totalReturn: "2790000",  imageUrl: "/xpeng-product-7.jpg", sortOrder: 6 },
+      { name: "VIP 7", price: "1000000", dailyEarnings: "123000", cycleDays: 30, totalReturn: "3690000",  imageUrl: "/xpeng-product-8.jpg", sortOrder: 7 },
     ];
     await db.insert(products).values(defaultProducts);
     console.log("Products seeded (first install)");

@@ -12,7 +12,7 @@ import type { Product } from "@shared/schema";
 
 const xpengLogo = "/xpeng-logo-white.svg";
 import serviceIcon from "@assets/20260311_214852_1773265973964.png";
-import productImgFallback from "@assets/vestas_112v_closeup_1783210181172.jpg";
+import { getProductImageUrl } from "@/lib/product-image";
 
 interface ProductWithOwnership extends Product {
   isOwned: boolean;
@@ -79,7 +79,7 @@ export default function InvestPage() {
         ) : paidProducts.length > 0 ? (
           <div className="grid grid-cols-2 gap-2">
             {paidProducts.map((product) => {
-              const img = product.imageUrl || productImgFallback;
+              const img = getProductImageUrl(product.imageUrl, product.sortOrder || product.id);
               return (
                 <div
                   key={product.id}
@@ -166,7 +166,7 @@ export default function InvestPage() {
               style={{ background: "#f8f8f8", height: 200 }}
             >
               <img
-                src={confirmProduct.imageUrl || productImgFallback}
+                src={getProductImageUrl(confirmProduct.imageUrl, confirmProduct.sortOrder || confirmProduct.id)}
                 alt={confirmProduct.name}
                 style={{ height: 180, maxWidth: "90%", objectFit: "contain" }}
               />
