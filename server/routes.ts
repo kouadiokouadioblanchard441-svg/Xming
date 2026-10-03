@@ -1788,19 +1788,7 @@ export async function registerRoutes(
       const taskId = parseInt(req.params.id as string);
       const userId = req.session.userId!;
 
-      // Récupérer la récompense avant le claim pour les commissions
-      const tasksStatus = await storage.getTasksWithStatus(userId);
-      const taskStatus = tasksStatus.find((t: any) => t.id === taskId);
-      const taskReward = taskStatus?.reward ?? 0;
-
       await storage.claimTask(userId, taskId);
-
-      // Distribuer les commissions de parrainage sur les gains de tâche
-      if (taskReward > 0) {
-        storage.processTaskReferralCommissions(userId, taskReward).catch((err: any) =>
-          console.error("Erreur commission tâche:", err)
-        );
-      }
 
       res.json({ success: true });
     } catch (error: any) {
@@ -2650,9 +2638,6 @@ export async function registerRoutes(
         "level1Commission",
         "level2Commission",
         "level3Commission",
-        "taskLevel1Commission",
-        "taskLevel2Commission",
-        "taskLevel3Commission",
       ]);
 
       for (const [key, value] of entries) {

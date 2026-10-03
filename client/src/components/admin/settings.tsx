@@ -13,10 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Loader2, Save, Link, Clock, Users, PowerOff, Power, HandCoins, Zap } from "lucide-react";
-import {
-  DEFAULT_REFERRAL_COMMISSION_RATES,
-  DEFAULT_TASK_REFERRAL_COMMISSION_RATES,
-} from "@shared/referral-settings";
+import { DEFAULT_REFERRAL_COMMISSION_RATES } from "@shared/referral-settings";
 
 const commissionPercentage = z.string()
   .trim()
@@ -70,9 +67,6 @@ const settingsSchema = z.object({
   level1Commission: commissionPercentage,
   level2Commission: commissionPercentage,
   level3Commission: commissionPercentage,
-  taskLevel1Commission: commissionPercentage,
-  taskLevel2Commission: commissionPercentage,
-  taskLevel3Commission: commissionPercentage,
   dailyBonusEnabled: z.boolean(),
   dailyBonusAmount: z.string().min(1, "Montant requis"),
   signupBonusEnabled: z.boolean(),
@@ -242,9 +236,6 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       level1Commission: DEFAULT_REFERRAL_COMMISSION_RATES.level1,
       level2Commission: DEFAULT_REFERRAL_COMMISSION_RATES.level2,
       level3Commission: DEFAULT_REFERRAL_COMMISSION_RATES.level3,
-      taskLevel1Commission: DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level1,
-      taskLevel2Commission: DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level2,
-      taskLevel3Commission: DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level3,
       dailyBonusEnabled: true,
       dailyBonusAmount: "25",
       signupBonusEnabled: true,
@@ -294,9 +285,6 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       level1Commission:       settings.level1Commission       || DEFAULT_REFERRAL_COMMISSION_RATES.level1,
       level2Commission:       settings.level2Commission       || DEFAULT_REFERRAL_COMMISSION_RATES.level2,
       level3Commission:       settings.level3Commission       || DEFAULT_REFERRAL_COMMISSION_RATES.level3,
-      taskLevel1Commission:   settings.taskLevel1Commission   || DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level1,
-      taskLevel2Commission:   settings.taskLevel2Commission   || DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level2,
-      taskLevel3Commission:   settings.taskLevel3Commission   || DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level3,
       dailyBonusEnabled:      settings.dailyBonusEnabled      !== "false",
       dailyBonusAmount:       settings.dailyBonusAmount       ?? "25",
       signupBonusEnabled:     settings.signupBonusEnabled     !== "false",
@@ -868,42 +856,6 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 </FormItem>
               )} />
               <FormField control={form.control} name="level3Commission" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Niveau 3 (%)</FormLabel>
-                  <FormControl><Input {...field} type="number" min="0" max="100" step="0.01" /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* ── Commissions sur tâches ── */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Users className="w-5 h-5 text-gray-800" />
-              Commissions de parrainage — Tâches quotidiennes
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="text-xs text-muted-foreground">Pourcentage reversé aux parrains sur les gains de tâches de leurs filleuls.</p>
-            <div className="grid grid-cols-3 gap-4">
-              <FormField control={form.control} name="taskLevel1Commission" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Niveau 1 (%)</FormLabel>
-                  <FormControl><Input {...field} type="number" min="0" max="100" step="0.01" /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="taskLevel2Commission" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Niveau 2 (%)</FormLabel>
-                  <FormControl><Input {...field} type="number" min="0" max="100" step="0.01" /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="taskLevel3Commission" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Niveau 3 (%)</FormLabel>
                   <FormControl><Input {...field} type="number" min="0" max="100" step="0.01" /></FormControl>

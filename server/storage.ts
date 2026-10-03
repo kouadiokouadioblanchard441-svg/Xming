@@ -10,10 +10,13 @@ import { db } from "./db";
 import { getKinshasaStartOfDay } from "./rdc-time";
 import { eq, and, asc, desc, sql, gte, lte, or, inArray } from "drizzle-orm";
 import bcrypt from "bcryptjs";
-import {
-  DEFAULT_REFERRAL_COMMISSION_RATES,
-  DEFAULT_TASK_REFERRAL_COMMISSION_RATES,
-} from "@shared/referral-settings";
+import { DEFAULT_REFERRAL_COMMISSION_RATES } from "@shared/referral-settings";
+
+const RETIRED_TASK_REFERRAL_SETTING_KEYS = new Set([
+  "taskLevel1Commission",
+  "taskLevel2Commission",
+  "taskLevel3Commission",
+]);
 
 // Compares phone numbers regardless of local vs international MSISDN format
 // (e.g. "0150839909" vs "+22990150839909") by matching on the last 8 digits.
@@ -471,65 +474,6 @@ export class DatabaseStorage implements IStorage {
                 type: "commission",
                 amount: commission3.toFixed(2),
                 description: `Commission niveau 3`,
-              });
-            }
-          }
-        }
-      }
-    }
-  }
-
-  async processTaskReferralCommissions(userId: number, taskReward: number): Promise<void> {
-    const user = await this.getUser(userId);
-    if (!user || !user.referredBy) return;
-
-    const settings = await this.getSettings();
-    const level1Rate = parseFloat(settings.taskLevel1Commission || DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level1) / 100;
-    const level2Rate = parseFloat(settings.taskLevel2Commission || DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level2) / 100;
-    const level3Rate = parseFloat(settings.taskLevel3Commission || DEFAULT_TASK_REFERRAL_COMMISSION_RATES.level3) / 100;
-
-    // Niveau 1 — parrain direct
-    const level1User = await this.getUserByReferralCode(user.referredBy);
-    if (level1User) {
-      const commission1 = taskReward * level1Rate;
-      await this.updateUser(level1User.id, {
-        totalEarnings: (parseFloat(level1User.totalEarnings || "0") + commission1).toFixed(2),
-      });
-      await this.createTransaction({
-        userId: level1User.id,
-        type: "commission",
-        amount: commission1.toFixed(2),
-        description: `Commission tâche niv.1 de ${user.fullName}`,
-      });
-
-      // Niveau 2
-      if (level1User.referredBy) {
-        const level2User = await this.getUserByReferralCode(level1User.referredBy);
-        if (level2User) {
-          const commission2 = taskReward * level2Rate;
-          await this.updateUser(level2User.id, {
-            totalEarnings: (parseFloat(level2User.totalEarnings || "0") + commission2).toFixed(2),
-          });
-          await this.createTransaction({
-            userId: level2User.id,
-            type: "commission",
-            amount: commission2.toFixed(2),
-            description: `Commission tâche niv.2 de ${user.fullName}`,
-          });
-
-          // Niveau 3
-          if (level2User.referredBy) {
-            const level3User = await this.getUserByReferralCode(level2User.referredBy);
-            if (level3User) {
-              const commission3 = taskReward * level3Rate;
-              await this.updateUser(level3User.id, {
-                totalEarnings: (parseFloat(level3User.totalEarnings || "0") + commission3).toFixed(2),
-              });
-              await this.createTransaction({
-                userId: level3User.id,
-                type: "commission",
-                amount: commission3.toFixed(2),
-                description: `Commission tâche niv.3 de ${user.fullName}`,
               });
             }
           }
@@ -1246,6 +1190,7 @@ export class DatabaseStorage implements IStorage {
 
   // Settings
   async getSetting(key: string): Promise<string | null> {
+    if (RETIRED_TASK_REFERRAL_SETTING_KEYS.has(key)) return null;
     const [setting] = await db.select().from(platformSettings).where(eq(platformSettings.key, key));
     return setting?.value || null;
   }
@@ -1254,12 +1199,16 @@ export class DatabaseStorage implements IStorage {
     const allSettings = await db.select().from(platformSettings);
     const result: Record<string, string> = {};
     for (const s of allSettings) {
+      if (RETIRED_TASK_REFERRAL_SETTING_KEYS.has(s.key)) continue;
       result[s.key] = s.value;
     }
     return result;
   }
 
   async setSetting(key: string, value: string, modifiedBy?: number): Promise<void> {
+    if (RETIRED_TASK_REFERRAL_SETTING_KEYS.has(key)) {
+      throw new Error("Les commissions de parrainage sur les gains des tâches ont été supprimées.");
+    }
     const existing = await db.select().from(platformSettings).where(eq(platformSettings.key, key));
     if (existing.length > 0) {
       await db.update(platformSettings).set({ value, modifiedBy, modifiedAt: new Date() }).where(eq(platformSettings.key, key));

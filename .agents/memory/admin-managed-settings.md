@@ -3,8 +3,8 @@ name: Admin-managed settings
 description: XPENG product settings that the user expects to control from the admin panel.
 ---
 
-Business rates and bonuses, including referral percentages, must remain changeable through the administrator panel. Application constants may provide initial defaults, but runtime calculations must read the persisted settings and startup seeding must preserve administrator changes.
+Referral percentages for product purchases must remain changeable through the administrator panel. Task earnings do not generate referral commissions; the former task-level rates are retired. Preserve already-credited transactions.
 
-**Why:** the user explicitly said referral bonuses should not be hard-coded and must be fully editable from the admin panel.
+**Why:** the user wants purchase referral rates to stay configurable, but explicitly requested complete removal of the 3% / 2% / 1% commissions on task earnings.
 
-**How to apply:** store editable values in platform settings, expose them in the admin form, validate them on save, and use database-backed values when calculating rewards.
+**How to apply:** keep the product-purchase commission settings editable and database-backed; do not reintroduce task commission controls or payouts, and do not erase historical task commission records.
