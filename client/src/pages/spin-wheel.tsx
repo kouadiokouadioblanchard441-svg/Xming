@@ -352,7 +352,7 @@ export default function SpinWheelPage() {
     ?? "Invitez vos amis à s'inscrire et vous aurez plus de chances de gagner des prix, jusqu'à 50 fois par jour.";
   const inviteHighlight = platformSettings?.spinWheelInviteHighlight ?? "50";
   const rulesText = platformSettings?.spinWheelRulesText
-    ?? "Achetez un produit pour obtenir des tours gratuits. Chaque tour vous donne une chance de remporter un gain en FCFA crédité directement sur votre solde.";
+    ?? "Achetez un produit pour obtenir des tours gratuits. Chaque tour vous donne une chance de remporter un gain en CDF crédité directement sur votre solde.";
   const rulesHighlight = platformSettings?.spinWheelRulesHighlight ?? "";
   const [segments, setSegments] = useState<SpinWheelSegment[]>(DEFAULT_SPIN_WHEEL_SEGMENTS);
   const rotDrawRef   = useRef(rotation);
@@ -538,7 +538,7 @@ export default function SpinWheelPage() {
               </div>
             </div>
            <p className="text-center text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.78)" }}>
-             Tournez la roue et tentez de gagner des récompenses en FCFA.
+             Tournez la roue et tentez de gagner des récompenses en CDF.
            </p>
            <div className="grid grid-cols-2 gap-3 mt-3">
              <button

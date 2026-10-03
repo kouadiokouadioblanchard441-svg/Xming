@@ -88,7 +88,7 @@ function DepositCard({ dep }: { dep: Deposit }) {
       }}
     >
       <div style={{ borderBottom: "none" }}>
-        <Row label="Montant du paiement" value={`FCFA ${amt.toLocaleString("fr-FR")}`} valueColor="#111" bold />
+        <Row label="Montant du paiement" value={`CDF ${amt.toLocaleString("fr-FR")}`} valueColor="#111" bold />
         <Row label="Commande" value={generateOrderId(dep.id, dep.createdAt)} />
         <Row label="Canal" value={dep.paymentMethod || "Mobile Money"} />
         <Row label="État" value={st.label} valueColor={st.color} />

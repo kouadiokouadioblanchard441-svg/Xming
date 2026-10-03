@@ -19,12 +19,11 @@ interface Country {
 }
 
 const FLAGS: Record<string, string> = {
-  CM: "🇨🇲", BF: "🇧🇫", TG: "🇹🇬", BJ: "🇧🇯", CI: "🇨🇮",
-  CG: "🇨🇬", CD: "🇨🇩", CF: "🇨🇫", ML: "🇲🇱", SN: "🇸🇳",
+  CD: "🇨🇩",
 };
 
 /* ─── Empty forms ─────────────────────────── */
-const emptyCh = { name: "", description: "", country: "", isActive: true, sortOrder: 0 };
+const emptyCh = { name: "", description: "", country: "CD", isActive: true, sortOrder: 0 };
 const emptyOp = { ownerName: "", phone: "", operatorName: "", logoUrl: "", isActive: true };
 
 /* ═══════════════════════════════════════════════════════════════════

@@ -1,6 +1,6 @@
 /**
  * Popup carte blanche — résultat d'un tour de roue.
- * Victoire : "Félicitations vous avez gagné X FCFA"
+ * Victoire : "Félicitations vous avez gagné X CDF"
  * Défaite  : "Pas de chance !"
  */
 interface Props {
@@ -17,9 +17,9 @@ export default function WheelResultModal({ open, onClose, won, amount, label }: 
   const displayAmount =
     amount && amount > 0
       ? amount >= 1000
-        ? `${(amount / 1000).toFixed(amount % 1000 === 0 ? 0 : 1)} 000 FCFA`
-        : `${amount} FCFA`
-      : label ?? "0 FCFA";
+        ? `${(amount / 1000).toFixed(amount % 1000 === 0 ? 0 : 1)} 000 CDF`
+        : `${amount} CDF`
+      : label ?? "0 CDF";
 
   return (
     <div

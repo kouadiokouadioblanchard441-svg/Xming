@@ -34,7 +34,7 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
     defaultValues: {
       phone: "",
-      country: "CI",
+      country: "CD",
       password: "",
     },
   });
@@ -125,7 +125,7 @@ export default function LoginPage() {
               style={{ color: "#333", borderColor: "rgba(0,0,0,0.15)" }}
               data-testid="button-select-country"
             >
-              +{countryData?.phonePrefix || "225"}
+              🇨🇩 +{countryData?.phonePrefix || "243"}
               <ChevronDown size={13} />
             </button>
             <input

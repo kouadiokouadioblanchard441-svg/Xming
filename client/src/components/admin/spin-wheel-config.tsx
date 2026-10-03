@@ -65,7 +65,7 @@ function SegmentCard({
           {/* Amount */}
           <div>
             <label className="text-xs font-medium text-muted-foreground">
-              Montant gagné (FCFA)
+              Montant gagné (CDF)
             </label>
             <Input
               type="number"

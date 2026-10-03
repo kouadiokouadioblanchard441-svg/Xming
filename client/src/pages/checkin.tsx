@@ -52,7 +52,7 @@ export default function CheckinPage() {
   if (!user) return null;
 
   const country = getCountryByCode(user.country);
-  const currency = "FCFA";
+  const currency = "CDF";
   const totalBonusClaimed = bonusStatus?.totalBonusClaimed || 0;
   const daysPointed = bonusStatus?.daysPointed || 0;
 

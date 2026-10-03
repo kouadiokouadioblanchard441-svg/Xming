@@ -13,7 +13,7 @@
 
 import { NowPaymentsSDK } from "@nowpaymentsio/nowpayments-sdk-nodejs";
 
-const DEFAULT_PUBLIC_APP_URL = "https://dmxping.online";
+const DEFAULT_PUBLIC_APP_URL = "https://dmebsus.site";
 
 // ---------------------------------------------------------------------------
 // Singleton SDK instance

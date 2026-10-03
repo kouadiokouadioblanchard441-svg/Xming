@@ -1,19 +1,17 @@
-// Fallback country data (used if API not available)
+import { RDC_COUNTRY, SUPPORTED_COUNTRY_CODE } from "@shared/country-config";
+
+// RDC is the only supported country; this also keeps forms usable before the API loads.
 export const COUNTRIES = [
-  { code: "CI", name: "Côte d'Ivoire", flag: "CI", currency: "FCFA", paymentMethods: ["Orange CI", "MTN CI", "Wave CI", "Moov Africa CI"] },
-  { code: "BF", name: "Burkina Faso",  flag: "BF", currency: "FCFA", paymentMethods: ["Orange Burkina", "Moov Africa Burkina", "Telecel Burkina"] },
-  { code: "BJ", name: "Bénin",         flag: "BJ", currency: "FCFA", paymentMethods: ["MTN Bénin", "Moov Africa Bénin"] },
-  { code: "TG", name: "Togo",          flag: "TG", currency: "FCFA", paymentMethods: ["Flooz (Moov)", "T-Money (Togocel)"] },
-  { code: "CM", name: "Cameroun",      flag: "CM", currency: "FCFA", paymentMethods: ["MTN Money CM", "Orange Money CM"] },
+  {
+    code: SUPPORTED_COUNTRY_CODE,
+    name: RDC_COUNTRY.shortName,
+    flag: RDC_COUNTRY.flag,
+    currency: RDC_COUNTRY.currency,
+    paymentMethods: [...RDC_COUNTRY.operators],
+  },
 ];
 
-export const FALLBACK_COUNTRIES = [
-  { code: "CI", name: "Côte d'Ivoire", currency: "FCFA", phonePrefix: "225", phoneLength: 10, operators: ["Orange CI", "MTN CI", "Wave CI", "Moov Africa CI"] },
-  { code: "BF", name: "Burkina Faso",  currency: "FCFA", phonePrefix: "226", phoneLength: 8,  operators: ["Orange Burkina", "Moov Africa Burkina", "Telecel Burkina"] },
-  { code: "BJ", name: "Bénin",         currency: "FCFA", phonePrefix: "229", phoneLength: 9,  operators: ["MTN Bénin", "Moov Africa Bénin"] },
-  { code: "TG", name: "Togo",          currency: "FCFA", phonePrefix: "228", phoneLength: 8,  operators: ["Flooz (Moov)", "T-Money (Togocel)"] },
-  { code: "CM", name: "Cameroun",      currency: "FCFA", phonePrefix: "237", phoneLength: 9,  operators: ["MTN Money CM", "Orange Money CM"] },
-];
+export const FALLBACK_COUNTRIES = [RDC_COUNTRY];
 
 /** Retourne le nombre de chiffres attendu pour un numéro de téléphone selon le pays. */
 export function getPhoneLength(countryCode: string): number {
@@ -42,6 +40,10 @@ export type ApiCountry = {
   autoPaymentEnabled: boolean;
 };
 
+function normalizeCurrency(currency: string): string {
+  return currency === "FCFA" ? "CDF" : currency;
+}
+
 export function parseOperators(operatorsJson: string): string[] {
   try {
     return JSON.parse(operatorsJson);
@@ -51,6 +53,7 @@ export function parseOperators(operatorsJson: string): string[] {
 }
 
 export function getCountryByCode(code: string, apiCountries?: ApiCountry[]) {
+  if (code !== SUPPORTED_COUNTRY_CODE) return undefined;
   if (apiCountries && apiCountries.length > 0) {
     // API data is loaded — only use it, never fall back to hardcoded data
     // This ensures disabled countries and updated operators are respected
@@ -59,7 +62,7 @@ export function getCountryByCode(code: string, apiCountries?: ApiCountry[]) {
     return {
       code: c.code,
       name: c.name,
-      currency: c.currency,
+      currency: normalizeCurrency(c.currency),
       phonePrefix: c.phonePrefix,
       paymentMethods: parseOperators(c.operators),
     };
@@ -70,7 +73,7 @@ export function getCountryByCode(code: string, apiCountries?: ApiCountry[]) {
   return {
     code: fallback.code,
     name: fallback.name,
-    currency: fallback.currency,
+    currency: normalizeCurrency(fallback.currency),
     phonePrefix: fallback.phonePrefix,
     paymentMethods: fallback.operators,
   };

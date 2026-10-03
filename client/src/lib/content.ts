@@ -7,5 +7,6 @@ export function getContent(
   fallback: string
 ): string {
   const value = settings?.[key];
-  return value !== undefined && value.trim() !== "" ? value : fallback;
+  const content = value !== undefined && value.trim() !== "" ? value : fallback;
+  return content.replace(/\bFCFA\b/g, "CDF");
 }

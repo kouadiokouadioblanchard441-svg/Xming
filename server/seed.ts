@@ -1,10 +1,17 @@
 import { db } from "./db";
 import { users, products, tasks, paymentChannels, paymentNumbers, platformSettings, companyContent, countries, stakingProducts, depositChannels, productSeries } from "@shared/schema";
+import { RDC_COUNTRY, SUPPORTED_COUNTRY_CODE } from "@shared/country-config";
 import bcrypt from "bcryptjs";
 import { and, eq, sql } from "drizzle-orm";
 
 export async function seed() {
   console.log("Seeding database...");
+  const rdcOnlyMode = process.env.RDC_ONLY_MODE === "true";
+  if (!rdcOnlyMode) {
+    console.log("Database seed skipped: set RDC_ONLY_MODE=true only after configuring the new RDC database.");
+    return;
+  }
+  const adminCountry = SUPPORTED_COUNTRY_CODE;
 
   // ─── Schema migrations (run FIRST, before any table access) ─────────────────
   // Product series table
@@ -91,15 +98,18 @@ export async function seed() {
   // Check if admin already exists
   const adminPhone = "0501682811";
   const existingAdmin = await db.select().from(users).where(eq(users.phone, adminPhone));
-  const adminPassword = process.env.ADMIN_PASSWORD || "44605058";
-  const adminPin = process.env.ADMIN_PIN || "1990";
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminPin = process.env.ADMIN_PIN;
+  if (!adminPassword || !adminPin) {
+    throw new Error("ADMIN_PASSWORD and ADMIN_PIN must be configured before initializing the RDC database.");
+  }
 
   if (existingAdmin.length === 0) {
     const hashedPassword = await bcrypt.hash(adminPassword, 12);
     await db.insert(users).values({
       fullName: "Super Admin",
       phone: adminPhone,
-      country: "CI",
+      country: adminCountry,
       password: hashedPassword,
       referralCode: "ADMIN1",
       balance: "0",
@@ -112,69 +122,24 @@ export async function seed() {
     // Always ensure correct country, password and PIN are up-to-date
     const hashedPassword = await bcrypt.hash(adminPassword, 12);
     await db.update(users)
-      .set({ country: "CI", password: hashedPassword, isAdmin: true, isSuperAdmin: true, adminPin })
+      .set({ country: adminCountry, password: hashedPassword, isAdmin: true, isSuperAdmin: true, adminPin })
       .where(eq(users.phone, adminPhone));
     console.log("Super admin updated");
   }
 
-  // Seed/update countries (CI, BF, BJ, TG, CM)
-  const requiredCountries = [
-    {
-      code: "CI",
-      name: "Côte d'Ivoire",
-      currency: "FCFA",
-      phonePrefix: "225",
-      operators: JSON.stringify(["Wave", "MTN Money", "Orange Money", "Moov Money"]),
-      isActive: true,
-      autoPaymentEnabled: true,
-    },
-    {
-      code: "BF",
-      name: "Burkina Faso",
-      currency: "FCFA",
-      phonePrefix: "226",
-      operators: JSON.stringify(["Orange Money", "Wave", "Moov Money"]),
-      isActive: true,
-      autoPaymentEnabled: true,
-    },
-    {
-      code: "BJ",
-      name: "Bénin",
-      currency: "FCFA",
-      phonePrefix: "229",
-      operators: JSON.stringify(["Moov Money", "MTN Money"]),
-      isActive: true,
-      autoPaymentEnabled: true,
-    },
-    {
-      code: "TG",
-      name: "Togo",
-      currency: "FCFA",
-      phonePrefix: "228",
-      operators: JSON.stringify(["Moov (Flooz)", "T-Money"]),
-      isActive: true,
-      autoPaymentEnabled: true,
-    },
-    {
-      code: "CM",
-      name: "Cameroun",
-      currency: "FCFA",
-      phonePrefix: "237",
-      operators: JSON.stringify(["Orange Money", "MTN Money"]),
-      isActive: true,
-      autoPaymentEnabled: true,
-    },
-  ];
-
-  // Remove old countries no longer in the list (e.g. Tchad/Niger, discontinued)
-  const activeCodes = requiredCountries.map(c => c.code);
-  const allCountries = await db.select().from(countries);
-  for (const c of allCountries) {
-    if (!activeCodes.includes(c.code)) {
-      await db.delete(countries).where(eq(countries.code, c.code));
-      console.log(`Country removed: ${c.name}`);
-    }
-  }
+  // Seed only the RDC after explicitly switching to the new database.
+  // Existing country rows are never deleted during this transition.
+  const requiredCountries = rdcOnlyMode
+    ? [{
+        code: RDC_COUNTRY.code,
+        name: RDC_COUNTRY.name,
+        currency: RDC_COUNTRY.currency,
+        phonePrefix: RDC_COUNTRY.phonePrefix,
+        operators: JSON.stringify([...RDC_COUNTRY.operators]),
+        isActive: true,
+        autoPaymentEnabled: RDC_COUNTRY.autoPaymentEnabled,
+      }]
+    : [];
 
   for (const countryData of requiredCountries) {
     const existing = await db.select().from(countries).where(eq(countries.code, countryData.code));
@@ -188,6 +153,7 @@ export async function seed() {
         phonePrefix: countryData.phonePrefix,
         operators: countryData.operators,
         isActive: countryData.isActive,
+        autoPaymentEnabled: countryData.autoPaymentEnabled,
       }).where(eq(countries.code, countryData.code));
       console.log(`Country updated: ${countryData.name}`);
     }
@@ -238,6 +204,7 @@ export async function seed() {
     console.log(`Tasks skipped — ${existingTasks.length} existing tasks preserved`);
   }
 
+  if (!rdcOnlyMode && process.env.SEED_LEGACY_CI_PAYMENTS === "true") {
   // ── Seed deposit channels CI (Canal 1 & Wave) ─────────────────────────────
   const existingDepositChannels = await db.select().from(depositChannels)
     .then(rows => rows.filter(r => r.country === "CI"));
@@ -310,6 +277,8 @@ export async function seed() {
       .where(and(eq(paymentNumbers.country, "CI"), eq(paymentNumbers.phone, legacyPhone)));
   }
 
+  }
+
   // Check if payment channels exist
   const existingChannels = await db.select().from(paymentChannels);
   if (existingChannels.length === 0) {
@@ -369,12 +338,7 @@ export async function seed() {
     { key: "westpayMerchantSlug", value: "" },
     { key: "westpayWebhookSecret", value: "" },
     // Clés API WestPay par pays
-    { key: "westpayApiKey_CI", value: "" },
-    { key: "westpayApiKey_BF", value: "" },
-    { key: "westpayApiKey_BJ", value: "" },
-    { key: "westpayApiKey_TG", value: "" },
-    { key: "westpayApiKey_CM", value: "" },
-    { key: "westpayApiKey_ML", value: "" }, // gardé pour WestPay même si Mali retiré du login
+    { key: "westpayApiKey_CD", value: "" },
     // VIP descriptions & advantages (insert only — never force-update)
     { key: "vip0Description", value: "Membre inscrit n'ayant pas encore investi." },
     { key: "vip0Advantages", value: "Accès à la plateforme. Possibilité de déposer et d'investir." },
@@ -415,7 +379,7 @@ export async function seed() {
     // Spin wheel popup texts (insert only — admin can override)
     { key: "spinWheelInviteText", value: "Invitez vos amis à s'inscrire et vous aurez plus de chances de gagner des prix, jusqu'à 50 fois par jour." },
     { key: "spinWheelInviteHighlight", value: "50" },
-    { key: "spinWheelRulesText", value: "Achetez un produit pour obtenir des tours gratuits. Chaque tour vous donne une chance de remporter un gain en FCFA crédité directement sur votre solde." },
+    { key: "spinWheelRulesText", value: "Achetez un produit pour obtenir des tours gratuits. Chaque tour vous donne une chance de remporter un gain en CDF crédité directement sur votre solde." },
     { key: "spinWheelRulesHighlight", value: "" },
     { key: "banner1Images", value: JSON.stringify(["/banner/meeting-1.jpg", "/banner/meeting-2.jpg", "/banner/meeting-3.jpg"]) },
     { key: "banner2Images", value: JSON.stringify(["/banner/meeting-4.jpg", "/banner/meeting-5.jpg", "/banner/meeting-6.jpg"]) },

@@ -1,5 +1,6 @@
 import { useRef, useEffect } from "react";
 import { FALLBACK_COUNTRIES } from "@/lib/countries";
+import { SUPPORTED_COUNTRY_CODE } from "@shared/country-config";
 
 interface CountrySelectorProps {
   open: boolean;
@@ -31,16 +32,15 @@ export function CountrySelector({
 
   if (!open) return null;
 
-  const sourceList =
-    apiCountries && apiCountries.length > 0
-      ? apiCountries
-          .filter((c) => c.isActive)
-          .map((c) => ({ code: c.code, name: c.name, phonePrefix: c.phonePrefix }))
-      : FALLBACK_COUNTRIES.map((c) => ({
-          code: c.code,
-          name: c.name,
-          phonePrefix: c.phonePrefix,
-        }));
+  const apiCountry = apiCountries?.find(
+    (country) => country.code === SUPPORTED_COUNTRY_CODE && country.isActive,
+  );
+  const fallback = FALLBACK_COUNTRIES[0];
+  const sourceList = [{
+    code: SUPPORTED_COUNTRY_CODE,
+    name: apiCountry?.name ?? fallback.name,
+    phonePrefix: apiCountry?.phonePrefix ?? fallback.phonePrefix,
+  }];
 
   return (
     <>
@@ -59,7 +59,7 @@ export function CountrySelector({
           background: "#111",
           borderRadius: 12,
           boxShadow: "0 8px 32px rgba(0,0,0,0.40)",
-          minWidth: 110,
+          minWidth: 245,
           overflow: "hidden",
           padding: "6px 0",
         }}
@@ -78,8 +78,9 @@ export function CountrySelector({
                 width: "100%",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
+                 justifyContent: "space-between",
                 height: 46,
+                 padding: "0 14px",
                 background: isSelected ? "rgba(255,255,255,0.12)" : "transparent",
                 border: "none",
                 cursor: "pointer",
@@ -91,14 +92,23 @@ export function CountrySelector({
             >
               <span
                 style={{
-                  fontSize: 17,
+                  fontSize: 13,
+                  fontWeight: isSelected ? 700 : 500,
+                  color: "#ffffff",
+                }}
+              >
+                {country.name}
+              </span>
+              <span
+                style={{
+                  fontSize: 14,
                   fontWeight: isSelected ? 700 : 500,
                   color: "#ffffff",
                   letterSpacing: "0.05em",
                   fontFamily: "monospace",
                 }}
               >
-                +{country.phonePrefix}
+                🇨🇩 +{country.phonePrefix}
               </span>
             </button>
           );

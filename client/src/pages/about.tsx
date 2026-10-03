@@ -15,7 +15,7 @@ export default function AboutPage() {
   const s2Title   = getContent(settings, "content_about_s2Title",   "Nos produits & solutions");
   const s2Text    = getContent(settings, "content_about_s2Text",    "La plateforme propose une gamme de produits d'investissement allant de l'entrée de gamme au premium, avec des rendements journaliers adaptés à chaque profil.");
   const s3Title   = getContent(settings, "content_about_s3Title",   "Notre modèle");
-  const s3Text    = getContent(settings, "content_about_s3Text",    "Chaque membre peut acheter un ou plusieurs produits, générer des revenus quotidiens et retirer ses gains en FCFA via Mobile Money.");
+  const s3Text    = getContent(settings, "content_about_s3Text",    "Chaque membre peut acheter un ou plusieurs produits, générer des revenus quotidiens et retirer ses gains en CDF via Mobile Money.");
   const s4Title   = getContent(settings, "content_about_s4Title",   "Qualité & engagement");
   const s4Text    = getContent(settings, "content_about_s4Text",    "Nous nous engageons à offrir une plateforme fiable, sécurisée et transparente, avec un support disponible 7j/7 pour accompagner chaque investisseur.");
 

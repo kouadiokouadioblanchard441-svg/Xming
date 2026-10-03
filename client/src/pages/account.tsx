@@ -102,7 +102,7 @@ export default function AccountPage() {
   const balance       = parseFloat(user.balance || "0");
   const totalEarnings = parseFloat(user.totalEarnings || "0");
   const country       = getCountryByCode(user.country);
-  const currency      = country?.currency || "FCFA";
+  const currency      = country?.currency || "CDF";
   const phonePrefix   = country?.phonePrefix ? `+${country.phonePrefix} ` : "";
 
   /* VIP level : basé sur le sortOrder du produit actif le plus élevé */

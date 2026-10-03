@@ -12,6 +12,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Plus, Pencil, Trash2, Globe } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import type { Country } from "@shared/schema";
+import { RDC_COUNTRY, SUPPORTED_COUNTRY_CODE } from "@shared/country-config";
 
 interface CountryForm {
   code: string;
@@ -24,11 +25,11 @@ interface CountryForm {
 }
 
 const emptyForm: CountryForm = {
-  code: "",
-  name: "",
-  currency: "FCFA",
-  phonePrefix: "",
-  operators: "",
+  code: SUPPORTED_COUNTRY_CODE,
+  name: RDC_COUNTRY.name,
+  currency: RDC_COUNTRY.currency,
+  phonePrefix: RDC_COUNTRY.phonePrefix,
+  operators: RDC_COUNTRY.operators.join(", "),
   isActive: true,
   autoPaymentEnabled: false,
 };
@@ -111,7 +112,7 @@ export default function AdminCountries() {
     setForm({
       code: c.code,
       name: c.name,
-      currency: c.currency,
+      currency: c.currency === "FCFA" ? "CDF" : c.currency,
       phonePrefix: c.phonePrefix,
       operators: operatorsStr,
       isActive: c.isActive,
@@ -139,7 +140,12 @@ export default function AdminCountries() {
           <Globe className="w-5 h-5" />
           {t.adminCountriesTitle} ({countriesList?.length ?? 0})
         </h2>
-        <Button onClick={openAdd} size="sm" data-testid="button-add-country">
+         <Button
+           onClick={openAdd}
+           size="sm"
+           disabled={isLoading || !!countriesList?.some(country => country.code === SUPPORTED_COUNTRY_CODE)}
+           data-testid="button-add-country"
+         >
           <Plus className="w-4 h-4 mr-1" />
           {t.adminAddCountry}
         </Button>
@@ -159,7 +165,7 @@ export default function AdminCountries() {
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-semibold text-base">{c.name}</span>
                       <Badge variant="outline" className="text-xs">{c.code}</Badge>
-                      <Badge variant="secondary" className="text-xs">{c.currency}</Badge>
+                       <Badge variant="secondary" className="text-xs">{c.currency === "FCFA" ? "CDF" : c.currency}</Badge>
                        <Badge variant={c.autoPaymentEnabled ? "default" : "outline"} className="text-xs">
                          {c.autoPaymentEnabled ? "Automatique" : t.adminManualPayment}
                        </Badge>
@@ -180,12 +186,13 @@ export default function AdminCountries() {
                       checked={c.isActive}
                       onCheckedChange={(v) => toggleMutation.mutate({ id: c.id, isActive: v })}
                       title={t.adminCountryActiveLabel}
+                      disabled
                       data-testid={`switch-country-active-${c.id}`}
                     />
                     <Button size="icon" variant="ghost" onClick={() => openEdit(c)} data-testid={`button-edit-country-${c.id}`}>
                       <Pencil className="w-4 h-4" />
                     </Button>
-                    <Button size="icon" variant="ghost" className="text-destructive" onClick={() => setDeleteId(c.id)} data-testid={`button-delete-country-${c.id}`}>
+                    <Button size="icon" variant="ghost" className="text-destructive" disabled title="La RDC est le seul pays pris en charge" onClick={() => setDeleteId(c.id)} data-testid={`button-delete-country-${c.id}`}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -214,7 +221,7 @@ export default function AdminCountries() {
                   onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
                   placeholder="CM"
                   maxLength={3}
-                  disabled={!!editingId}
+                  disabled
                   required
                   data-testid="input-country-code"
                 />
@@ -224,7 +231,8 @@ export default function AdminCountries() {
                 <Input
                   value={form.currency}
                   onChange={e => setForm({ ...form, currency: e.target.value.toUpperCase() })}
-                  placeholder="FCFA"
+                  placeholder="CDF"
+                  disabled
                   maxLength={5}
                   required
                   data-testid="input-country-currency"
@@ -236,7 +244,8 @@ export default function AdminCountries() {
               <Input
                 value={form.name}
                 onChange={e => setForm({ ...form, name: e.target.value })}
-                placeholder="Cameroun"
+                placeholder="République démocratique du Congo"
+                disabled
                 required
                 data-testid="input-country-name"
               />
@@ -246,7 +255,8 @@ export default function AdminCountries() {
               <Input
                 value={form.phonePrefix}
                 onChange={e => setForm({ ...form, phonePrefix: e.target.value })}
-                placeholder="235"
+                placeholder="243"
+                disabled
                 required
                 data-testid="input-country-prefix"
               />
@@ -265,6 +275,7 @@ export default function AdminCountries() {
               <Switch
                 checked={form.isActive}
                 onCheckedChange={v => setForm({ ...form, isActive: v })}
+                disabled
                 id="country-active"
               />
               <Label htmlFor="country-active">{t.adminCountryActiveLabel}</Label>

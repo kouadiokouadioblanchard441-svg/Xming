@@ -85,7 +85,7 @@ export default function MembersPage() {
     queryKey: ["/api/team/details"],
   });
 
-  const currency = "FCFA";
+  const currency = "CDF";
 
   const levels = [
     { num: 1 as const, label: "Niveau 1", members: team?.level1 || [] },

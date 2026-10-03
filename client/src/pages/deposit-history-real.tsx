@@ -31,7 +31,7 @@ export default function DepositHistoryRealPage() {
   const { user } = useAuth();
   const { t } = useI18n();
   const countryInfo = user ? getCountryByCode(user.country) : null;
-  const currency = "FCFA";
+  const currency = "CDF";
 
   const STATUS = {
     approved: { label: t.statusApproved, color: "#16a34a" },

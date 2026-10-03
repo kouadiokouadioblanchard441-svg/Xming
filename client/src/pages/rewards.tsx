@@ -49,7 +49,7 @@ export default function RewardsPage() {
   if (!user) return null;
 
   const country = getCountryByCode(user.country);
-  const currency = "FCFA";
+  const currency = "CDF";
 
   const totalReward = tasks?.reduce((sum, t) => sum + t.reward, 0) || 0;
   const claimedReward = tasks?.filter(t => t.isCompleted).reduce((sum: number, t: any) => sum + t.reward, 0) || 0;

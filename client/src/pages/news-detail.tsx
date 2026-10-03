@@ -21,7 +21,7 @@ Notre plateforme s'appuie sur l'identité XPENG pour offrir une expérience d'in
     summary: "La plateforme propose une gamme complète de produits d'investissement avec des rendements journaliers attractifs.",
     body: `La plateforme XPENG propose plusieurs niveaux de produits adaptés à chaque investisseur :
 
-- VIP 1 à VIP 3 : produits d'entrée de gamme, accessibles dès 600 FCFA
+- VIP 1 à VIP 3 : produits d'entrée de gamme, accessibles dès 600 CDF
 - VIP 4 à VIP 6 : produits intermédiaires avec des rendements élevés
 - VIP 7 à VIP 9 : produits premium pour les investisseurs confirmés
 

@@ -95,11 +95,11 @@ function WithdrawalCard({ w }: { w: Withdrawal }) {
         overflow: "hidden",
       }}
     >
-      <Row label="Montant du retrait" value={`FCFA ${amt.toLocaleString("fr-FR")}`} valueColor="#111" bold />
+      <Row label="Montant du retrait" value={`CDF ${amt.toLocaleString("fr-FR")}`} valueColor="#111" bold />
       <Row label="Commande" value={generateOrderId(w.id, w.createdAt)} />
       <Row label="Canal" value={w.paymentMethod || "Mobile Money"} />
       {fees !== null && (
-        <Row label="Frais" value={`FCFA ${fees.toLocaleString("fr-FR")}`} valueColor="#dc2626" />
+        <Row label="Frais" value={`CDF ${fees.toLocaleString("fr-FR")}`} valueColor="#dc2626" />
       )}
       <Row label="État" value={st.label} valueColor={st.color} />
       <Row label="Temps" value={formatDate(w.createdAt)} last />

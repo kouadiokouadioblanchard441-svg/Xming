@@ -57,8 +57,8 @@ export default function RulesPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-bold text-[#E8192C] border-l-4 border-[#E8192C] pl-3">{rS2Title}</h2>
           <ul className="list-disc pl-5 space-y-2 text-white/90 text-sm">
-            <li>Montant minimum de recharge : {parseInt(minDeposit).toLocaleString()} FCFA.</li>
-            <li>Montant minimum de retrait : {parseInt(minWithdrawal).toLocaleString()} FCFA.</li>
+            <li>Montant minimum de recharge : {parseInt(minDeposit).toLocaleString()} CDF.</li>
+            <li>Montant minimum de retrait : {parseInt(minWithdrawal).toLocaleString()} CDF.</li>
             <li>Frais de retrait : {withdrawalFees}%, couvrant les frais de traitement et de maintenance.</li>
             <li>Horaires de retrait : {withdrawalStartHour}h00 – {withdrawalEndHour}h00.</li>
             <li>Maximum {maxWithdrawalsPerDay} retrait(s) par jour et par utilisateur.</li>
@@ -78,7 +78,7 @@ export default function RulesPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-bold text-[#E8192C] border-l-4 border-[#E8192C] pl-3">{rS4Title}</h2>
           <ul className="list-disc pl-5 space-y-2 text-white/90 text-sm">
-            <li>Chaque nouveau membre reçoit un bonus de {parseInt(signupBonus).toLocaleString()} FCFA à l'inscription.</li>
+            <li>Chaque nouveau membre reçoit un bonus de {parseInt(signupBonus).toLocaleString()} CDF à l'inscription.</li>
           </ul>
         </section>
 

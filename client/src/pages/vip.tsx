@@ -189,7 +189,7 @@ export default function VipPage() {
                         <div className="flex items-center gap-1.5">
                           <Gift className={`w-3.5 h-3.5 ${isActive || isDone ? "text-yellow-300" : "text-white/30"}`} />
                           <span className={`text-[11px] font-bold ${isActive || isDone ? "text-yellow-300" : "text-white/30"}`}>
-                            Récompense : {cfg.reward.toLocaleString()} FCFA
+                            Récompense : {cfg.reward.toLocaleString()} CDF
                           </span>
                         </div>
                         {isDone && (

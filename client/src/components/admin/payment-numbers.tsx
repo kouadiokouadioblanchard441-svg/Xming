@@ -21,19 +21,16 @@ interface Country {
 }
 
 const COUNTRY_FLAGS: Record<string, string> = {
-  CM: "🇨🇲", BF: "🇧🇫", TG: "🇹🇬", BJ: "🇧🇯", CI: "🇨🇮", CG: "🇨🇬",
-  CD: "🇨🇩", CF: "🇨🇫",
+  CD: "🇨🇩",
 };
 
-const emptyForm = { ownerName: "", phone: "", operatorName: "", country: "", logoUrl: "", isActive: true };
+const emptyForm = { ownerName: "", phone: "", operatorName: "", country: "CD", logoUrl: "", isActive: true };
 
 export default function AdminPaymentNumbers() {
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [editTarget, setEditTarget] = useState<PaymentNumber | null>(null);
   const [form, setForm] = useState(emptyForm);
-  const [manualCountry, setManualCountry] = useState(false);
-  const [manualCountryInput, setManualCountryInput] = useState("");
 
   const { data: numbers = [], isLoading } = useQuery<PaymentNumber[]>({
     queryKey: ["/api/admin/payment-numbers"],
@@ -47,9 +44,8 @@ export default function AdminPaymentNumbers() {
     mutationFn: async () => {
       const payload = {
         ...form,
-        country: manualCountry ? manualCountryInput.toUpperCase().trim() : form.country,
+        country: "CD",
       };
-      if (!payload.country) throw new Error("Veuillez sélectionner ou saisir un pays");
       if (editTarget) {
         const res = await apiRequest("PUT", `/api/admin/payment-numbers/${editTarget.id}`, payload);
         if (!res.ok) { const d = await res.json(); throw new Error(d.message || "Erreur"); }
@@ -97,19 +93,13 @@ export default function AdminPaymentNumbers() {
 
   const openAdd = () => {
     setEditTarget(null);
-    const defaultCountry = countries.length > 0 ? countries[0].code : "";
-    setForm({ ...emptyForm, country: defaultCountry });
-    setManualCountry(false);
-    setManualCountryInput("");
+    setForm({ ...emptyForm, country: "CD" });
     setShowForm(true);
   };
 
   const openEdit = (num: PaymentNumber) => {
     setEditTarget(num);
-    const isKnown = countries.some(c => c.code === num.country);
-    setManualCountry(!isKnown);
-    setManualCountryInput(!isKnown ? num.country : "");
-    setForm({ ownerName: num.ownerName, phone: num.phone, operatorName: num.operatorName, country: isKnown ? num.country : "", logoUrl: num.logoUrl || "", isActive: num.isActive });
+    setForm({ ownerName: num.ownerName, phone: num.phone, operatorName: num.operatorName, country: "CD", logoUrl: num.logoUrl || "", isActive: num.isActive });
     setShowForm(true);
   };
 
@@ -117,8 +107,6 @@ export default function AdminPaymentNumbers() {
     setShowForm(false);
     setEditTarget(null);
     setForm(emptyForm);
-    setManualCountry(false);
-    setManualCountryInput("");
   };
 
   const grouped = numbers.reduce((acc, n) => {
@@ -216,59 +204,19 @@ export default function AdminPaymentNumbers() {
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium">Pays</label>
-              {!manualCountry ? (
-                <div className="space-y-2 mt-1">
-                  <select
-                    value={form.country}
-                    onChange={(e) => {
-                      if (e.target.value === "__manual__") {
-                        setManualCountry(true);
-                        setForm(f => ({ ...f, country: "" }));
-                      } else {
-                        setForm(f => ({ ...f, country: e.target.value }));
-                      }
-                    }}
-                    className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background text-foreground"
-                    data-testid="select-country"
-                  >
-                    <option value="">-- Choisir un pays --</option>
-                    {countries.map(c => (
-                      <option key={c.code} value={c.code}>
-                        {COUNTRY_FLAGS[c.code] || "🌍"} {c.name} ({c.code})
-                      </option>
-                    ))}
-                    <option value="__manual__">✏️ Saisir manuellement...</option>
-                  </select>
-                </div>
-              ) : (
-                <div className="flex gap-2 mt-1">
-                  <Input
-                    value={manualCountryInput}
-                    onChange={(e) => setManualCountryInput(e.target.value.toUpperCase())}
-                    placeholder="Code pays (ex: GA, SN...)"
-                    maxLength={3}
-                    className="flex-1"
-                    data-testid="input-manual-country"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => { setManualCountry(false); setManualCountryInput(""); setForm(f => ({ ...f, country: countries[0]?.code || "" })); }}
-                  >
-                    Liste
-                  </Button>
-                </div>
-              )}
+              <div className="mt-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground">
+                🇨🇩 {countries.find(country => country.code === "CD")?.name || "République démocratique du Congo"} (CD)
+              </div>
             </div>
             <div>
               <label className="text-sm font-medium">Opérateur</label>
               <Input value={form.operatorName} onChange={(e) => setForm(f => ({ ...f, operatorName: e.target.value }))}
-                placeholder="Ex: Airtel Money, Moov Money" className="mt-1" data-testid="input-operator-name" />
+                placeholder="Ex: Airtel Money, M-Pesa, Orange Money" className="mt-1" data-testid="input-operator-name" />
             </div>
             <div>
               <label className="text-sm font-medium">Numéro de téléphone</label>
               <Input value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))}
-                placeholder="Ex: +23599000000" className="mt-1" data-testid="input-phone" />
+                placeholder="Ex: +243..." className="mt-1" data-testid="input-phone" />
             </div>
             <div>
               <label className="text-sm font-medium">Nom du propriétaire</label>
@@ -292,7 +240,7 @@ export default function AdminPaymentNumbers() {
               <Button
                 className="flex-1"
                 onClick={() => saveMutation.mutate()}
-                disabled={saveMutation.isPending || !form.ownerName || !form.phone || !form.operatorName || (!manualCountry && !form.country) || (manualCountry && !manualCountryInput.trim())}
+                disabled={saveMutation.isPending || !form.ownerName || !form.phone || !form.operatorName}
                 data-testid="button-save-payment-number"
               >
                 {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : (editTarget ? "Modifier" : "Ajouter")}

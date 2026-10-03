@@ -106,7 +106,7 @@ export default function HomePage() {
 
   const balance       = parseFloat(user.balance       || "0");
   const totalEarnings = parseFloat(user.totalEarnings || "0");
-  const currency      = "FCFA";
+  const currency      = "CDF";
 
   const telegramGroupLink = settings?.groupLink || "https://t.me/vestasgroup";
   const minDeposit    = settings?.minDeposit    || "3000";
@@ -386,19 +386,19 @@ export default function HomePage() {
                     <div className="flex justify-between items-center">
                       <span className="text-gray-400 text-[11px]">{t.price}</span>
                       <span className="font-bold text-[11px]" style={{ color: ACCENT }}>
-                        FCFA {Number(product.price).toLocaleString()}
+                        CDF {Number(product.price).toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-400 text-[11px]">{t.dailyRevenue}</span>
                       <span className="font-bold text-[11px]" style={{ color: ACCENT }}>
-                        FCFA {Number(product.dailyEarnings).toLocaleString()}
+                        CDF {Number(product.dailyEarnings).toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-400 text-[11px]">{t.totalRevenue}</span>
                       <span className="font-bold text-[11px]" style={{ color: ACCENT }}>
-                        FCFA {Number(product.totalReturn).toLocaleString()}
+                        CDF {Number(product.totalReturn).toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -412,7 +412,7 @@ export default function HomePage() {
                   {/* Prix + bouton Acheter */}
                   <div className="mt-auto px-3 pb-3 pt-2">
                     <p className="text-gray-800 font-black text-base text-center mb-2">
-                      FCFA {Number(product.price).toLocaleString()}
+                      CDF {Number(product.price).toLocaleString()}
                     </p>
                     <div className="flex justify-center">
                       <button
@@ -458,7 +458,7 @@ export default function HomePage() {
             {/* Prix + nom */}
             <div className="px-5 pt-4 pb-2">
               <p className="font-black" style={{ fontSize: 24, color: ACCENT, lineHeight: 1.2 }}>
-                FCFA {Number(confirmProduct.price).toLocaleString()}
+                CDF {Number(confirmProduct.price).toLocaleString()}
               </p>
               <p style={{ fontSize: 14, color: "#555", marginTop: 2 }}>{confirmProduct.name}</p>
             </div>
@@ -490,8 +490,8 @@ export default function HomePage() {
             <div className="flex" style={{ margin: "0 20px 16px", border: "1px solid #eee", borderRadius: 12, overflow: "hidden" }}>
               {[
                 { value: `${confirmProduct.cycleDays} jours`, label: "Durée" },
-                { value: `FCFA ${Number(confirmProduct.dailyEarnings).toLocaleString()}`, label: "Revenu quotidien" },
-                { value: `FCFA ${Number(confirmProduct.totalReturn).toLocaleString()}`, label: "Revenu total" },
+                { value: `CDF ${Number(confirmProduct.dailyEarnings).toLocaleString()}`, label: "Revenu quotidien" },
+                { value: `CDF ${Number(confirmProduct.totalReturn).toLocaleString()}`, label: "Revenu total" },
               ].map((stat, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center py-3"
                   style={{ borderRight: i < 2 ? "1px solid #eee" : "none" }}>

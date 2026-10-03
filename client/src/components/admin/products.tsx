@@ -78,7 +78,7 @@ function ProductFormFields({ form, isPending, submitLabel, onSubmit }: ProductFo
       <div className="grid grid-cols-2 gap-4">
         <FormField control={form.control} name="price" render={({ field }) => (
           <FormItem>
-            <FormLabel>Prix (FCFA)</FormLabel>
+            <FormLabel>Prix (CDF)</FormLabel>
             <FormControl><Input {...field} type="number" placeholder="Ex: 15000" /></FormControl>
             <FormMessage />
           </FormItem>
@@ -106,7 +106,7 @@ function ProductFormFields({ form, isPending, submitLabel, onSubmit }: ProductFo
         <div className="bg-primary/10 rounded-lg p-3 text-sm">
           <p className="text-muted-foreground">Retour total estimé :</p>
           <p className="font-bold text-primary text-lg">
-            {(parseFloat(form.watch("dailyEarnings") || "0") * parseInt(form.watch("cycleDays") || "0")).toLocaleString()} FCFA
+            {(parseFloat(form.watch("dailyEarnings") || "0") * parseInt(form.watch("cycleDays") || "0")).toLocaleString()} CDF
           </p>
         </div>
       )}

@@ -120,7 +120,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
     >
       <Row
         label="Montant du paiement"
-        value={`${cat.sign}${amt.toLocaleString("fr-FR")} FCFA`}
+        value={`${cat.sign}${amt.toLocaleString("fr-FR")} CDF`}
         valueColor={amtColor}
         bold
       />
@@ -130,7 +130,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
         <Row label="Méthode" value={item.extra.paymentMethod} />
       )}
       {fees !== null && (
-        <Row label="Frais" value={`${fees.toLocaleString("fr-FR")} FCFA`} valueColor="#dc2626" />
+        <Row label="Frais" value={`${fees.toLocaleString("fr-FR")} CDF`} valueColor="#dc2626" />
       )}
       <Row label="État" value={st.label} valueColor={st.color} />
       <Row label="Temps" value={formatDate(item.createdAt)} last />

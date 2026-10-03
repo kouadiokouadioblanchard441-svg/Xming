@@ -66,7 +66,7 @@ export default function ProductsPage() {
   if (!user) return null;
 
   const balance  = parseFloat(user.balance || "0");
-  const currency = "FCFA";
+  const currency = "CDF";
 
   const paidProducts = (products || []).filter(p => !p.isFree);
   const filtered = paidProducts;

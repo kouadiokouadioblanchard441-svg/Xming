@@ -125,10 +125,10 @@ export default function OrdersPage() {
 
                       <div className="space-y-0.5 text-[11px]">
                         <p className="text-gray-600">
-                          {t.price}：<span className="text-gray-800 font-medium">{Number(up.product?.price || 0).toLocaleString() || 0} FCFA</span>
+                          {t.price}：<span className="text-gray-800 font-medium">{Number(up.product?.price || 0).toLocaleString() || 0} CDF</span>
                         </p>
                         <p className="text-gray-600">
-                          {t.ordersDailyLbl}：<span className="text-gray-800 font-medium">{Number(up.product?.dailyEarnings || 0).toLocaleString() || 0} FCFA</span>
+                          {t.ordersDailyLbl}：<span className="text-gray-800 font-medium">{Number(up.product?.dailyEarnings || 0).toLocaleString() || 0} CDF</span>
                         </p>
                         <p className="text-gray-600">
                           {t.ordersCycleLbl}：<span className="text-gray-800 font-medium">{up.product?.cycleDays || 0} {t.ordersDaysLbl}</span>
@@ -137,7 +137,7 @@ export default function OrdersPage() {
                           {t.ordersRemainingLbl}：<span className="text-[#2196F3] font-medium">{up.daysRemaining || 0}</span>
                         </p>
                         <p className="text-gray-600">
-                          {t.ordersTotalEarnedLbl}：<span className="text-gray-600 font-bold">{totalEarned.toLocaleString()} FCFA</span>
+                          {t.ordersTotalEarnedLbl}：<span className="text-gray-600 font-bold">{totalEarned.toLocaleString()} CDF</span>
                         </p>
                         <p className="text-gray-600">
                           {t.ordersDateLbl}：<span className="text-gray-700 font-medium">{purchaseDate}</span> {purchaseTime}

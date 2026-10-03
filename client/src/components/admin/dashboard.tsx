@@ -121,15 +121,15 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
   const depositStats = [
     {
       title: "Total depots approuves",
-      value: `${stats.totalDeposits.toLocaleString()} FCFA`,
-      subtitle: `+${stats.todayDeposits.toLocaleString()} FCFA aujourd'hui`,
+      value: `${stats.totalDeposits.toLocaleString()} CDF`,
+      subtitle: `+${stats.todayDeposits.toLocaleString()} CDF aujourd'hui`,
       icon: ArrowDownToLine,
       color: "text-gray-800",
       bg: "bg-black/20",
     },
     {
       title: "Depots en attente",
-      value: `${stats.pendingDeposits.toLocaleString()} FCFA`,
+      value: `${stats.pendingDeposits.toLocaleString()} CDF`,
       subtitle: `${stats.pendingDepositsCount} demande(s)`,
       icon: Clock,
       color: "text-[#2196F3]",
@@ -140,15 +140,15 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
   const withdrawalStats = [
     {
       title: "Total retraits approuves",
-      value: `${stats.totalWithdrawals.toLocaleString()} FCFA`,
-      subtitle: `+${stats.todayWithdrawals.toLocaleString()} FCFA aujourd'hui`,
+      value: `${stats.totalWithdrawals.toLocaleString()} CDF`,
+      subtitle: `+${stats.todayWithdrawals.toLocaleString()} CDF aujourd'hui`,
       icon: ArrowUpFromLine,
       color: "text-red-500",
       bg: "bg-red-500/20",
     },
     {
       title: "Retraits en attente",
-      value: `${stats.pendingWithdrawals.toLocaleString()} FCFA`,
+      value: `${stats.pendingWithdrawals.toLocaleString()} CDF`,
       subtitle: `${stats.pendingWithdrawalsCount} demande(s)`,
       icon: Clock,
       color: "text-[#2196F3]",
@@ -159,7 +159,7 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
   const financialStats = [
     {
       title: "Solde total plateforme",
-      value: `${stats.totalBalance.toLocaleString()} FCFA`,
+      value: `${stats.totalBalance.toLocaleString()} CDF`,
       subtitle: "Tous les utilisateurs",
       icon: Wallet,
       color: "text-primary",
@@ -167,7 +167,7 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
     },
     {
       title: "Gains totaux distribues",
-      value: `${stats.totalEarnings.toLocaleString()} FCFA`,
+      value: `${stats.totalEarnings.toLocaleString()} CDF`,
       subtitle: "Depuis le debut",
       icon: TrendingUp,
       color: "text-emerald-500",
@@ -175,7 +175,7 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
     },
     {
       title: "Commissions versees",
-      value: `${stats.totalCommissions.toLocaleString()} FCFA`,
+      value: `${stats.totalCommissions.toLocaleString()} CDF`,
       subtitle: "Parrainages",
       icon: Award,
       color: "text-indigo-500",
@@ -194,7 +194,7 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
     },
     {
       title: "Depots (periode)",
-      value: `${stats.periodDeposits.toLocaleString()} FCFA`,
+      value: `${stats.periodDeposits.toLocaleString()} CDF`,
       subtitle: "Approuves sur la periode",
       icon: ArrowDownToLine,
       color: "text-gray-600",
@@ -202,7 +202,7 @@ export default function AdminDashboard({ isSuperAdmin }: AdminDashboardProps) {
     },
     {
       title: "Retraits (periode)",
-      value: `${stats.periodWithdrawals.toLocaleString()} FCFA`,
+      value: `${stats.periodWithdrawals.toLocaleString()} CDF`,
       subtitle: "Approuves sur la periode",
       icon: ArrowUpFromLine,
       color: "text-red-600",

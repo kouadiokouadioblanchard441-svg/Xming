@@ -32,7 +32,7 @@ export default function WithdrawalPage() {
   const [selectedWallet, setSelectedWallet] = useState<WalletData | null>(null);
   const [, navigate] = useLocation();
 
-  const currency = "FCFA";
+  const currency = "CDF";
 
   const { data: withdrawalSettings } = useQuery<{
     withdrawalFees: number;

@@ -44,7 +44,7 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       phone: "",
-      country: "CI",
+      country: "CD",
       password: "",
       confirmPassword: "",
       invitationCode: refCode,
@@ -144,7 +144,7 @@ export default function RegisterPage() {
               style={{ color: "#333", borderColor: "rgba(0,0,0,0.15)" }}
               data-testid="button-select-country"
             >
-              +{countryData?.phonePrefix || "225"}
+              🇨🇩 +{countryData?.phonePrefix || "243"}
               <ChevronDown size={13} />
             </button>
             <input

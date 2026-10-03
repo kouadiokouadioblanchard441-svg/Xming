@@ -13,6 +13,10 @@ externalPort = 80
 localPort = 5050
 externalPort = 3000
 
+[[ports]]
+localPort = 23636
+externalPort = 3001
+
 [env]
 PORT = "5000"
 
@@ -54,9 +58,10 @@ expertMode = true
 
 [userenv.shared]
 WESTPAY_MERCHANT_SLUG = "business"
+RDC_ONLY_MODE = "true"
 
 [userenv.development]
-APP_URL = "https://dmxping.online"
+APP_URL = "https://dmebsus.site"
 
 [postMerge]
 path = "scripts/post-merge.sh"

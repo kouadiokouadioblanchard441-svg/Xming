@@ -134,7 +134,7 @@ export default function AdminVipSettings() {
               {cfg.level >= 2 && (
                 <div className="flex items-center gap-2">
                   <label className="text-xs text-muted-foreground w-52 shrink-0">
-                    Récompense de passage (FCFA)
+                    Récompense de passage (CDF)
                   </label>
                   <Input
                     type="number" min="0"
@@ -143,7 +143,7 @@ export default function AdminVipSettings() {
                     value={val(`vip${cfg.level}Reward`, String(cfg.reward))}
                     onChange={(e) => set(`vip${cfg.level}Reward`, e.target.value)}
                   />
-                  <span className="text-xs text-muted-foreground">FCFA</span>
+                  <span className="text-xs text-muted-foreground">CDF</span>
                 </div>
               )}
             </div>

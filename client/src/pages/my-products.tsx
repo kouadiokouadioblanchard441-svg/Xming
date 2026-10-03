@@ -32,7 +32,7 @@ export default function MyProductsPage() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/user/products"] });
       refreshUser();
-      toast({ title: "✅ Gains collectés !", description: `${Number(data.collected).toLocaleString()} FCFA ajoutés à votre solde.` });
+      toast({ title: "✅ Gains collectés !", description: `${Number(data.collected).toLocaleString()} CDF ajoutés à votre solde.` });
     },
     onError: (e: any) => toast({ title: e.message, variant: "destructive" }),
   });
@@ -45,7 +45,7 @@ export default function MyProductsPage() {
 
   if (!user) return null;
   const country  = getCountryByCode(user.country);
-  const currency = country?.currency || "FCFA";
+  const currency = country?.currency || "CDF";
   const allProducts = userProducts || [];
 
   /* Revenu journalier total des produits actifs */

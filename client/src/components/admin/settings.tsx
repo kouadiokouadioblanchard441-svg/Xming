@@ -66,12 +66,7 @@ const settingsSchema = z.object({
   // WestPay
   westpayMerchantSlug: z.string().optional(),
   westpayWebhookSecret: z.string().optional(),
-  westpayApiKey_CI: z.string().optional(),
-  westpayApiKey_BF: z.string().optional(),
-  westpayApiKey_BJ: z.string().optional(),
-  westpayApiKey_TG: z.string().optional(),
-  westpayApiKey_CM: z.string().optional(),
-  westpayApiKey_ML: z.string().optional(),
+  westpayApiKey_CD: z.string().optional(),
   // Popup d'accueil
   popupTitle: z.string().optional(),
   popupTelegramLabel: z.string().optional(),
@@ -240,12 +235,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       signupBonusAmount: "500",
       westpayMerchantSlug: "",
       westpayWebhookSecret: "",
-      westpayApiKey_CI: "",
-      westpayApiKey_BF: "",
-      westpayApiKey_BJ: "",
-      westpayApiKey_TG: "",
-      westpayApiKey_CM: "",
-      westpayApiKey_ML: "",
+      westpayApiKey_CD: "",
     },
   });
 
@@ -305,12 +295,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       popupLine7:             settings.popupLine7             ?? "",
       westpayMerchantSlug:    settings.westpayMerchantSlug    ?? "",
       westpayWebhookSecret:   settings.westpayWebhookSecret   ?? "",
-      westpayApiKey_CI:       settings.westpayApiKey_CI       ?? "",
-      westpayApiKey_BF:       settings.westpayApiKey_BF       ?? "",
-      westpayApiKey_BJ:       settings.westpayApiKey_BJ       ?? "",
-      westpayApiKey_TG:       settings.westpayApiKey_TG       ?? "",
-      westpayApiKey_CM:       settings.westpayApiKey_CM       ?? "",
-      westpayApiKey_ML:       settings.westpayApiKey_ML       ?? "",
+      westpayApiKey_CD:       settings.westpayApiKey_CD       ?? "",
     });
   // "form" est intentionnellement absent des dépendances : l'objet change à
   // chaque render et provoquerait une boucle infinie de réinitialisations.
@@ -696,14 +681,14 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
             <div className="grid grid-cols-2 gap-4">
               <FormField control={form.control} name="minDeposit" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Recharge minimum (FCFA)</FormLabel>
+                  <FormLabel>Recharge minimum (CDF)</FormLabel>
                   <FormControl><Input {...field} type="number" min="0" /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={form.control} name="depositPresetAmounts" render={({ field }) => (
                 <FormItem className="col-span-2">
-                  <FormLabel>Montants rapides de recharge (FCFA)</FormLabel>
+                  <FormLabel>Montants rapides de recharge (CDF)</FormLabel>
                   <FormControl><Input {...field} placeholder="3500,5000,7000,10000,15000,20000,50000,70000" /></FormControl>
                   <FormDescription>Liste de montants séparés par des virgules, affichés comme boutons rapides sur la page de recharge.</FormDescription>
                   <FormMessage />
@@ -711,14 +696,14 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               )} />
               <FormField control={form.control} name="minWithdrawal" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Retrait minimum (FCFA)</FormLabel>
+                  <FormLabel>Retrait minimum (CDF)</FormLabel>
                   <FormControl><Input {...field} type="number" min="0" /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={form.control} name="maxWithdrawal" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Retrait maximum (FCFA)</FormLabel>
+                  <FormLabel>Retrait maximum (CDF)</FormLabel>
                   <FormControl><Input {...field} type="number" min="0" /></FormControl>
                   <FormMessage />
                 </FormItem>
@@ -749,7 +734,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                   <textarea
                     {...field}
                     rows={6}
-                    placeholder={"1. Le montant minimum de retrait est de 1000 FCFA\n2. Les deux derniers chiffres du montant doivent être 0\n3. Des frais de 10% seront déduits\n4. Maximum 1 retrait par jour"}
+                    placeholder={"1. Le montant minimum de retrait est de 1000 CDF\n2. Les deux derniers chiffres du montant doivent être 0\n3. Des frais de 10% seront déduits\n4. Maximum 1 retrait par jour"}
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
                   />
                 </FormControl>
@@ -915,7 +900,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
             )} />
             <FormField control={form.control} name="dailyBonusAmount" render={({ field }) => (
               <FormItem>
-                <FormLabel>Montant du bonus (FCFA)</FormLabel>
+                <FormLabel>Montant du bonus (CDF)</FormLabel>
                 <FormControl><Input {...field} type="number" min="0" /></FormControl>
                 <FormMessage />
               </FormItem>
@@ -944,7 +929,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
             )} />
             <FormField control={form.control} name="signupBonusAmount" render={({ field }) => (
               <FormItem>
-                <FormLabel>Montant du bonus d'inscription (FCFA)</FormLabel>
+                <FormLabel>Montant du bonus d'inscription (CDF)</FormLabel>
                 <FormControl><Input {...field} type="number" min="0" /></FormControl>
                 <FormMessage />
               </FormItem>
@@ -982,8 +967,8 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               { name: "popupLine1" as const, label: "Ligne 1 — Lancement officiel", placeholder: "✨✨ Lancement officiel de la plateforme XPENG ✨✨" },
               { name: "popupLine2" as const, label: "Ligne 2 — Invitation parrainage", placeholder: "🔻 Invitez vos amis à investir et gagnez jusqu'à 25% de commissions..." },
               { name: "popupLine3" as const, label: "Ligne 3 — Bonus connexion", placeholder: "🎁 Bonus de connexion quotidienne disponible chaque jour" },
-              { name: "popupLine4" as const, label: "Ligne 4 — Dépôt minimum", placeholder: "🤝 Dépôt minimum : 3 000 FCFA" },
-              { name: "popupLine5" as const, label: "Ligne 5 — Retrait minimum", placeholder: "💚 Retrait minimum : 1 000 FCFA" },
+              { name: "popupLine4" as const, label: "Ligne 4 — Dépôt minimum", placeholder: "🤝 Dépôt minimum : 3 000 CDF" },
+              { name: "popupLine5" as const, label: "Ligne 5 — Retrait minimum", placeholder: "💚 Retrait minimum : 1 000 CDF" },
               { name: "popupLine6" as const, label: "Ligne 6 — Frais de retrait", placeholder: "⚙️ Frais de retrait : 10%" },
               { name: "popupLine7" as const, label: "Ligne 7 — Horaires retraits", placeholder: "🍀 Retraits disponibles du Lundi au Vendredi de 10h à 16h" },
             ]).map(({ name, label, placeholder }) => (
@@ -1043,18 +1028,13 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               </code>
             </p>
 
-            {/* Clés API par pays */}
-            <p className="text-xs font-semibold text-gray-600 pt-1">Clés API par pays</p>
+            {/* Clé API RDC */}
+            <p className="text-xs font-semibold text-gray-600 pt-1">Clé API de la RDC</p>
             <p className="text-xs text-gray-400">
-              Chaque pays possède sa propre clé API WestPay (disponible dans votre dashboard WestPay → API Keys).
+              La clé API WestPay de la RDC est disponible dans votre dashboard WestPay → API Keys.
             </p>
             {([
-              { name: "westpayApiKey_CI" as const, label: "🇨🇮 Côte d'Ivoire" },
-              { name: "westpayApiKey_BF" as const, label: "🇧🇫 Burkina Faso" },
-              { name: "westpayApiKey_BJ" as const, label: "🇧🇯 Bénin" },
-              { name: "westpayApiKey_TG" as const, label: "🇹🇬 Togo" },
-              { name: "westpayApiKey_CM" as const, label: "🇨🇲 Cameroun" },
-              { name: "westpayApiKey_ML" as const, label: "🇲🇱 Mali (WestPay uniquement)" },
+              { name: "westpayApiKey_CD" as const, label: "🇨🇩 République démocratique du Congo" },
             ]).map(({ name, label }) => (
               <FormField key={name} control={form.control} name={name} render={({ field }) => (
                 <FormItem>

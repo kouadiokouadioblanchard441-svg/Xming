@@ -52,12 +52,15 @@ export default function WalletPage() {
     queryKey: ["/api/wallets"],
   });
 
-  // Opérateurs Mobile Money selon le pays de l'utilisateur
-  const userCountryCode = user?.country || "CI";
+  // XPENG is currently available only in the RDC.
+  const userCountryCode = "CD";
   const { data: countryOperators = [] } = useQuery<string[]>({
     queryKey: [`/api/countries/${userCountryCode}/operators`],
     enabled: !!user,
   });
+  const supportedOperators = countryOperators.length > 0
+    ? countryOperators
+    : FALLBACK_COUNTRIES[0].operators;
 
   const addMutation = useMutation({
     mutationFn: async () => {
@@ -65,7 +68,7 @@ export default function WalletPage() {
         accountName: holderName,
         accountNumber: accountNumber,
         paymentMethod: selectedOperator,
-        country: user!.country,
+        country: userCountryCode,
       });
       if (!response.ok) {
         const result = await response.json();
@@ -129,7 +132,7 @@ export default function WalletPage() {
   };
 
   const countryInfo = FALLBACK_COUNTRIES.find(c => c.code === userCountryCode);
-  const phonePrefix = countryInfo?.phonePrefix || "225";
+  const phonePrefix = countryInfo?.phonePrefix || "243";
   const requiredPhoneLength = getPhoneLength(userCountryCode);
 
   const handleConfirm = () => {
@@ -275,12 +278,12 @@ export default function WalletPage() {
             >
               <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mt-3 mb-2" />
               <div className="overflow-y-auto" style={{ maxHeight: "calc(60vh - 32px)" }}>
-                {countryOperators.length === 0 ? (
+                {supportedOperators.length === 0 ? (
                   <div className="text-center py-12">
                     <p className="text-gray-400 text-sm">Aucun opérateur disponible</p>
                   </div>
                 ) : (
-                  countryOperators.map((op, idx) => (
+                  supportedOperators.map((op, idx) => (
                     <button
                       key={op}
                       onClick={() => {
@@ -288,7 +291,7 @@ export default function WalletPage() {
                         setShowBankSheet(false);
                       }}
                       className="w-full text-center py-4 text-sm text-gray-800 active:bg-gray-50 transition"
-                      style={{ borderBottom: idx < countryOperators.length - 1 ? "1px solid #f3f4f6" : undefined }}
+                      style={{ borderBottom: idx < supportedOperators.length - 1 ? "1px solid #f3f4f6" : undefined }}
                       data-testid={`button-operator-${idx}`}
                     >
                       {op}

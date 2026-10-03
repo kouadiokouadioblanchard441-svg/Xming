@@ -247,7 +247,7 @@ function SpecialProductsConfig() {
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm truncate">{p.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      Prix : {Number(p.price).toLocaleString()} FCFA · Revenu/j : {Number(p.dailyEarnings).toLocaleString()} FCFA
+                      Prix : {Number(p.price).toLocaleString()} CDF · Revenu/j : {Number(p.dailyEarnings).toLocaleString()} CDF
                     </p>
                   </div>
                   {isSelected && <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />}

@@ -56,7 +56,7 @@ export default function InvestPage() {
 
   const balance = parseFloat(user.balance || "0");
   const country = getCountryByCode(user.country);
-  const currency = "FCFA";
+  const currency = "CDF";
   const paidProducts = products?.filter(p => !p.isFree) || [];
 
   return (
