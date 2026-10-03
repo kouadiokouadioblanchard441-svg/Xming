@@ -51,8 +51,8 @@ export default function ServicePage() {
 
   const servicePageTitle = getContent(allSettings, "content_service_pageTitle", t.customerService);
 
-  const startHour = parseInt(settings?.withdrawalStartHour || "9", 10);
-  const endHour   = parseInt(settings?.withdrawalEndHour   || "19", 10);
+  const startHour = parseInt(settings?.withdrawalStartHour || "8", 10);
+  const endHour   = parseInt(settings?.withdrawalEndHour   || "18", 10);
   const hoursDisplay = `${toAmPm(startHour)}-${toAmPm(endHour)}`;
 
   const allLinks = [

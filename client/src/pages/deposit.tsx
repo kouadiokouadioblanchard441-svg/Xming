@@ -169,12 +169,12 @@ export default function DepositPage() {
   // Are channels configured for this country?
   const hasChannels = showManualDepositChannels && depositChannels.length > 0;
 
-  const minDeposit = parseInt(platformSettings?.minDeposit || "1000", 10);
+  const minDeposit = parseInt(platformSettings?.minDeposit || "20000", 10);
   const presetAmounts = useMemo(
     () =>
       (
         platformSettings?.depositPresetAmounts ||
-        "1000,3800,15000,30000,100000,150000,200000,300000"
+        "20000,45000,75000,100000,245000,500000,1000000"
       )
         .split(",")
         .map((v) => parseInt(v.trim(), 10))

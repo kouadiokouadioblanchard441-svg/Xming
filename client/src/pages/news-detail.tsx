@@ -18,12 +18,10 @@ Notre plateforme s'appuie sur l'identité XPENG pour offrir une expérience d'in
   {
     id: "2",
     title: "Les produits d'investissement XPENG",
-    summary: "La plateforme propose une gamme complète de produits d'investissement avec des rendements journaliers attractifs.",
-    body: `La plateforme XPENG propose plusieurs niveaux de produits adaptés à chaque investisseur :
+    summary: "La plateforme propose sept niveaux de produits VIP avec un cycle de 30 jours.",
+    body: `La plateforme XPENG propose sept niveaux de produits VIP, de 20 000 CDF à 1 000 000 CDF.
 
-- VIP 1 à VIP 3 : produits d'entrée de gamme, accessibles dès 600 CDF
-- VIP 4 à VIP 6 : produits intermédiaires avec des rendements élevés
-- VIP 7 à VIP 9 : produits premium pour les investisseurs confirmés
+Chaque produit affiche son prix, son revenu journalier et son total sur un cycle de 30 jours.
 
 Chaque produit génère des revenus journaliers versés directement sur votre solde.
 

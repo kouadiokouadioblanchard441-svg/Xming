@@ -326,7 +326,7 @@ export async function registerRoutes(
       // Bonus d'inscription → crédité sur le solde de dépôt (balance), pas sur les gains
       const settings = await storage.getSettings();
       if (settings.signupBonusEnabled !== "false") {
-        const signupBonus = parseFloat(settings.signupBonusAmount || "500");
+        const signupBonus = parseFloat(settings.signupBonusAmount || "1000");
         if (signupBonus > 0) {
           const freshUser = await storage.getUser(user.id);
           const currentBalance = parseFloat(freshUser?.balance || "0");
@@ -1233,9 +1233,9 @@ export async function registerRoutes(
       }
 
       const settings = await storage.getSettings();
-      const minDeposit = parseInt(settings.minDeposit || "3500");
+      const minDeposit = parseInt(settings.minDeposit || "20000");
       if (amount < minDeposit) {
-        return res.status(400).json({ message: `Montant minimum: ${minDeposit.toLocaleString()} USDT` });
+        return res.status(400).json({ message: `Montant minimum: ${minDeposit.toLocaleString()} CDF` });
       }
 
       if (!accountName || !accountNumber || !paymentMethod || !country) {
@@ -1302,7 +1302,7 @@ export async function registerRoutes(
         return res.status(403).json({ message: "Le dépôt automatique n'est pas activé pour la RDC." });
       }
       const settings = await storage.getSettings();
-      const minDeposit = parseInt(settings.minDeposit || "3500");
+      const minDeposit = parseInt(settings.minDeposit || "20000");
       if (Number(amount) < minDeposit)
         return res.status(400).json({
           message: `Montant minimum : ${minDeposit.toLocaleString()} CDF`,
@@ -1454,15 +1454,15 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Les retraits sont temporairement désactivés par l'administration" });
       }
 
-      // ── Vérification jour + heure (fuseau Côte d'Ivoire = UTC+0) ──
+      // ── Vérification jour + heure (heure locale de Kinshasa, RDC) ──
       {
-        const nowCI = new Date(new Date().toLocaleString("en-US", { timeZone: "Africa/Abidjan" }));
-        const currentDay = nowCI.getDay();   // 0=Dim, 1=Lun … 6=Sam
-        const currentHour = nowCI.getHours();
-        const allowedDays = (settingsForWithdrawal.withdrawalDays || "1,2,3,4,5")
+        const nowKinshasa = new Date(new Date().toLocaleString("en-US", { timeZone: "Africa/Kinshasa" }));
+        const currentDay = nowKinshasa.getDay();   // 0=Dim, 1=Lun … 6=Sam
+        const currentHour = nowKinshasa.getHours();
+        const allowedDays = (settingsForWithdrawal.withdrawalDays || "0,1,2,3,4,5,6")
           .split(",").map((d: string) => parseInt(d.trim())).filter((n: number) => !isNaN(n));
-        const startHour = parseInt(settingsForWithdrawal.withdrawalStartHour || "10");
-        const endHour   = parseInt(settingsForWithdrawal.withdrawalEndHour   || "16");
+        const startHour = parseInt(settingsForWithdrawal.withdrawalStartHour || "8");
+        const endHour   = parseInt(settingsForWithdrawal.withdrawalEndHour   || "18");
 
         const DAY_NAMES: Record<number, string> = {
           0: "Dimanche", 1: "Lundi", 2: "Mardi", 3: "Mercredi",
@@ -1473,10 +1473,10 @@ export async function registerRoutes(
           return res.status(400).json({ message: `Les retraits sont disponibles uniquement : ${dayLabels}` });
         }
         if (currentHour < startHour || currentHour >= endHour) {
-          return res.status(400).json({ message: `Les retraits sont disponibles de ${startHour}h à ${endHour}h` });
+          return res.status(400).json({ message: `Les retraits sont disponibles de ${startHour}h à ${endHour}h (heure de Kinshasa)` });
         }
       }
-      const minWithdrawal = parseInt(settingsForWithdrawal.minWithdrawal || "1000");
+      const minWithdrawal = parseInt(settingsForWithdrawal.minWithdrawal || "5000");
       if (amount < minWithdrawal) {
         return res.status(400).json({ message: `Montant minimum : ${minWithdrawal.toLocaleString()} CDF` });
       }
@@ -1915,8 +1915,8 @@ export async function registerRoutes(
         support2Enabled: settings.support2Enabled ?? "true",
         channelEnabled: settings.channelEnabled ?? "true",
         groupEnabled: settings.groupEnabled ?? "true",
-        withdrawalStartHour: settings.withdrawalStartHour || "9",
-        withdrawalEndHour: settings.withdrawalEndHour || "17",
+        withdrawalStartHour: settings.withdrawalStartHour || "8",
+        withdrawalEndHour: settings.withdrawalEndHour || "18",
         floatingSupportTarget: settings.floatingSupportTarget || "support1",
       });
     } catch (error: any) {
@@ -1930,11 +1930,13 @@ export async function registerRoutes(
       res.json({
         withdrawalEnabled: settings.withdrawalEnabled !== "false",
         withdrawalFees: parseFloat(settings.withdrawalFees || "10"),
-        withdrawalStartHour: parseInt(settings.withdrawalStartHour || "10"),
-        withdrawalEndHour: parseInt(settings.withdrawalEndHour || "16"),
-        withdrawalDays: settings.withdrawalDays || "1,2,3,4,5",
+        withdrawalStartHour: parseInt(settings.withdrawalStartHour || "8"),
+        withdrawalEndHour: parseInt(settings.withdrawalEndHour || "18"),
+        withdrawalDays: settings.withdrawalDays || "0,1,2,3,4,5,6",
         maxWithdrawalsPerDay: parseInt(settings.maxWithdrawalsPerDay || "1"),
-        minWithdrawal: parseInt(settings.minWithdrawal || "1000"),
+        minWithdrawal: parseInt(settings.minWithdrawal || "5000"),
+        withdrawalMinDelayMinutes: parseInt(settings.withdrawalMinDelayMinutes || "30"),
+        withdrawalMaxDelayHours: parseInt(settings.withdrawalMaxDelayHours || "6"),
       });
     } catch (error: any) {
       res.status(500).json({ message: error.message });

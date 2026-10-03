@@ -109,8 +109,8 @@ export default function HomePage() {
   const currency      = "CDF";
 
   const telegramGroupLink = settings?.groupLink || "https://t.me/vestasgroup";
-  const minDeposit    = settings?.minDeposit    || "3000";
-  const minWithdrawal = settings?.minWithdrawal || "1000";
+  const minDeposit    = settings?.minDeposit    || "20000";
+  const minWithdrawal = settings?.minWithdrawal || "5000";
   const fees          = settings?.withdrawalFees || "10";
   const lvl1          = settings?.level1Commission || "25";
   const lvl2          = settings?.level2Commission || "1";
@@ -134,7 +134,7 @@ export default function HomePage() {
     getContent(settings, "popupLine3", `➤ Les nouveaux utilisateurs reçoivent un bonus à l'inscription.`),
     getContent(settings, "popupLine4", `➤ Gagnez des commissions de ${lvl1} %, ${lvl2} % et ${lvl3} % respectivement pour chaque ami parrainé.`),
     getContent(settings, "popupLine5", `➤ Dépôts et retraits 24 h/24 et 7 j/7.`),
-    getContent(settings, "popupLine6", `➤ Bénéficiez de rendements stables sur vos investissements pendant 100 jours maximum.`),
+    getContent(settings, "popupLine6", `➤ Les nouveaux produits VIP ont un cycle de 30 jours.`),
     getContent(settings, "popupLine7", `↪ Commencez à bâtir votre patrimoine dès aujourd'hui !`),
   ];
 

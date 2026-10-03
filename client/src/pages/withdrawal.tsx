@@ -42,6 +42,8 @@ export default function WithdrawalPage() {
     withdrawalDays: string;
     maxWithdrawalsPerDay: number;
     minWithdrawal: number;
+    withdrawalMinDelayMinutes: number;
+    withdrawalMaxDelayHours: number;
   }>({
     queryKey: ["/api/settings/withdrawal"],
     staleTime: 0,
@@ -52,13 +54,15 @@ export default function WithdrawalPage() {
     queryKey: ["/api/settings"],
   });
 
-  const minWithdrawal = withdrawalSettings?.minWithdrawal ?? 1000;
+  const minWithdrawal = withdrawalSettings?.minWithdrawal ?? 5000;
   const maxWithdrawal = parseInt(allSettings?.maxWithdrawal || "1000000");
   const withdrawalEnabled = withdrawalSettings?.withdrawalEnabled ?? true;
   const withdrawalFee = withdrawalSettings?.withdrawalFees ?? 10;
-  const withdrawalStartHour = withdrawalSettings?.withdrawalStartHour ?? 10;
-  const withdrawalEndHour = withdrawalSettings?.withdrawalEndHour ?? 16;
-  const withdrawalDaysRaw = withdrawalSettings?.withdrawalDays ?? "1,2,3,4,5";
+  const withdrawalStartHour = withdrawalSettings?.withdrawalStartHour ?? 8;
+  const withdrawalEndHour = withdrawalSettings?.withdrawalEndHour ?? 18;
+  const withdrawalDaysRaw = withdrawalSettings?.withdrawalDays ?? "0,1,2,3,4,5,6";
+  const withdrawalMinDelayMinutes = withdrawalSettings?.withdrawalMinDelayMinutes ?? 30;
+  const withdrawalMaxDelayHours = withdrawalSettings?.withdrawalMaxDelayHours ?? 6;
 
   // Convertit "1,2,3,4,5" → "Lundi au Vendredi" ou liste des jours
   const DAY_NAMES: Record<number, string> = {
@@ -66,10 +70,14 @@ export default function WithdrawalPage() {
     4: "Jeudi", 5: "Vendredi", 6: "Samedi",
   };
   const allowedDayNums = withdrawalDaysRaw.split(",").map(d => parseInt(d.trim())).filter(n => !isNaN(n));
-  const isConsecutiveWeekdays = JSON.stringify(allowedDayNums.sort()) === JSON.stringify([1,2,3,4,5]);
-  const daysLabel = isConsecutiveWeekdays
-    ? "du Lundi au Vendredi"
-    : allowedDayNums.map(d => DAY_NAMES[d] ?? d).join(", ");
+  const sortedDayNums = [...allowedDayNums].sort((a, b) => a - b);
+  const isEveryDay = JSON.stringify(sortedDayNums) === JSON.stringify([0,1,2,3,4,5,6]);
+  const isConsecutiveWeekdays = JSON.stringify(sortedDayNums) === JSON.stringify([1,2,3,4,5]);
+  const daysLabel = isEveryDay
+    ? "tous les jours"
+    : isConsecutiveWeekdays
+    ? "du lundi au vendredi"
+    : sortedDayNums.map(d => DAY_NAMES[d] ?? d).join(", ");
 
   const withdrawalWarningNoProduct = getContent(allSettings, "content_withdrawal_warningNoProduct", "Vous devez posséder un produit actif pour effectuer un retrait.");
 
@@ -302,6 +310,9 @@ export default function WithdrawalPage() {
           {instructions.map((line, i) => (
             <p key={i} className="text-gray-600 text-xs leading-relaxed">{line}</p>
           ))}
+        </div>
+        <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-900">
+          Délai prévu de traitement du retrait : entre {withdrawalMinDelayMinutes} minute{withdrawalMinDelayMinutes === 1 ? "" : "s"} et {withdrawalMaxDelayHours} heure{withdrawalMaxDelayHours === 1 ? "" : "s"}.
         </div>
       </div>
     </div>

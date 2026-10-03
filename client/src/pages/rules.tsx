@@ -8,13 +8,25 @@ export default function RulesPage() {
     queryKey: ["/api/settings"],
   });
 
-  const signupBonus = settings?.signupBonusAmount || "500";
-  const minDeposit = settings?.minDeposit || "4000";
-  const minWithdrawal = settings?.minWithdrawal || "1500";
+  const signupBonus = settings?.signupBonusAmount || "1000";
+  const minDeposit = settings?.minDeposit || "20000";
+  const minWithdrawal = settings?.minWithdrawal || "5000";
   const withdrawalFees = settings?.withdrawalFees || "18";
-  const withdrawalStartHour = settings?.withdrawalStartHour || "9";
-  const withdrawalEndHour = settings?.withdrawalEndHour || "17";
+  const withdrawalStartHour = settings?.withdrawalStartHour || "8";
+  const withdrawalEndHour = settings?.withdrawalEndHour || "18";
   const maxWithdrawalsPerDay = settings?.maxWithdrawalsPerDay || "1";
+  const withdrawalDays = (settings?.withdrawalDays || "0,1,2,3,4,5,6")
+    .split(",").map((day) => Number(day.trim())).filter((day) => Number.isInteger(day) && day >= 0 && day <= 6).sort((a, b) => a - b);
+  const allDays = JSON.stringify(withdrawalDays) === JSON.stringify([0, 1, 2, 3, 4, 5, 6]);
+  const weekdays = JSON.stringify(withdrawalDays) === JSON.stringify([1, 2, 3, 4, 5]);
+  const dayLabels = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+  const withdrawalDaysLabel = allDays
+    ? "tous les jours"
+    : weekdays
+    ? "du lundi au vendredi"
+    : withdrawalDays.map((day) => dayLabels[day]).join(", ");
+  const withdrawalMinDelayMinutes = settings?.withdrawalMinDelayMinutes || "30";
+  const withdrawalMaxDelayHours = settings?.withdrawalMaxDelayHours || "6";
   const lv1 = settings?.level1Commission || "25";
   const lv2 = settings?.level2Commission || "3";
   const lv3 = settings?.level3Commission || "1";
@@ -23,7 +35,7 @@ export default function RulesPage() {
   const rS1Title = getContent(settings, "content_rulespage_s1Title", "1. Investissement");
   const rS1b1 = getContent(settings, "content_rulespage_s1b1", "Chaque utilisateur peut posséder plusieurs produits d'investissement simultanément.");
   const rS1b2 = getContent(settings, "content_rulespage_s1b2", "Les revenus sont générés quotidiennement et crédités toutes les 24h après l'heure d'achat.");
-  const rS1b3 = getContent(settings, "content_rulespage_s1b3", "La durée standard d'investissement est de 360 jours, sauf mention contraire sur le produit.");
+  const rS1b3 = getContent(settings, "content_rulespage_s1b3", "La durée des nouveaux produits VIP est de 30 jours.");
   const rS2Title = getContent(settings, "content_rulespage_s2Title", "2. Recharge & Retrait");
   const rS3Title = getContent(settings, "content_rulespage_s3Title", "3. Système de parrainage");
   const rS3b4 = getContent(settings, "content_rulespage_s3b4", "Toute activité frauduleuse ou manipulation via plusieurs comptes entraînera la suspension du compte.");
@@ -60,7 +72,8 @@ export default function RulesPage() {
             <li>Montant minimum de recharge : {parseInt(minDeposit).toLocaleString()} CDF.</li>
             <li>Montant minimum de retrait : {parseInt(minWithdrawal).toLocaleString()} CDF.</li>
             <li>Frais de retrait : {withdrawalFees}%, couvrant les frais de traitement et de maintenance.</li>
-            <li>Horaires de retrait : {withdrawalStartHour}h00 – {withdrawalEndHour}h00.</li>
+            <li>Horaires de retrait : {withdrawalDaysLabel}, de {withdrawalStartHour}h00 à {withdrawalEndHour}h00.</li>
+            <li>Délai prévu de traitement du retrait : de {withdrawalMinDelayMinutes} minutes à {withdrawalMaxDelayHours} heures.</li>
             <li>Maximum {maxWithdrawalsPerDay} retrait(s) par jour et par utilisateur.</li>
           </ul>
         </section>

@@ -53,6 +53,8 @@ const settingsSchema = z.object({
   withdrawalDays: z.string().min(1, "Jours requis"),
   withdrawalStartHour: z.string().min(1, "Heure requise"),
   withdrawalEndHour: z.string().min(1, "Heure requise"),
+  withdrawalMinDelayMinutes: z.string().min(1, "Délai requis"),
+  withdrawalMaxDelayHours: z.string().min(1, "Délai requis"),
   level1Commission: z.string().min(1, "Commission requise"),
   level2Commission: z.string().min(1, "Commission requise"),
   level3Commission: z.string().min(1, "Commission requise"),
@@ -212,17 +214,19 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       support2Enabled: true,
       channelEnabled: true,
       groupEnabled: true,
-      minDeposit: "4000",
-      depositPresetAmounts: "3500,5000,7000,10000,15000,20000,50000,70000",
-      minWithdrawal: "1000",
+      minDeposit: "20000",
+      depositPresetAmounts: "20000,45000,75000,100000,245000,500000,1000000",
+      minWithdrawal: "5000",
       maxWithdrawal: "1000000",
       withdrawalEnabled: true,
       withdrawalFees: "10",
       maxWithdrawalsPerDay: "1",
       withdrawalInstructions: "",
-      withdrawalDays: "1,2,3,4,5",
-      withdrawalStartHour: "9",
-      withdrawalEndHour: "17",
+      withdrawalDays: "0,1,2,3,4,5,6",
+      withdrawalStartHour: "8",
+      withdrawalEndHour: "18",
+      withdrawalMinDelayMinutes: "30",
+      withdrawalMaxDelayHours: "6",
       level1Commission: "10",
       level2Commission: "2",
       level3Commission: "1",
@@ -232,7 +236,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       dailyBonusEnabled: true,
       dailyBonusAmount: "25",
       signupBonusEnabled: true,
-      signupBonusAmount: "500",
+      signupBonusAmount: "1000",
       westpayMerchantSlug: "",
       westpayWebhookSecret: "",
       westpayApiKey_CD: "",
@@ -262,17 +266,19 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       support2Enabled:        settings.support2Enabled        !== "false",
       channelEnabled:         settings.channelEnabled         !== "false",
       groupEnabled:           settings.groupEnabled           !== "false",
-      minDeposit:             settings.minDeposit             ?? "4000",
-      depositPresetAmounts:   settings.depositPresetAmounts   ?? "3500,5000,7000,10000,15000,20000,50000,70000",
-      minWithdrawal:          settings.minWithdrawal          ?? "1000",
+      minDeposit:             settings.minDeposit             ?? "20000",
+      depositPresetAmounts:   settings.depositPresetAmounts   ?? "20000,45000,75000,100000,245000,500000,1000000",
+      minWithdrawal:          settings.minWithdrawal          ?? "5000",
       maxWithdrawal:          settings.maxWithdrawal          ?? "1000000",
       withdrawalEnabled:      settings.withdrawalEnabled      !== "false",
       withdrawalFees:         settings.withdrawalFees         ?? "10",
       maxWithdrawalsPerDay:   settings.maxWithdrawalsPerDay   ?? "1",
       withdrawalInstructions: settings.withdrawalInstructions ?? "",
-      withdrawalDays:         settings.withdrawalDays         ?? "1,2,3,4,5",
-      withdrawalStartHour:    settings.withdrawalStartHour    ?? "9",
-      withdrawalEndHour:      settings.withdrawalEndHour      ?? "17",
+      withdrawalDays:         settings.withdrawalDays         ?? "0,1,2,3,4,5,6",
+      withdrawalStartHour:    settings.withdrawalStartHour    ?? "8",
+      withdrawalEndHour:      settings.withdrawalEndHour      ?? "18",
+      withdrawalMinDelayMinutes: settings.withdrawalMinDelayMinutes ?? "30",
+      withdrawalMaxDelayHours: settings.withdrawalMaxDelayHours ?? "6",
       level1Commission:       settings.level1Commission       ?? "10",
       level2Commission:       settings.level2Commission       ?? "2",
       level3Commission:       settings.level3Commission       ?? "1",
@@ -282,7 +288,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       dailyBonusEnabled:      settings.dailyBonusEnabled      !== "false",
       dailyBonusAmount:       settings.dailyBonusAmount       ?? "25",
       signupBonusEnabled:     settings.signupBonusEnabled     !== "false",
-      signupBonusAmount:      settings.signupBonusAmount      ?? "500",
+      signupBonusAmount:      settings.signupBonusAmount      ?? "1000",
       popupTitle:             settings.popupTitle             ?? "",
       popupTelegramLabel:     settings.popupTelegramLabel     ?? "",
       popupConfirmLabel:      settings.popupConfirmLabel      ?? "",
@@ -689,7 +695,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               <FormField control={form.control} name="depositPresetAmounts" render={({ field }) => (
                 <FormItem className="col-span-2">
                   <FormLabel>Montants rapides de recharge (CDF)</FormLabel>
-                  <FormControl><Input {...field} placeholder="3500,5000,7000,10000,15000,20000,50000,70000" /></FormControl>
+                  <FormControl><Input {...field} placeholder="20000,45000,75000,100000,245000,500000,1000000" /></FormControl>
                   <FormDescription>Liste de montants séparés par des virgules, affichés comme boutons rapides sur la page de recharge.</FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -734,7 +740,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                   <textarea
                     {...field}
                     rows={6}
-                    placeholder={"1. Le montant minimum de retrait est de 1000 CDF\n2. Les deux derniers chiffres du montant doivent être 0\n3. Des frais de 10% seront déduits\n4. Maximum 1 retrait par jour"}
+                    placeholder={"1. Le montant minimum de retrait est de 5000 CDF\n2. Les deux derniers chiffres du montant doivent être 0\n3. Des frais de 10% seront déduits\n4. Maximum 1 retrait par jour"}
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
                   />
                 </FormControl>
@@ -800,6 +806,23 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 <FormItem>
                   <FormLabel>Heure de fin (0–23)</FormLabel>
                   <FormControl><Input {...field} type="number" min="0" max="23" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField control={form.control} name="withdrawalMinDelayMinutes" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Délai minimum de traitement (minutes)</FormLabel>
+                  <FormControl><Input {...field} type="number" min="0" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="withdrawalMaxDelayHours" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Délai maximum de traitement (heures)</FormLabel>
+                  <FormControl><Input {...field} type="number" min="1" /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -967,10 +990,10 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               { name: "popupLine1" as const, label: "Ligne 1 — Lancement officiel", placeholder: "✨✨ Lancement officiel de la plateforme XPENG ✨✨" },
               { name: "popupLine2" as const, label: "Ligne 2 — Invitation parrainage", placeholder: "🔻 Invitez vos amis à investir et gagnez jusqu'à 25% de commissions..." },
               { name: "popupLine3" as const, label: "Ligne 3 — Bonus connexion", placeholder: "🎁 Bonus de connexion quotidienne disponible chaque jour" },
-              { name: "popupLine4" as const, label: "Ligne 4 — Dépôt minimum", placeholder: "🤝 Dépôt minimum : 3 000 CDF" },
-              { name: "popupLine5" as const, label: "Ligne 5 — Retrait minimum", placeholder: "💚 Retrait minimum : 1 000 CDF" },
+              { name: "popupLine4" as const, label: "Ligne 4 — Dépôt minimum", placeholder: "🤝 Dépôt minimum : 20 000 CDF" },
+              { name: "popupLine5" as const, label: "Ligne 5 — Retrait minimum", placeholder: "💚 Retrait minimum : 5 000 CDF" },
               { name: "popupLine6" as const, label: "Ligne 6 — Frais de retrait", placeholder: "⚙️ Frais de retrait : 10%" },
-              { name: "popupLine7" as const, label: "Ligne 7 — Horaires retraits", placeholder: "🍀 Retraits disponibles du Lundi au Vendredi de 10h à 16h" },
+              { name: "popupLine7" as const, label: "Ligne 7 — Horaires retraits", placeholder: "🍀 Retraits disponibles tous les jours de 8h à 18h" },
             ]).map(({ name, label, placeholder }) => (
               <FormField key={name} control={form.control} name={name} render={({ field }) => (
                 <FormItem>

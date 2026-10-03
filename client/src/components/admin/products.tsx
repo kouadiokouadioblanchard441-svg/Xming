@@ -232,7 +232,7 @@ export default function AdminProducts() {
   });
 
   const defaultValues: ProductForm = {
-    name: "", price: "", dailyEarnings: "", cycleDays: "80",
+    name: "", price: "", dailyEarnings: "", cycleDays: "30",
     imageUrl: "", minInviteCount: "0", maxOwned: "0", collectAtEnd: false, stockPercentage: 0,
   };
 
