@@ -5,4 +5,4 @@
 - [PowerAdd Supabase pooler](spolarpv-supabase-pooler.md) — the app needs Supabase's exact PostgreSQL pooler URI; public API URLs and malformed/old pooler tenants fail before login.
 - [PowerAdd GitHub remote recovery](spolarpv-github-remote-recovery.md) — verify the live head, reconnect Git Providers separately from the Agent connector, and never rewrite remote history without approval.
 - [Mockup sandbox dependencies](mockup-sandbox-dependencies.md) — isolated previews need their own installed dependencies; main-app packages may mask missing or incompatible sandbox packages.
-- [XPENG RDC-only market](xpeng-rdc-only-market.md) — XPENG supports CD only; do not clear or migrate the current database before the new database is explicitly connected.
+- [XPENG RDC-only market](xpeng-rdc-only-market.md) — CD only; login/signup use 9 local digits without 0; keep the existing DB untouched until the new one is connected.

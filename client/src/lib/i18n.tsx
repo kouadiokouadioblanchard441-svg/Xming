@@ -675,7 +675,7 @@ const T: Record<Lang, Translations> = {
     repeatPassword:     "répéter le mot de passe",
     referralCode:       "code de parrainage",
     terms:              "En cochant cette case, vous acceptez les Conditions Générales d'Utilisation de XPENG",
-    errInvalidPhone:    "Numéro de téléphone invalide",
+    errInvalidPhone:    "Saisissez 9 chiffres sans le 0 initial",
     errPasswordRequired:"Le mot de passe est requis",
     errMinPassword:     "Au moins 6 caractères",
     errConfirmPassword: "Confirmez le mot de passe",

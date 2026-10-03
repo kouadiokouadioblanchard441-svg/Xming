@@ -19,6 +19,22 @@ export function getPhoneLength(countryCode: string): number {
   return c?.phoneLength ?? 8;
 }
 
+/** Normalize RDC phone input, accepting the legacy local 0 before a 9-digit number. */
+export function normalizePhoneInput(value: string, countryCode: string): string {
+  const digits = value.replace(/\D/g, "");
+  const expectedLength = getPhoneLength(countryCode);
+
+  if (
+    countryCode === SUPPORTED_COUNTRY_CODE &&
+    digits.length === expectedLength + 1 &&
+    digits.startsWith("0")
+  ) {
+    return digits.slice(1);
+  }
+
+  return digits;
+}
+
 // Legacy compatibility - kept for places still using ELIGIBLE_COUNTRIES directly
 export const ELIGIBLE_COUNTRIES = FALLBACK_COUNTRIES.map(c => ({
   code: c.code,

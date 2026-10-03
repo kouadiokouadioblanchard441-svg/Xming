@@ -6,7 +6,7 @@ import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
-import { FALLBACK_COUNTRIES, type ApiCountry } from "@/lib/countries";
+import { FALLBACK_COUNTRIES, getPhoneLength, normalizePhoneInput, type ApiCountry } from "@/lib/countries";
 import { CountrySelector } from "@/components/country-selector";
 import { useI18n } from "@/lib/i18n";
 import { Eye, EyeOff, ChevronDown } from "lucide-react";
@@ -24,7 +24,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const loginSchema = z.object({
-    phone: z.string().regex(/^\d{9}$/, t.errInvalidPhone),
+    phone: z.string().regex(/^[1-9]\d{8}$/, t.errInvalidPhone),
     country: z.string().min(2, t.selectCountry),
     password: z.string().min(1, t.errPasswordRequired),
   });
@@ -132,8 +132,14 @@ export default function LoginPage() {
               {...form.register("phone")}
               type="tel"
               inputMode="numeric"
-              maxLength={9}
+              maxLength={getPhoneLength(selectedCountry) + 1}
               placeholder={t.phonePlaceholder}
+              onChange={event => {
+                form.setValue("phone", normalizePhoneInput(event.currentTarget.value, selectedCountry), {
+                  shouldDirty: true,
+                  shouldValidate: form.formState.isSubmitted,
+                });
+              }}
               className="flex-1 h-full bg-transparent text-gray-700 placeholder:text-gray-400 text-sm outline-none px-3"
               data-testid="input-phone"
             />
