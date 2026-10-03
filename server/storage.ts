@@ -8,6 +8,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { getKinshasaStartOfDay } from "./rdc-time";
+import { RDC_COUNTRY, SUPPORTED_COUNTRY_CODE } from "@shared/country-config";
 import { eq, and, asc, desc, sql, gte, lte, or, inArray } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { DEFAULT_REFERRAL_COMMISSION_RATES } from "@shared/referral-settings";
@@ -175,8 +176,25 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByPhone(phone: string, country: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(and(eq(users.phone, phone), eq(users.country, country)));
-    return user || undefined;
+    const [exactMatch] = await db.select().from(users)
+      .where(and(eq(users.phone, phone), eq(users.country, country)));
+    if (exactMatch) return exactMatch;
+
+    if (country !== SUPPORTED_COUNTRY_CODE) return undefined;
+
+    const digits = phone.replace(/\D/g, "");
+    const alternatePhone =
+      digits.length === RDC_COUNTRY.phoneLength
+        ? `0${digits}`
+        : digits.length === RDC_COUNTRY.phoneLength + 1 && digits.startsWith("0")
+          ? digits.slice(1)
+          : null;
+
+    if (!alternatePhone || alternatePhone === phone) return undefined;
+
+    const [legacyMatch] = await db.select().from(users)
+      .where(and(eq(users.phone, alternatePhone), eq(users.country, country)));
+    return legacyMatch || undefined;
   }
 
   async getUserByReferralCode(code: string): Promise<User | undefined> {
