@@ -2634,6 +2634,21 @@ export async function registerRoutes(
   app.post("/api/admin/settings", requireAdmin, async (req, res) => {
     try {
       const entries = Object.entries(req.body ?? {});
+      const whatsappLink = req.body?.popupWhatsAppLink;
+      if (whatsappLink !== undefined && whatsappLink !== "") {
+        if (typeof whatsappLink !== "string") {
+          return res.status(400).json({ message: "Le lien WhatsApp doit être une URL HTTPS valide." });
+        }
+        let parsedWhatsAppLink: URL;
+        try {
+          parsedWhatsAppLink = new URL(whatsappLink.trim());
+        } catch {
+          return res.status(400).json({ message: "Le lien WhatsApp doit être une URL HTTPS valide." });
+        }
+        if (parsedWhatsAppLink.protocol !== "https:") {
+          return res.status(400).json({ message: "Le lien WhatsApp doit commencer par https://." });
+        }
+      }
       const referralRateKeys = new Set([
         "level1Commission",
         "level2Commission",

@@ -1,5 +1,5 @@
 import { useAuth } from "@/lib/auth";
-import { SiTelegram } from "react-icons/si";
+import { SiTelegram, SiWhatsapp } from "react-icons/si";
 import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -110,6 +110,7 @@ export default function HomePage() {
   const currency      = "CDF";
 
   const telegramGroupLink = settings?.groupLink || "https://t.me/vestasgroup";
+  const whatsappGroupLink = settings?.popupWhatsAppLink?.trim() || "";
   const minDeposit    = settings?.minDeposit    || "20000";
   const minWithdrawal = settings?.minWithdrawal || "5000";
   const fees          = settings?.withdrawalFees || "15";
@@ -128,6 +129,7 @@ export default function HomePage() {
 
   const popupTitle = getContent(settings, "popupTitle", "Plate-forme");
   const popupTelegramLabel = getContent(settings, "popupTelegramLabel", "Groupes Telegram");
+  const popupWhatsAppLabel = getContent(settings, "popupWhatsAppLabel", "Groupe WhatsApp");
   const popupConfirmLabel = getContent(settings, "popupConfirmLabel", "thankyou");
   const popupLines: string[] = [
     getContent(settings, "popupLine1", `✨ Bienvenue chez XPENG !`),
@@ -213,6 +215,26 @@ export default function HomePage() {
                 <SiTelegram style={{ width: 16, height: 16 }} />
                 {popupTelegramLabel}
               </a>
+              {whatsappGroupLink && (
+                <a
+                  href={whatsappGroupLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setShowPopup(false)}
+                  className="flex items-center justify-center gap-2 font-medium rounded-md active:scale-[0.99] transition-transform"
+                  style={{
+                    width: "100%",
+                    height: 45,
+                    background: "#fff",
+                    color: "#222",
+                    fontSize: 16,
+                  }}
+                  data-testid="button-popup-whatsapp"
+                >
+                  <SiWhatsapp style={{ width: 16, height: 16, color: "#25D366" }} />
+                  {popupWhatsAppLabel}
+                </a>
+              )}
               <button
                 onClick={() => setShowPopup(false)}
                 className="flex items-center justify-center font-semibold rounded-md active:scale-[0.99] transition-transform"

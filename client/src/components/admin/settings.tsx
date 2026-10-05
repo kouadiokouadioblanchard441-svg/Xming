@@ -23,6 +23,15 @@ const commissionPercentage = z.string()
     return Number.isFinite(rate) && rate >= 0 && rate <= 100;
   }, "Saisissez un pourcentage entre 0 et 100.");
 
+const optionalHttpsUrl = z.string().trim().refine((value) => {
+  if (!value) return true;
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}, "Saisissez un lien HTTPS valide.");
+
 const NETWORKS = [
   { value: "telegram", label: "Telegram" },
   { value: "whatsapp", label: "WhatsApp" },
@@ -78,6 +87,8 @@ const settingsSchema = z.object({
   // Popup d'accueil
   popupTitle: z.string().optional(),
   popupTelegramLabel: z.string().optional(),
+  popupWhatsAppLabel: z.string().optional(),
+  popupWhatsAppLink: optionalHttpsUrl,
   popupConfirmLabel: z.string().optional(),
   popupLine1: z.string().optional(),
   popupLine2: z.string().optional(),
@@ -214,6 +225,8 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       popupButtonLabel: "Cliquez ici pour rejoindre le groupe Telegram",
       popupTitle: "Plate-forme",
       popupTelegramLabel: "Groupes Telegram",
+      popupWhatsAppLabel: "Groupe WhatsApp",
+      popupWhatsAppLink: "",
       popupConfirmLabel: "thankyou",
       floatingSupportTarget: "support1",
       supportEnabled: true,
@@ -291,6 +304,8 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       signupBonusAmount:      settings.signupBonusAmount      ?? "1000",
       popupTitle:             settings.popupTitle             ?? "",
       popupTelegramLabel:     settings.popupTelegramLabel     ?? "",
+      popupWhatsAppLabel:     settings.popupWhatsAppLabel     ?? "Groupe WhatsApp",
+      popupWhatsAppLink:      settings.popupWhatsAppLink      ?? "",
       popupConfirmLabel:      settings.popupConfirmLabel      ?? "",
       popupLine1:             settings.popupLine1             ?? "",
       popupLine2:             settings.popupLine2             ?? "",
@@ -938,6 +953,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
             {([
               { name: "popupTitle" as const, label: "Titre du popup", placeholder: "Plate-forme" },
               { name: "popupTelegramLabel" as const, label: "Texte du bouton Telegram", placeholder: "Groupes Telegram" },
+              { name: "popupWhatsAppLabel" as const, label: "Texte du bouton WhatsApp", placeholder: "Groupe WhatsApp" },
               { name: "popupConfirmLabel" as const, label: "Texte du bouton de confirmation", placeholder: "thankyou" },
             ]).map(({ name, label, placeholder }) => (
               <FormField key={name} control={form.control} name={name} render={({ field }) => (
@@ -950,6 +966,16 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
                 </FormItem>
               )} />
             ))}
+            <FormField control={form.control} name="popupWhatsAppLink" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Lien du groupe WhatsApp</FormLabel>
+                <FormControl>
+                  <Input {...field} type="url" placeholder="https://chat.whatsapp.com/…" />
+                </FormControl>
+                <FormDescription>Laissez vide pour masquer le bouton WhatsApp du popup.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )} />
             {([
               { name: "popupLine1" as const, label: "Ligne 1 — Lancement officiel", placeholder: "✨✨ Lancement officiel de la plateforme XPENG ✨✨" },
               { name: "popupLine2" as const, label: "Ligne 2 — Invitation parrainage", placeholder: "🔻 Invitez vos amis à investir et gagnez jusqu'à 25% de commissions..." },
