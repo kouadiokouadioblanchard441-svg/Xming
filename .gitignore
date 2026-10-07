@@ -6,6 +6,7 @@ vite.config.ts.*
 *.zip
 .cache
 .local
+/attached_assets/Screenshot_20261007-063450_1791354991581.png
 
 # The production bundle is built here and deployed to Plesk through Git.
 # Keep both the Express entry point and the compiled frontend versioned.
